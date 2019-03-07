@@ -54,7 +54,7 @@ import json
 from swarm_bot_simulator.model.board import *
 from swarm_bot_simulator.model.config import *
 app_config = None
-with open("E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\Resources\\app_config.json", "r", encoding="utf-8") as f:
+with open("E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\resources\\app_config.json", "r", encoding="utf-8") as f:
     app_config = json.load(f)
 
 print(app_config)

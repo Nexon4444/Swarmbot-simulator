@@ -6,25 +6,29 @@ class Server:
         self.all_bot_info = config.start_bots
         self.config = config
 
+    def print_all_info(self):
+        for bot_info in self.all_bot_info:
+            print(str(bot_info.id) + str(bot_info.poz_x) + str(bot_info.poz_y) + str(bot_info.direction))
+
     # def listen(self):
     #     # Import package
     #     self.config.communication_settings.broker = "192.168.0.103"
     #     self.config.communication_settings.port = 1883
 
-    def on_log(client, userdata, level, buf):
+    def on_log(self, client, userdata, level, buf):
             print("log: " + buf)
 
-    def on_connect(client, userdata, flags, rc):
+    def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             # client.connected_flag = True  # set flag
             print("connected OK")
         else:
             print("Bad connection Returned code=", rc)
 
-    def on_disconnect(client, userdata, flags, rc=0):
+    def on_disconnect(self, client, userdata, flags, rc=0):
         print("Disconnected result code " + str(rc))
 
-    def on_message(client, userdata, msg):
+    def on_message(self, client, userdata, msg):
         topic = msg.topic
         m_decode = str(msg.payload.decode("utf-8"))
         print("message received", m_decode)

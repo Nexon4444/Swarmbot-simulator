@@ -3,7 +3,6 @@ import json
 
 from swarm_bot_simulator.controller.information_transfer import Messenger
 
-
 class Bot:
     # last_id = 0
 
@@ -13,10 +12,7 @@ class Bot:
         topic_name = "swarm_bot" + str(self.bot_info.bot_id)
         self.messenger = Messenger(topic=topic_name, communication_settings=communication_settings)
 
-
     # def set_communication(self):
-
-
     def comm_out(self):
         self.messenger.send(self.bot_info)
 
