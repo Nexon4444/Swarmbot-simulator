@@ -1,0 +1,28 @@
+{
+  "communication_settings": {
+    "method": "indirect",
+    "broker": "localhost",
+    "port": 1883
+
+  },
+  "bots": {
+    "bot_info": {
+      "bot_id": 1,
+      "poz_x": 0,
+      "poz_y": 0,
+      "direction": 0
+    },
+    "bot_info": {
+      "bot_id": 2,
+      "poz_x": 50,
+      "poz_y": 150,
+      "direction": 90
+    },
+    "bot_info": {
+      "bot_id": 3,
+      "poz_x": 150,
+      "poz_y": 50,
+      "direction": 180
+    }
+  }
+}
