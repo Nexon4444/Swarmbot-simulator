@@ -6,7 +6,7 @@ class Board:
         self.bot_n = config.bot_n
         self.all_bots = config.config["bots"]
         self.server = Server(config)
-        x= 3
+        x = 3
 
     def calibrate(self):
         pass

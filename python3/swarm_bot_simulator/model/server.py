@@ -10,6 +10,8 @@ class Server:
         for bot_info in self.all_bot_info:
             print(str(bot_info.id) + str(bot_info.poz_x) + str(bot_info.poz_y) + str(bot_info.direction))
 
+    def get_info(self):
+        return self.all_bot_info
     # def listen(self):
     #     # Import package
     #     self.config.communication_settings.broker = "192.168.0.103"
