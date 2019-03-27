@@ -6,11 +6,16 @@ from swarm_bot_simulator.controller.information_transfer import Messenger
 class Bot:
     # last_id = 0
 
-    def __init__(self, parsed_bot, communication_settings):
-        self.bot_info = BotInfo(parsed_bot["bot_info"])
+    def __init__(self, parsed_bot_info, communication_settings):
+        self.bot_info = BotInfo(parsed_bot_info)
+        self.name = "swarm_bot" + str(self.bot_info.bot_id)
         self.acceleration = 0
-        topic_name = "swarm_bot" + str(self.bot_info.bot_id)
-        self.messenger = Messenger(topic=topic_name, communication_settings=communication_settings)
+        self.communication_settings = communication_settings
+        self.messenger = None
+
+    def initialize_comm(self):
+        # topic_name = "swarm_bot" + str(self.bot_info.bot_id)
+        self.messenger = Messenger(name=self.name, communication_settings=self.communication_settings)
 
     # def set_communication(self):
     def comm_out(self):
@@ -49,9 +54,3 @@ class BotInfo:
         }
         return json.dumps(message)
         # self.head =
-
-
-
-
-
-

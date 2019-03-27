@@ -50,15 +50,18 @@ Constant names must be fully capitalized
 Words in a constant name should be separated by an underscore
 '''
 import json
-
+import os
 from swarm_bot_simulator.model.board import *
 from swarm_bot_simulator.model.config import *
+from swarm_bot_simulator.view.visualize import *
+
 app_config = None
-with open("E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\resources\\app_config.json", "r", encoding="utf-8") as f:
+with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") as f:
     app_config = json.load(f)
 
 print(app_config)
 
 config = Config(app_config)
 test_board = Board(config)
-
+vis = Visualizer()
+vis.visualize(board)

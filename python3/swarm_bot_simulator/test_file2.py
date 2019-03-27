@@ -1,5 +1,6 @@
 import math
 import cairo
+from math import pi
 
 WIDTH, HEIGHT = 256, 256
 
@@ -21,7 +22,7 @@ cr2.set_source_rgb(0, 0, 1)
 cr2.translate(WIDTH/2, HEIGHT/2)
 cr2.scale(WIDTH, HEIGHT)
 # cr2.transform()
-cr2.rotate(0.8)
+cr2.rotate(0.5*pi)
 cr2.rectangle(-0.2, -0.3, 0.4, 0.6)
 cr2.fill()
 cr2.set_source_rgb(1, 0, 0)
