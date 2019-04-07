@@ -4,12 +4,14 @@ import os
 from pathlib import Path
 import cairo
 from math import pi
+from PIL import Image
 import math
 from swarm_bot_simulator.model import board
 
 class Visualizer:
     pygame.init()
-
+    width = 20
+    height = 20
     black = (0, 0, 0)
     white = (255, 255, 255)
     size = [800, 600]
@@ -91,8 +93,16 @@ class BotImage:
         self.game_display.blit(self.convert2pygame(self.vectorize(self.dir)), (self.poz_x, self.poz_y))
 
     def convert2pygame(self, surface):
+        def bgra_surf_to_rgba_string(cairo_surface):
+            # We use PIL to do this
+            img = Image.frombuffer(
+                'RGBA', (cairo_surface.get_width(),
+                         cairo_surface.get_height()),
+                cairo_surface.get_data().tobytes(), 'raw', 'BGRA', 0, 1)
 
-        pass
+            return img.tobytes('raw', 'RGBA', 0, 1)
+        return pygame.image.frombuffer(
+    bgra_surf_to_rgba_string(surface), (surface.get_width(), surface.get_height()), 'RGBA')
 
 
     def vectorize(self, dir):
