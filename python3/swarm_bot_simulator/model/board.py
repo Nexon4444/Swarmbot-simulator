@@ -15,7 +15,7 @@ class Board:
 
         mess.subscribe("server/main")
         self.server.messenger.send(topic="server/main", message="tralalalalalatralalalalalatralalalalalatralalalalala")
-        time.sleep(5)
+        # time.sleep(5)
 
     def calibrate(self):
         pass

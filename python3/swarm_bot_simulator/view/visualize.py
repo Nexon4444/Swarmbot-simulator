@@ -10,8 +10,8 @@ from swarm_bot_simulator.model import board
 
 class Visualizer:
     pygame.init()
-    width = 20
-    height = 20
+    # width = 20
+    # height = 20
     black = (0, 0, 0)
     white = (255, 255, 255)
     size = [800, 600]
@@ -38,13 +38,13 @@ class Visualizer:
         clock = pygame.time.Clock()
         crashed = False
 
-        os.chdir(Path(os.getcwd()).parent)
+        # os.chdir(Path(os.getcwd()).parent)
         # bot_image = pygame.image.load(os.path.join('resources', 'bot_w_bezruchu.png'))
         # bot_image =
 
 
-        # for bot in board.all_bots:
-        #     pass
+        for bot in board.all_bots:
+            pass
 
         while not crashed:
             clock.tick(10)
