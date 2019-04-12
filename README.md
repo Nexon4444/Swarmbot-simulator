@@ -11,3 +11,12 @@ Alexander Shaduri’s GTK+ installer works. (Make sure to leave the Set up PATH 
 Pycairo on Windows is sometimes compiled statically against cairo and may not provide a .dll file that cairocffi can use.
 
 link to installation: https://sourceforge.net/projects/gtk-win/
+
+need to launch mosquitto before: E:\mosquitto
+
+pip install psutil
+
+install shapely from wheel: https://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely
+pip install "C:\Users\Nexon\Downloads\Shapely-1.6.4.post1-cp37-cp37m-win_amd64.whl"
+
+add mosquitto.exe to path variable

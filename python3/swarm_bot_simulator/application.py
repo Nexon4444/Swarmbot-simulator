@@ -54,6 +54,8 @@ import os
 from swarm_bot_simulator.model.board import *
 from swarm_bot_simulator.model.config import *
 from swarm_bot_simulator.view.visualize import *
+from psutil import process_iter
+#initialize mosquitto
 
 app_config = None
 with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") as f:
@@ -64,4 +66,7 @@ print(app_config)
 config = Config(app_config)
 test_board = Board(config)
 vis = Visualizer()
-vis.visualize(board)
+vis.visualize(test_board)
+
+def initialize_mosquitto():
+    if "mosquitto.exe" not in (p.name() for p in process_iter()):

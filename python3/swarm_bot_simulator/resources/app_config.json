@@ -1,9 +1,12 @@
 {
   "communication_settings": {
-    "method": "indirect",
+    "method_is_direct": true,
     "broker": "localhost",
     "port": 1883
 
+  },
+  "bot_settings": {
+    "view_mode_is_omni": true
   },
   "bots": [
     {

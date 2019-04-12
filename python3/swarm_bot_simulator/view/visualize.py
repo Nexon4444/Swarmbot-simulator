@@ -7,6 +7,7 @@ from math import pi
 from PIL import Image
 import math
 from swarm_bot_simulator.model import board
+from swarm_bot_simulator.model.bot_components import Bot, BotInfo
 
 class Visualizer:
     pygame.init()
@@ -38,14 +39,6 @@ class Visualizer:
         clock = pygame.time.Clock()
         crashed = False
 
-        # os.chdir(Path(os.getcwd()).parent)
-        # bot_image = pygame.image.load(os.path.join('resources', 'bot_w_bezruchu.png'))
-        # bot_image =
-
-
-        for bot in board.all_bots:
-            pass
-
         while not crashed:
             clock.tick(10)
             game_display.fill(Visualizer.white)
@@ -54,9 +47,11 @@ class Visualizer:
                     crashed = True
             # display_bot(bot_image, 200, 200, 100)
             # bot1.draw()
-            bot1 = BotImage(100, 100, 0, 40, 40, game_display)
-            bot1.change_poz(0, 0, -11)
-            bot1.draw()
+            for bot in board.all_bots:
+                image = BotImage(bot.bot_info, game_display)
+                image.draw()
+            # bot1 = BotImage(100, 100, 0, 40, 40, game_display)
+            # bot1.change_poz(0, 0, -11)
             x += 2
             pygame.display.update()
 
@@ -72,14 +67,14 @@ class BotImage:
     GREEN = (0, 255, 0)
     RED = (255, 0, 0)
 
-    def __init__(self, poz_x, poz_y, dir, size_x, size_y, game_display):
+    def __init__(self, bot_info, game_display):
         # self.image_orginal = image
         # self.image = self.image_orginal
-        self.poz_x = poz_x
-        self.poz_y = poz_y
-        self.dir = dir
-        self.size_x = size_x
-        self.size_y = size_y
+        self.poz_x = bot_info.poz_x
+        self.poz_y = bot_info.poz_y
+        self.dir = bot_info.dir
+        self.size_x = BotInfo.size_x
+        self.size_y = BotInfo.size_y
         self.game_display = game_display
 
     def change_poz(self, x, y, dir):
@@ -88,8 +83,6 @@ class BotImage:
         self.dir = (self.dir + dir) % (2*pi)
 
     def draw(self):
-        # self.image = pygame.transform.rotozoom(self.image_orginal, self.dir, 0.03)
-        # self.image = pygame.transform.scale(self.image, (self.size_x, self.size_y))
         self.game_display.blit(self.convert2pygame(self.vectorize(self.dir)), (self.poz_x, self.poz_y))
 
     def convert2pygame(self, surface):
@@ -106,7 +99,7 @@ class BotImage:
 
 
     def vectorize(self, dir):
-        WIDTH, HEIGHT = 256, 256
+        WIDTH, HEIGHT = BotInfo.size_x, BotInfo.size_y
 
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
         cr = cairo.Context(surface)

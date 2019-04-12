@@ -9,8 +9,10 @@ class Board:
         self.server = Server(config)
         self.server.initialize_comm()
         self.all_bots = config.start_bots
+
         for bot in self.all_bots:
             bot.initialize_comm()
+
         mess = Messenger("TEST", communication_settings=config.communication_settings)
 
         mess.subscribe("server/main")
