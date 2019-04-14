@@ -50,23 +50,39 @@ Constant names must be fully capitalized
 Words in a constant name should be separated by an underscore
 '''
 import json
+import subprocess
+import warnings
 import os
+
+from swarm_bot_simulator.controller.simulator import Simulator
 from swarm_bot_simulator.model.board import *
 from swarm_bot_simulator.model.config import *
 from swarm_bot_simulator.view.visualize import *
-from psutil import process_iter
-#initialize mosquitto
+# from swarm_bot_simulator.controller import *
 
+from psutil import process_iter
+
+# def initialize_mosquitto():
+#     if "mosquitto.exe" not in (p.name() for p in process_iter()):
+#         subprocess.call(["echo", "tralala"], shell=True)
+#         warnings.warn("May not work systems in which path is other than E:\mosquitto.exe")
+#         subprocess.Popen(["E:\mosquitto.exe"], shell=True)
+#
+# #initialize mosquitto
+# initialize_mosquitto()
 app_config = None
+
 with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") as f:
     app_config = json.load(f)
 
 print(app_config)
-
 config = Config(app_config)
-test_board = Board(config)
-vis = Visualizer()
-vis.visualize(test_board)
+try:
+    simulator = Simulator(config)
+    simulator.simulate()
 
-def initialize_mosquitto():
-    if "mosquitto.exe" not in (p.name() for p in process_iter()):
+except ConnectionRefusedError as e:
+    warnings.warn("Have you started mosquitto.exe?")
+    raise e
+
+

@@ -62,6 +62,6 @@ class Messenger:
 #         self.client.loop_stop()
 #         self.client.disconnect()
 
-def __del__(self):
-    self.client.loop_stop()
-    self.client.disconnect()
+    def __del__(self):
+        self.client.loop_stop()
+        self.client.disconnect()

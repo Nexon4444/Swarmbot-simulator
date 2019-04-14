@@ -13,12 +13,16 @@ class Bot:
     view_cone = 60
     def __init__(self, parsed_bot_info, communication_settings, bot_settings):
         self.bot_info = BotInfo(parsed_bot_info)
+        self.board = None
         # self.model = model
         self.name = "swarm_bot" + str(self.bot_info.bot_id)
         self.acceleration = 0
         self.communication_settings = communication_settings
         self.bot_settings = bot_settings
         self.messenger = None
+
+    def update_board_info(self, board: Board):
+        self.board = board
 
     def initialize_comm(self):
         # topic_name = "swarm_bot" + str(self.bot_info.bot_id)
@@ -46,15 +50,21 @@ class Bot:
         pass
 
     def think(self):
+        visible_bots = self.get_visible_bots(self.board)
+        for bot in visible_bots:
+            print(str(bot.bot_info))
+
+
+
+    def separation(self, visible_bots):
+
+
         pass
 
-    def separation(self):
+    def cohesion(self, visible_bots):
         pass
 
-    def cohesion(self):
-        pass
-
-    def alignment(self):
+    def alignment(self, visible_bots):
         pass
 
     def get_other_bots_info(self):
@@ -79,7 +89,7 @@ class Bot:
             return model.all_bots
 
         visible_bots = []
-        self_point = Point(self.bot_info.poz_x, self.bot_info.poz_y)
+        self_point = (self.bot_info.position.x, self.bot_info.position.y) #self.bot_info.position
         left_cone_angle = self.bot_info.dir - Bot.view_cone/2
         right_cone_angle = self.bot_info.dir + Bot.view_cone/2
 
@@ -87,12 +97,15 @@ class Bot:
         left = (math.sin(left_cone_angle)*side, math.cos(left_cone_angle)*side)
         right = (math.sin(right_cone_angle)*side, math.cos(right_cone_angle)*side)
         triangle = Polygon([self_point, right, left])
+
         for bot in model.all_bots:
-            if triangle.contains((bot.bot_info.poz_x, bot.bot_info.poz_y)):
+            if triangle.contains(Point(bot.bot_info.position.x, bot.bot_info.position.y)):
                 visible_bots.append(bot)
 
         return visible_bots
 
+    def distance(self, bot):
+        return self.bot_info.position.distance(bot.bot_info.position)
 
 
 class BotInfo:
@@ -101,15 +114,19 @@ class BotInfo:
 
     def __init__(self, bot_info_parsed):
         self.bot_id = bot_info_parsed["bot_id"]
-        self.poz_x = float(bot_info_parsed["poz_x"])
-        self.poz_y = float(bot_info_parsed["poz_y"])
+        # self.poz_x = float(bot_info_parsed["poz_x"])
+        # self.poz_y = float(bot_info_parsed["poz_y"])
         self.dir = float(bot_info_parsed["direction"])
+        self.position = Point(float(bot_info_parsed["poz_x"]), float(bot_info_parsed["poz_y"]))
 
     def serialize(self):
         message = {
             "bot_id": self.bot_id,
-            "poz_x": self.poz_x,
-            "poz_y": self.poz_y,
+            "poz_x": self.position.x,
+            "poz_y": self.position.y,
             "direction": self.dir
         }
         return json.dumps(message)
+
+    def __str__(self):
+        return str(self.bot_id) + str(self.dir) + str(self.position)

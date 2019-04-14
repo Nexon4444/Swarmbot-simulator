@@ -7,6 +7,8 @@ from math import pi
 from PIL import Image
 import math
 from swarm_bot_simulator.model import board
+from shapely.geometry import Point
+from threading import Thread
 from swarm_bot_simulator.model.bot_components import Bot, BotInfo
 
 class Visualizer:
@@ -26,11 +28,14 @@ class Visualizer:
         bot_image = pygame.transform.scale(bot_image, (20, 20))
         self.game_display.blit(bot_image, (x, y))
 
+
+        "thread finished...exiting"
     def visualize(self, board):
         # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
 
         x = (800 * 0.45)
         y = (600 * 0.8)
+        print("asdasd")
         game_display = pygame.display.set_mode(Visualizer.size)
         pygame.draw.rect(game_display, Visualizer.black, (x, y, 100, 100))
         pygame.display.set_caption('Swarmbot visualization')
@@ -56,6 +61,7 @@ class Visualizer:
             pygame.display.update()
 
         pygame.quit()
+
         quit()
 
 
@@ -70,20 +76,20 @@ class BotImage:
     def __init__(self, bot_info, game_display):
         # self.image_orginal = image
         # self.image = self.image_orginal
-        self.poz_x = bot_info.poz_x
-        self.poz_y = bot_info.poz_y
+        self.position = bot_info.position
+        # self.poz_y = bot_info.poz_y
         self.dir = bot_info.dir
         self.size_x = BotInfo.size_x
         self.size_y = BotInfo.size_y
         self.game_display = game_display
 
     def change_poz(self, x, y, dir):
-        self.poz_x = self.poz_x + x
-        self.poz_y = self.poz_y + y
+        self.position.x = self.position.x + x
+        self.position.y = self.position.y + y
         self.dir = (self.dir + dir) % (2*pi)
 
     def draw(self):
-        self.game_display.blit(self.convert2pygame(self.vectorize(self.dir)), (self.poz_x, self.poz_y))
+        self.game_display.blit(self.convert2pygame(self.vectorize(self.dir)), (self.position.x, self.position.y))
 
     def convert2pygame(self, surface):
         def bgra_surf_to_rgba_string(cairo_surface):
