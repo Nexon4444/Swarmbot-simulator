@@ -6,6 +6,7 @@ class Config:
         self.bot_n = len(app_config["bots"])
         self.communication_settings = CommunicationSettings(app_config["communication_settings"])
         self.bot_settings = BotSettings(app_config["bot_settings"])
+        self.view_settings = ViewSettings(app_config["view_settings"])
         self.start_bots = [Bot(b, self.communication_settings, self.bot_settings) for b in app_config["bots"]]
 
 class CommunicationSettings:
@@ -18,4 +19,8 @@ class CommunicationSettings:
 class BotSettings:
     def __init__(self, bot_settings):
         self.view_is_omni = bot_settings["view_mode_is_omni"]
+
+class ViewSettings:
+    def __init__(self, view_settings):
+        self.launch = view_settings["launch"]
 

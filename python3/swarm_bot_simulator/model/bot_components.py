@@ -9,7 +9,7 @@ import math
 
 class Bot:
     # last_id = 0
-    view_range = 30
+    view_range = 300
     view_cone = 60
     def __init__(self, parsed_bot_info, communication_settings, bot_settings):
         self.bot_info = BotInfo(parsed_bot_info)
@@ -53,12 +53,9 @@ class Bot:
         visible_bots = self.get_visible_bots(self.board)
         for bot in visible_bots:
             print(str(bot.bot_info))
-
-
+            print(str(self.distance(bot)))
 
     def separation(self, visible_bots):
-
-
         pass
 
     def cohesion(self, visible_bots):
@@ -114,8 +111,6 @@ class BotInfo:
 
     def __init__(self, bot_info_parsed):
         self.bot_id = bot_info_parsed["bot_id"]
-        # self.poz_x = float(bot_info_parsed["poz_x"])
-        # self.poz_y = float(bot_info_parsed["poz_y"])
         self.dir = float(bot_info_parsed["direction"])
         self.position = Point(float(bot_info_parsed["poz_x"]), float(bot_info_parsed["poz_y"]))
 

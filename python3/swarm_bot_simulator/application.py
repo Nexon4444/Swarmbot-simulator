@@ -60,7 +60,6 @@ from swarm_bot_simulator.model.config import *
 from swarm_bot_simulator.view.visualize import *
 # from swarm_bot_simulator.controller import *
 
-from psutil import process_iter
 
 # def initialize_mosquitto():
 #     if "mosquitto.exe" not in (p.name() for p in process_iter()):

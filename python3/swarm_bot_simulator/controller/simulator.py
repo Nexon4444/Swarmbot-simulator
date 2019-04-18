@@ -1,5 +1,6 @@
 from swarm_bot_simulator.model.board import *
 from swarm_bot_simulator.view.visualize import *
+from swarm_bot_simulator.model.config import *
 class Simulator:
     def __init__(self, config):
         self.config = config
@@ -12,13 +13,17 @@ class Simulator:
         # vis.visualize(test_board)
 
         main_thread = Thread(target=self.simulate_bots, args=[test_board])
-        visualization_thread = Thread(target=vis.visualize, args=[test_board])
+        assert isinstance(self.config.view_settings, ViewSettings)
+        if self.config.view_settings.launch is True:
+            visualization_thread = Thread(target=vis.visualize, args=[test_board])
         # thread.daemon = True
         main_thread.start()
-        visualization_thread.start()
+        if self.config.view_settings.launch is True:
+            visualization_thread.start()
 
         main_thread.join()
-        visualization_thread.join()
+        if self.config.view_settings.launch is True:
+            visualization_thread.join()
 
 
     def simulate_bots(self, board):
