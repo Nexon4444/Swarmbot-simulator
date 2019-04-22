@@ -4,6 +4,8 @@ from swarm_bot_simulator.model.server import Server
 from swarm_bot_simulator.controller.information_transfer import Messenger
 
 class Board:
+    all_bots: list()
+
     def __init__(self, config):
         self.bot_n = config.bot_n
         self.server = Server(config)

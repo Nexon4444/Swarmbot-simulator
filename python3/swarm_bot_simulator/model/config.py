@@ -19,6 +19,9 @@ class CommunicationSettings:
 class BotSettings:
     def __init__(self, bot_settings):
         self.view_is_omni = bot_settings["view_mode_is_omni"]
+        self.separation_distance = bot_settings["separation_distance"]
+        self.max_speed = bot_settings["max_speed"]
+        self.max_force = bot_settings["max_force"]
 
 class ViewSettings:
     def __init__(self, view_settings):

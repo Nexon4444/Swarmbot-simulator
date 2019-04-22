@@ -58,17 +58,9 @@ from swarm_bot_simulator.controller.simulator import Simulator
 from swarm_bot_simulator.model.board import *
 from swarm_bot_simulator.model.config import *
 from swarm_bot_simulator.view.visualize import *
-# from swarm_bot_simulator.controller import *
+from swarm_bot_simulator.model.bot_components import *
 
 
-# def initialize_mosquitto():
-#     if "mosquitto.exe" not in (p.name() for p in process_iter()):
-#         subprocess.call(["echo", "tralala"], shell=True)
-#         warnings.warn("May not work systems in which path is other than E:\mosquitto.exe")
-#         subprocess.Popen(["E:\mosquitto.exe"], shell=True)
-#
-# #initialize mosquitto
-# initialize_mosquitto()
 app_config = None
 
 with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") as f:

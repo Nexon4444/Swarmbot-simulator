@@ -9,7 +9,12 @@
 
   },
   "bot_settings": {
-    "view_mode_is_omni": true
+    "view_mode_is_omni": true,
+    "separation_distance": 100,
+    "alignment_distance": 200,
+    "cohesion_distance": 200,
+    "max_speed": 50,
+    "max_force": 10
   },
   "bots": [
     {
@@ -28,6 +33,18 @@
       "bot_id": 3,
       "poz_x": 0,
       "poz_y": 100,
+      "direction": 180
+    },
+    {
+      "bot_id": 4,
+      "poz_x": 200,
+      "poz_y": 0,
+      "direction": 180
+    },
+    {
+      "bot_id": 5,
+      "poz_x": 250,
+      "poz_y": 0,
       "direction": 180
     }
   ]

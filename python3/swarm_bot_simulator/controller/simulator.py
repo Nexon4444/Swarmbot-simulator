@@ -29,7 +29,7 @@ class Simulator:
     def simulate_bots(self, board):
         print("SIMULATE_BOTS")
         for bot in board.all_bots:
-            bot.think()
+            bot.flock()
 
 
 
