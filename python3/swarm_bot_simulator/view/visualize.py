@@ -10,9 +10,10 @@ from swarm_bot_simulator.model import board
 from shapely.geometry import Point
 from threading import Thread
 from swarm_bot_simulator.model.bot_components import Bot, BotInfo
+import logging
 
 class Visualizer:
-    pygame.init()
+
     # width = 20
     # height = 20
     black = (0, 0, 0)
@@ -28,14 +29,13 @@ class Visualizer:
         bot_image = pygame.transform.scale(bot_image, (20, 20))
         self.game_display.blit(bot_image, (x, y))
 
-
         "thread finished...exiting"
-    def visualize(self, board):
+    def visualize(self, q):
         # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
-
+        pygame.init()
         x = (800 * 0.45)
         y = (600 * 0.8)
-        print("asdasd")
+        print("visualization started")
         game_display = pygame.display.set_mode(Visualizer.size)
         pygame.draw.rect(game_display, Visualizer.black, (x, y, 100, 100))
         pygame.display.set_caption('Swarmbot visualization')
@@ -45,6 +45,7 @@ class Visualizer:
         crashed = False
 
         while not crashed:
+            board = q.get()
             clock.tick(10)
             game_display.fill(Visualizer.white)
             for event in pygame.event.get():

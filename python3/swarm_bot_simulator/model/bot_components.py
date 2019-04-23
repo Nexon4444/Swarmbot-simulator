@@ -70,7 +70,6 @@ class Bot:
         print("accl: " + str(self.bot_info.acceleration))
 
     def separation(self, visible_bots):
-
         steer = Vector(0, 0)
         for bot in visible_bots:
             dist = self.distance(bot)

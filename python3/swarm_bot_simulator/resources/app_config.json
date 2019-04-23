@@ -1,6 +1,6 @@
 {
   "view_settings":{
-    "launch": false
+    "launch": true
   },
   "communication_settings": {
     "method_is_direct": true,
