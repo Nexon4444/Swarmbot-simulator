@@ -31,21 +31,15 @@
     },
     {
       "bot_id": 3,
-      "poz_x": 0,
+      "poz_x": 100,
       "poz_y": 100,
-      "direction": 180
+      "direction": 0
     },
     {
       "bot_id": 4,
-      "poz_x": 200,
-      "poz_y": 0,
-      "direction": 180
-    },
-    {
-      "bot_id": 5,
-      "poz_x": 250,
-      "poz_y": 0,
-      "direction": 180
+      "poz_x": 0,
+      "poz_y": 100,
+      "direction": 90
     }
   ]
 }

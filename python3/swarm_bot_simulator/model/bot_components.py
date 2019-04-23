@@ -19,8 +19,8 @@ class Bot:
         self.board = None
         # self.model = model
         self.name = "swarm_bot" + str(self.bot_info.bot_id)
-        self.speed = BotVector(0, 0)
-        self.acceleration = BotVector(0, 0)
+        # self.bot_info.speed = Vector(0, 0)
+        # self.bot_info.acceleration = Vector(0, 0)
         self.communication_settings = communication_settings
         self.bot_settings = bot_settings
         self.messenger = None
@@ -55,17 +55,23 @@ class Bot:
 
     def flock(self):
         visible_bots = self.get_visible_bots(self.board)
-        sep = self.separation(visible_bots)
-        ali = self.alignment(visible_bots)
+        # sep = self.separation(visible_bots)
+        # ali = self.alignment(visible_bots)
         coh = self.cohesion(visible_bots)
 
-        self.applyForce(sep)
-        self.applyForce(ali)
+        # self.applyForce(sep)
+        # self.applyForce(ali)
         self.applyForce(coh)
+        self.report_val()
+
+    def report_val(self):
+        print("position: " + str(self.bot_info.position))
+        print("speed: " + str(self.bot_info.speed))
+        print("accl: " + str(self.bot_info.acceleration))
 
     def separation(self, visible_bots):
 
-        steer = BotVector(0, 0)
+        steer = Vector(0, 0)
         for bot in visible_bots:
             dist = self.distance(bot)
             steer = self.separation_steer(bot, dist, steer, visible_bots)
@@ -84,12 +90,9 @@ class Bot:
         # self.distance()
         # diff = Vector2(0, 0)
         if self.bot_settings.separation_distance > dist:
-            return BotVector(0, 0)
+            return Vector(0, 0)
 
-        diff_poz = Point(bot.bot_info.position.x - self.bot_info.position.x,
-                         bot.bot_info.position.y - self.bot_info.position.y)
-
-        diff_vec = BotVector(diff_poz.x, diff_poz.y)
+        diff_vec = self.points2vector(bot)
         diff_vec.div_scalar(dist)
         diff_vec.normalize()
         steer.add_vector(diff_vec)
@@ -97,29 +100,43 @@ class Bot:
         # print("diff: " + str(diff_vec))
         return steer
 
+    def points2vector(self, bot):
+        diff_poz = Point(bot.bot_info.position.x - self.bot_info.position.x,
+                         bot.bot_info.position.y - self.bot_info.position.y)
+        diff_vec = Vector(diff_poz.x, diff_poz.y)
+        return diff_vec
+
     def correct_steering(self, steer, visible_bots):
         if len(visible_bots) > 0:
             steer.div_scalar(len(visible_bots))
         if steer.magnitude() > 0:
             steer.normalize()
             steer.mul_scalar(self.bot_settings.max_speed)
-            steer.sub_vector(self.speed)
+            steer.sub_vector(self.bot_info.speed)
             steer.limit(self.bot_settings.max_force)
 
     def alignment(self, visible_bots):
-        return BotVector(0, 0)
+        return Vector(0, 0)
 
     def cohesion(self, visible_bots):
+        steer = Vector(0, 0)
         for bot in visible_bots:
             dist = self.distance(bot)
             steer = self.cohesion_steer(bot, dist, steer, visible_bots)
+
+        steer.div_scalar(len(visible_bots))
+        return self.seek(steer)
             # print(str(self.bot_info))
             # print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
 
-        return BotVector(0, 0)
+        # return Vector(0, 0)
 
     def cohesion_steer(self, bot, dist, steer, visible_bots):
-        if dist<
+        if dist > self.bot_settings.cohesion_distance:
+            return steer
+
+        steer.add_vector(self.points2vector(bot))
+        return steer
 
     def get_other_bots_info(self):
         if self.communication_settings.method is "direct":
@@ -167,7 +184,32 @@ class Bot:
         pass
 
     def applyForce(self, sep):
-        self.acceleration.add_vector(sep)
+        self.bot_info.acceleration.add_vector(sep)
+
+    def seek(self, vec):
+        desired = Vector(0, 0)
+        desired.sub_vector(vec)
+        desired.normalize()
+        desired.mul_scalar(self.bot_settings.max_speed)
+        desired.sub_vector(self.bot_info.speed)
+        desired.limit(self.bot_settings.max_force)
+        return desired
+
+    def run(self):
+        self.flock()
+        self.update()
+        self.borders()
+
+    def update(self):
+        self.bot_info.acceleration.mul_scalar(.4)
+        
+        self.bot_info.speed.add_vector(self.bot_info.acceleration)
+        self.bot_info.speed.limit(self.bot_settings.max_speed)
+        self.bot_info.position.add_vector(self.bot_info.speed)
+        self.bot_info.acceleration.mul_scalar(0)
+
+    def borders(self):
+        pass
 
 
 class BotInfo:
@@ -177,7 +219,9 @@ class BotInfo:
     def __init__(self, bot_info_parsed):
         self.bot_id = bot_info_parsed["bot_id"]
         self.dir = float(bot_info_parsed["direction"])
-        self.position = Point(float(bot_info_parsed["poz_x"]), float(bot_info_parsed["poz_y"]))
+        self.position = Vector(float(bot_info_parsed["poz_x"]), float(bot_info_parsed["poz_y"]))
+        self.acceleration = Vector(0, 0)
+        self.speed = Vector(0, 0)
 
     def serialize(self):
         message = {
@@ -193,7 +237,7 @@ class BotInfo:
             self.position) + "\ndirection: " + str(self.dir)
 
 
-class BotVector:
+class Vector:
     def __init__(self, x, y):
         self.x = x
         self.y = y
@@ -247,6 +291,12 @@ class BotVector:
 
     def get_angle(self):
         return math.atan2(self.x, self.y)
+
+    def sub2Vector(self, vec1, vec2):
+        return Vector(vec1.x-vec2.x, vec1.y-vec2.y)
+
+    def distance(self, vec):
+        return math.sqrt(math.pow(vec.x-self.x, 2) + math.pow(vec.y-self.y, 2))
 
     def __str__(self):
         return '[' + str(self.x) + ", " + str(self.y) + ']'
