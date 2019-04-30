@@ -1,5 +1,8 @@
 # from swarm_bot_simulator.model.config import PozInfo
 import json
+
+import logging
+
 from swarm_bot_simulator.model.board import Board
 from swarm_bot_simulator.controller.information_transfer import Messenger
 from shapely.geometry import Point
@@ -15,7 +18,7 @@ class Bot:
     view_cone = 60
 
     def __init__(self, parsed_bot_info, communication_settings, bot_settings):
-        self.bot_info = BotInfo(parsed_bot_info)
+        self.bot_info = BotInfo(parsed_bot_info, bot_settings)
         self.board = None
         # self.model = model
         self.name = "swarm_bot" + str(self.bot_info.bot_id)
@@ -46,28 +49,32 @@ class Bot:
     def designate_coords(self):
         self.update_data()
 
-    def move_front(self, distance):
-        self.bot_info.poz_x = self.bot_info.poz_x + distance
-        self.update_data()
+    def move(self, vec):
+        self.bot_info.position = self.bot_info.position + vec
+        # self.update_data()
 
     def calibrate(self):
         pass
 
+    def report_val(self):
+        print(str(self))
+
     def flock(self):
         visible_bots = self.get_visible_bots(self.board)
-        # sep = self.separation(visible_bots)
-        # ali = self.alignment(visible_bots)
+        sep = self.separation(visible_bots)
+        ali = self.alignment(visible_bots)
         coh = self.cohesion(visible_bots)
 
-        # self.applyForce(sep)
-        # self.applyForce(ali)
-        self.applyForce(coh)
-        self.report_val()
+        sep.mul_scalar(4.5)
+        ali.mul_scalar(1.0)
+        coh.mul_scalar(1.0)
 
-    def report_val(self):
-        print("position: " + str(self.bot_info.position))
-        print("speed: " + str(self.bot_info.speed))
-        print("accl: " + str(self.bot_info.acceleration))
+        self.applyForce(sep)
+        self.applyForce(ali)
+        self.applyForce(coh)
+
+        self.set_direction()
+        self.report_val()
 
     def separation(self, visible_bots):
         steer = Vector(0, 0)
@@ -77,9 +84,9 @@ class Bot:
             print(str(self.bot_info))
             print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
 
-        self.correct_steering(steer, visible_bots)
-        steer.invert()
-        print(steer)
+        self.correct_separation(steer, visible_bots)
+        # steer.invert()
+        print("steer" + str(steer))
         return steer
         # if steer.magnitude() > 0:
         #     steer.normalize()
@@ -88,24 +95,18 @@ class Bot:
     def separation_steer(self, bot, dist, steer, visible_bots):
         # self.distance()
         # diff = Vector2(0, 0)
-        if self.bot_settings.separation_distance > dist:
+        if self.bot_settings.separation_distance < dist:
             return Vector(0, 0)
 
         diff_vec = self.points2vector(bot)
         diff_vec.div_scalar(dist)
         diff_vec.normalize()
-        steer.add_vector(diff_vec)
+        steer.sub_vector(diff_vec)
 
         # print("diff: " + str(diff_vec))
         return steer
 
-    def points2vector(self, bot):
-        diff_poz = Point(bot.bot_info.position.x - self.bot_info.position.x,
-                         bot.bot_info.position.y - self.bot_info.position.y)
-        diff_vec = Vector(diff_poz.x, diff_poz.y)
-        return diff_vec
-
-    def correct_steering(self, steer, visible_bots):
+    def correct_separation(self, steer, visible_bots):
         if len(visible_bots) > 0:
             steer.div_scalar(len(visible_bots))
         if steer.magnitude() > 0:
@@ -114,40 +115,73 @@ class Bot:
             steer.sub_vector(self.bot_info.speed)
             steer.limit(self.bot_settings.max_force)
 
-    def alignment(self, visible_bots):
-        return Vector(0, 0)
+    def points2vector(self, bot):
+        diff_poz = Point(bot.bot_info.position.x - self.bot_info.position.x,
+                         bot.bot_info.position.y - self.bot_info.position.y)
+        diff_vec = Vector(diff_poz.x, diff_poz.y)
+        return diff_vec
 
     def cohesion(self, visible_bots):
-        steer = Vector(0, 0)
-        for bot in visible_bots:
-            dist = self.distance(bot)
-            steer = self.cohesion_steer(bot, dist, steer, visible_bots)
+            steer = Vector(0, 0)
+            for bot in visible_bots:
+                dist = self.distance(bot)
+                steer = self.cohesion_steer(bot, dist, steer, visible_bots)
 
-        steer.div_scalar(len(visible_bots))
-        return self.seek(steer)
-            # print(str(self.bot_info))
-            # print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
+            steer.div_scalar(len(visible_bots))
+            return self.seek(steer)
+                # print(str(self.bot_info))
+                # print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
 
-        # return Vector(0, 0)
+            # return Vector(0, 0)
 
     def cohesion_steer(self, bot, dist, steer, visible_bots):
         if dist > self.bot_settings.cohesion_distance:
             return steer
 
         steer.add_vector(self.points2vector(bot))
+
         return steer
 
-    def get_other_bots_info(self):
-        if self.communication_settings.method is "direct":
-            return self.get_sensor_info()
-        else:
-            return self.get_model_info()
+    def alignment(self, visible_bots):
+        steer = Vector(0, 0)
+        for bot in visible_bots:
+            dist = self.distance(bot)
+            steer = self.alignment_steer(bot, dist, steer, visible_bots)
+            print(str(self.bot_info))
+            print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
+
+        steer.div_scalar(len(visible_bots))
+
+        return self.correct_alignment(steer, visible_bots)
+
+    def alignment_steer(self, bot, dist, steer, visible_bots):
+        if dist > self.bot_settings.alignment_distance:
+            return steer
+
+        steer.add_vector(bot.bot_info.speed)
+        return steer
+
+    def correct_alignment(self, steer, visible_bots):
+        if len(visible_bots) > 0:
+            steer.div_scalar(len(visible_bots))
+
+        steer.normalize()
+        steer.mul_scalar(self.bot_settings.max_speed)
+        steer.sub_vector(self.bot_info.speed)
+        steer.limit(self.bot_settings.max_force)
+        return steer
 
     def get_sensor_info(self):
         pass
 
     def get_model_info(self):
         pass
+
+    def get_other_bots_info(self):
+        if self.communication_settings.method is "direct":
+            return self.get_sensor_info()
+        else:
+            return self.get_model_info()
 
     def get_visible_bots(self, model: Board):
         '''
@@ -179,48 +213,64 @@ class Bot:
     def distance(self, bot):
         return self.bot_info.position.distance(bot.bot_info.position)
 
-    def allignement(self):
-        pass
-
     def applyForce(self, sep):
         self.bot_info.acceleration.add_vector(sep)
 
     def seek(self, vec):
         desired = Vector(0, 0)
-        desired.sub_vector(vec)
+        desired.add_vector(vec)
         desired.normalize()
         desired.mul_scalar(self.bot_settings.max_speed)
         desired.sub_vector(self.bot_info.speed)
         desired.limit(self.bot_settings.max_force)
+        # desired.invert()
         return desired
 
     def run(self):
         self.flock()
-        self.update()
         self.borders()
 
+    def __str__(self):
+        return ("\nbot ID: " + str(self.bot_info.bot_id)
+                + "\nposition: " + str(self.bot_info.position)
+                + "\nspeed: " + str(self.bot_info.speed)
+                + "\naccel: " + str(self.bot_info.acceleration)
+                + "\ndir: " + str(self.bot_info.dir))
+
+    def borders(self):
+        pass
+
     def update(self):
-        self.bot_info.acceleration.mul_scalar(.4)
-        
+        self.bot_info.acceleration.mul_scalar(1)
+
         self.bot_info.speed.add_vector(self.bot_info.acceleration)
         self.bot_info.speed.limit(self.bot_settings.max_speed)
         self.bot_info.position.add_vector(self.bot_info.speed)
         self.bot_info.acceleration.mul_scalar(0)
 
-    def borders(self):
-        pass
+    def set_direction(self):
+        self.bot_info.dir = math.degrees(self.bot_info.speed.get_angle())
 
 
 class BotInfo:
     size_x = 20
     size_y = 20
 
-    def __init__(self, bot_info_parsed):
+    def __init__(self, bot_info_parsed, bot_settings):
         self.bot_id = bot_info_parsed["bot_id"]
         self.dir = float(bot_info_parsed["direction"])
         self.position = Vector(float(bot_info_parsed["poz_x"]), float(bot_info_parsed["poz_y"]))
         self.acceleration = Vector(0, 0)
-        self.speed = Vector(0, 0)
+
+        speed_vec = bot_info_parsed["speed"]
+
+        if bot_info_parsed["speed"][0] > bot_settings.max_speed:
+            speed_vec.x = bot_settings.max_speed
+
+        if bot_info_parsed["speed"][1] > bot_settings.max_speed:
+            speed_vec.y = bot_settings.max_speed
+
+        self.speed = Vector(speed_vec[0], speed_vec[1])
 
     def serialize(self):
         message = {
@@ -257,8 +307,9 @@ class Vector:
         if m > 0:
             self.x = self.x / m
             self.y = self.y / m
-        # else:
-        #     return Vector2(self.vec.x, self.vec.y)
+        else:
+            self.x = 0
+            self.y = 0
 
     def magnitude(self):
         return math.sqrt(self.x * self.x + self.y * self.y)
@@ -284,9 +335,13 @@ class Vector:
     def limit(self, max):
         size = self.magnitude()
 
+        if size is 0:
+            return
+
         if size > max:
             self.x = self.x / size
             self.y = self.y / size
+
 
     def get_angle(self):
         return math.atan2(self.x, self.y)
@@ -296,6 +351,14 @@ class Vector:
 
     def distance(self, vec):
         return math.sqrt(math.pow(vec.x-self.x, 2) + math.pow(vec.y-self.y, 2))
+
+    def __add__(self, other):
+        self.add_vector(other)
+        return self
+
+    def __sub__(self, other):
+        self.sub_vector(other)
+        return self
 
     def __str__(self):
         return '[' + str(self.x) + ", " + str(self.y) + ']'

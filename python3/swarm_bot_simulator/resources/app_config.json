@@ -10,36 +10,55 @@
   },
   "bot_settings": {
     "view_mode_is_omni": true,
-    "separation_distance": 100,
+    "separation_distance": 50,
     "alignment_distance": 200,
     "cohesion_distance": 200,
-    "max_speed": 50,
-    "max_force": 10
+    "exclusion_distance": 10,
+    "max_speed": 5,
+    "max_force": 1
   },
   "bots": [
     {
       "bot_id": 1,
-      "poz_x": 0,
-      "poz_y": 0,
+      "poz_x": 100,
+      "poz_y": 100,
+      "speed": [5, 1],
       "direction": 0
     },
     {
       "bot_id": 2,
-      "poz_x": 100,
-      "poz_y": 0,
-      "direction": 90
+      "poz_x": 120,
+      "poz_y": 100,
+      "speed":[-3, 0],
+      "direction": 0
     },
     {
       "bot_id": 3,
-      "poz_x": 100,
-      "poz_y": 100,
+      "poz_x": 170,
+      "poz_y": 120,
+      "speed": [4, 2],
       "direction": 0
     },
     {
       "bot_id": 4,
-      "poz_x": 0,
-      "poz_y": 100,
-      "direction": 90
+      "poz_x": 70,
+      "poz_y": 180,
+      "speed":[-3, 1],
+      "direction": 0
+    },
+    {
+      "bot_id": 5,
+      "poz_x": 140,
+      "poz_y": 140,
+      "speed": [1, 4],
+      "direction": 0
+    },
+    {
+      "bot_id": 6,
+      "poz_x": 120,
+      "poz_y": 80,
+      "speed":[-3, -4],
+      "direction": 0
     }
   ]
 }

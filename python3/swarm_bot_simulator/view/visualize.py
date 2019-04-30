@@ -13,7 +13,7 @@ from swarm_bot_simulator.model.bot_components import Bot, BotInfo
 import logging
 
 class Visualizer:
-
+    log = True
     # width = 20
     # height = 20
     black = (0, 0, 0)
@@ -31,10 +31,10 @@ class Visualizer:
 
         "thread finished...exiting"
     def visualize(self, q):
-        # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
         pygame.init()
-        x = (800 * 0.45)
         y = (600 * 0.8)
+        x = (800 * 0.45)
+        # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
         print("visualization started")
         game_display = pygame.display.set_mode(Visualizer.size)
         pygame.draw.rect(game_display, Visualizer.black, (x, y, 100, 100))
@@ -59,11 +59,16 @@ class Visualizer:
             # bot1 = BotImage(100, 100, 0, 40, 40, game_display)
             # bot1.change_poz(0, 0, -11)
             x += 2
+            self.log("Displaying board: {" + str(board) + "}")
             pygame.display.update()
 
         pygame.quit()
+        return
+        # quit()
 
-        quit()
+    def log(self, message):
+        if Visualizer.log:
+            print(message)
 
 
 class BotImage:

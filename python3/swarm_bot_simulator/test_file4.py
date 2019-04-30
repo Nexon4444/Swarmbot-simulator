@@ -13,21 +13,19 @@ class Visualizer:
     size = [800, 600]
 
     def __init__(self):
-        # self.board = board
-        self.game_display = pygame.display.set_mode(Visualizer.size)
-
+        pass
 
     def visualize(self):
-        # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
         pygame.init()
+        # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
         x = (800 * 0.45)
         y = (600 * 0.8)
+        # game_display = pygame.display.set_mode(Visualizer.size)
         print("visualization started")
         game_display = pygame.display.set_mode(Visualizer.size)
         pygame.draw.rect(game_display, Visualizer.white, (x, y, 100, 100))
-        pygame.display.set_caption('Swarmbot visualization')
+        # pygame.display.set_caption('Swarmbot visualization')
 
-        game_display.fill(Visualizer.white)
         game_display.fill(Visualizer.white)
         clock = pygame.time.Clock()
         crashed = False
@@ -46,9 +44,12 @@ class Visualizer:
 
         quit()
 
+def graphics():
 
-vis = Visualizer()
-vis_thread = threading.Thread(target=vis.visualize, args=[])
-vis_thread.run()
-time.sleep(1)
+    vis = Visualizer()
+    vis.visualize()
+
+vis_thread = threading.Thread(target=graphics, args=[])
+vis_thread.start()
+time.sleep(10)
 vis_thread.join()
