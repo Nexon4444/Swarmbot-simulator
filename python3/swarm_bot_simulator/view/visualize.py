@@ -18,11 +18,12 @@ class Visualizer:
     # height = 20
     black = (0, 0, 0)
     white = (255, 255, 255)
-    size = [800, 600]
+    # size = [800, 600]
 
-    def __init__(self):
+    def __init__(self, board_settings):
         # self.board = board
-        self.game_display = pygame.display.set_mode(Visualizer.size)
+        self.size = [board_settings.border_x, board_settings.border_y]
+        self.game_display = pygame.display.set_mode(self.size)
 
     def display_bot(self, bot_image, x, y, angle):
         bot_image = pygame.transform.rotate(bot_image, angle)
@@ -36,7 +37,7 @@ class Visualizer:
         x = (800 * 0.45)
         # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
         print("visualization started")
-        game_display = pygame.display.set_mode(Visualizer.size)
+        game_display = pygame.display.set_mode(self.size)
         pygame.draw.rect(game_display, Visualizer.black, (x, y, 100, 100))
         pygame.display.set_caption('Swarmbot visualization')
 

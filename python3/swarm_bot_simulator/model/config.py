@@ -7,7 +7,8 @@ class Config:
         self.communication_settings = CommunicationSettings(app_config["communication_settings"])
         self.bot_settings = BotSettings(app_config["bot_settings"])
         self.view_settings = ViewSettings(app_config["view_settings"])
-        self.start_bots = [Bot(b, self.communication_settings, self.bot_settings) for b in app_config["bots"]]
+        self.board_settings = BoardSettings(app_config["board_settings"])
+        self.start_bots = [Bot(b, self.communication_settings, self.bot_settings, self.board_settings) for b in app_config["bots"]]
 
 class CommunicationSettings:
     def __init__(self, communication_settings):
@@ -15,6 +16,10 @@ class CommunicationSettings:
         self.port = communication_settings["port"]
         self.method = communication_settings["method_is_direct"]
 
+class BoardSettings:
+    def __init__(self, board_settings):
+        self.border_x = board_settings["border_x"]
+        self.border_y = board_settings["border_y"]
 
 class BotSettings:
     def __init__(self, bot_settings):
@@ -22,6 +27,11 @@ class BotSettings:
         self.separation_distance = bot_settings["separation_distance"]
         self.cohesion_distance = bot_settings["cohesion_distance"]
         self.alignment_distance = bot_settings["alignment_distance"]
+
+        self.sep_mul = bot_settings["sep_mul"]
+        self.ali_mul = bot_settings["ali_mul"]
+        self.coh_mul = bot_settings["coh_mul"]
+
         self.max_speed = bot_settings["max_speed"]
         self.max_force = bot_settings["max_force"]
 

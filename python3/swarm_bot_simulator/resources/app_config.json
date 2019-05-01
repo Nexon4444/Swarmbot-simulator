@@ -8,12 +8,21 @@
     "port": 1883
 
   },
+  "board_settings": {
+    "border_x": 800,
+    "border_y": 600
+  },
   "bot_settings": {
     "view_mode_is_omni": true,
-    "separation_distance": 50,
+    "separation_distance": 100,
     "alignment_distance": 200,
     "cohesion_distance": 200,
     "exclusion_distance": 10,
+
+    "sep_mul": 4.5,
+    "ali_mul": 2.0,
+    "coh_mul": 1.0,
+
     "max_speed": 5,
     "max_force": 1
   },

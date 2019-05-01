@@ -17,7 +17,7 @@ class Bot:
     view_range = 1000
     view_cone = 60
 
-    def __init__(self, parsed_bot_info, communication_settings, bot_settings):
+    def __init__(self, parsed_bot_info, communication_settings, bot_settings, board_settings):
         self.bot_info = BotInfo(parsed_bot_info, bot_settings)
         self.board = None
         # self.model = model
@@ -26,6 +26,7 @@ class Bot:
         # self.bot_info.acceleration = Vector(0, 0)
         self.communication_settings = communication_settings
         self.bot_settings = bot_settings
+        self.board_settings = board_settings
         self.messenger = None
 
     def update_board_info(self, board: Board):
@@ -50,7 +51,7 @@ class Bot:
         self.update_data()
 
     def move(self, vec):
-        self.bot_info.position = self.bot_info.position + vec
+        self.bot_info.position.add_vector(vec)
         # self.update_data()
 
     def calibrate(self):
@@ -65,9 +66,9 @@ class Bot:
         ali = self.alignment(visible_bots)
         coh = self.cohesion(visible_bots)
 
-        sep.mul_scalar(4.5)
-        ali.mul_scalar(1.0)
-        coh.mul_scalar(1.0)
+        sep.mul_scalar(self.bot_settings.sep_mul)
+        ali.mul_scalar(self.bot_settings.ali_mul)
+        coh.mul_scalar(self.bot_settings.coh_mul)
 
         self.applyForce(sep)
         self.applyForce(ali)
@@ -238,7 +239,9 @@ class Bot:
                 + "\ndir: " + str(self.bot_info.dir))
 
     def borders(self):
-        pass
+        next_pos = self.bot_info.position + self.bot_info.speed
+        if next_pos.in_borders(Vector(self.board_settings.border_x, self.board_settings.border_y)) is False:
+            self.stop()
 
     def update(self):
         self.bot_info.acceleration.mul_scalar(1)
@@ -250,6 +253,9 @@ class Bot:
 
     def set_direction(self):
         self.bot_info.dir = math.degrees(self.bot_info.speed.get_angle())
+
+    def stop(self):
+        self.bot_info.speed.set_xy(0, 0)
 
 
 class BotInfo:
@@ -341,7 +347,9 @@ class Vector:
         if size > max:
             self.x = self.x / size
             self.y = self.y / size
-
+    def set_xy(self, x, y):
+        self.x = x
+        self.y = y
 
     def get_angle(self):
         return math.atan2(self.x, self.y)
@@ -352,13 +360,23 @@ class Vector:
     def distance(self, vec):
         return math.sqrt(math.pow(vec.x-self.x, 2) + math.pow(vec.y-self.y, 2))
 
+    def in_borders(self, border):
+        if self.x < 0:
+            return False
+        elif self.y < 0:
+            return False
+        elif self.x > border.x:
+            return False
+        elif self.y > border.y:
+            return False
+        else:
+            return True
+
     def __add__(self, other):
-        self.add_vector(other)
-        return self
+        return Vector(self.x + other.x, self.y + other.y)
 
     def __sub__(self, other):
-        self.sub_vector(other)
-        return self
+        return Vector(self.x - other.x, self.y - other.y)
 
     def __str__(self):
         return '[' + str(self.x) + ", " + str(self.y) + ']'

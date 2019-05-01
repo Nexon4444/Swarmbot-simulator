@@ -19,7 +19,7 @@ setx path "%path%;E:\mosquitto"
 
 
 
-
+pip install simple-pid
 
 
 --------------------------- outdated ------------------------------  
@@ -29,5 +29,8 @@ cairocffi needs a libcairo-2.dll file in a directory that is listed in the PATH 
 
 Alexander Shaduri’s GTK+ installer works. (Make sure to leave the Set up PATH environment variable checkbox checked.)
 Pycairo on Windows is sometimes compiled statically against cairo and may not provide a .dll file that cairocffi can use.  
+
+pip install slycot
+pip install control
 
 -------------------------------------------------------------------

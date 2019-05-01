@@ -22,7 +22,7 @@ class Simulator:
         board_thread.join()
 
     def start_visualization_thread(self, q):
-        vis = Visualizer()
+        vis = Visualizer(self.config.board_settings)
         stop = False
         vis.visualize(q)
         # while not stop:
@@ -40,7 +40,7 @@ class Simulator:
             for bot in board.all_bots:
                 bot.update()
             # board.all_bots[0].move(vec)
-            time.sleep(1)
+            time.sleep(0.1)
             q.put(board)
         logging.debug("Stopping simulatiion")
 
