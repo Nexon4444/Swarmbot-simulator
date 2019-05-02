@@ -36,7 +36,7 @@ x.period_us(700)
 # enable PWM
 x.enable(True)
 
-value= 0.0
+value = 0.0
 
 while True:
     # write PWM value
@@ -44,6 +44,7 @@ while True:
 
     time.sleep(0.05)
 
-    value = value + 0.01
+    value = value + 0.02
+
     if value >= 1:
-value = 0.0
+        value = 0.0
