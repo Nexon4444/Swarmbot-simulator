@@ -14,12 +14,13 @@ install shapely from wheel: https://www.lfd.uci.edu/~gohlke/pythonlibs/#shapely
 pip install "C:\Users\Nexon\Downloads\Shapely-1.6.4.post1-cp37-cp37m-win_amd64.whl"
 
 add mosquitto.exe to path variable
-setx path "%path%;E:\mosquitto"
+    
+    setx path "%path%;E:\mosquitto"
 
 
 
 
-pip install simple-pid
+    pip install simple-pid
 
 # Instalacja oprogramowania na Intel Edison
 Aby przygotować oprogramowanie na przenośnym układzie "Intel Edison", należy najpierw wyczyścić pamięc korzystając z 
@@ -88,6 +89,9 @@ Usunięcie katalogów roboczych
 
 Instalacja modułów potrzebnych przy projekcie:
 
+###Bibliografia
+
+https://www.intel.com/content/dam/support/us/en/documents/edison/sb/edison-module_HG_331189.pdf
 
 --------------------------- outdated ------------------------------  
 Installing cairo on Windows
