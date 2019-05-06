@@ -1,9 +1,10 @@
 import time
-
+from json import JSONEncoder
+import json
 from swarm_bot_simulator.model.server import Server
 from swarm_bot_simulator.controller.information_transfer import Messenger
 
-class Board:
+class Board():
     # all_bots: list()
 
     def __init__(self, config):
@@ -19,7 +20,7 @@ class Board:
 
         mess.subscribe("server/main")
         self.server.messenger.send(topic="server/main", message="tralalalalalatralalalalalatralalalalalatralalalalala")
-        # time.sleep(5)
+
 
     def __str__(self):
         bot_list = [str(bot)for bot in self.all_bots]
@@ -30,3 +31,12 @@ class Board:
 
     def run(self):
         pass
+    #
+
+class BoardEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Board):
+            return object.__dict__
+        else:
+            return json.JSONEncoder.default(self, o)
+
