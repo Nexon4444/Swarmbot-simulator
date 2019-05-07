@@ -32,7 +32,7 @@ class Simulator:
         board = Board(self.config)
         q.put(board)
         # vec = Vector(1, 0)
-        print(str(board.serialize()))
+        # print(str(board.serialize()))
         logging.debug("Starting simulation")
         print("SIMULATE_BOTS")
         for i in range(0, 1000):
