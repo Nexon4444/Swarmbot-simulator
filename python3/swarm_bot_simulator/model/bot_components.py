@@ -7,10 +7,10 @@ from swarm_bot_simulator.model.board import Board
 from swarm_bot_simulator.controller.information_transfer import Messenger
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
-from vectormath import Vector2
+import threading
 
 import math
-
+import copy
 
 class Bot:
     # last_id = 0
@@ -19,7 +19,15 @@ class Bot:
 
     def __init__(self, parsed_bot_info, communication_settings, bot_settings, board_settings):
         self.bot_info = BotInfo(parsed_bot_info, bot_settings)
+        self.bot_real = BotInfo(parsed_bot_info, bot_settings)
+
+        self.lock = threading.Lock()
+        self.signal = threading.Condition()
+        self.line = 0
+        self.line_event = threading.Event()
         self.board = None
+        self.hardware = Hardware()
+        self.listen_lf = None
         # self.model = model
         self.name = "swarm_bot" + str(self.bot_info.bot_id)
         # self.bot_info.speed = Vector(0, 0)
@@ -29,8 +37,33 @@ class Bot:
         self.board_settings = board_settings
         self.messenger = None
 
+    def pass_line(self):
+        self.counter()
+        self.line_event.set()
+
+    def counter(self):
+        with self.lock:
+            self.line = self.line + 1
+
     def update_board_info(self, board: Board):
         self.board = board
+
+    def update_real_data(self):
+        # bot_info_list = self.get_sensor_info()
+        self.bot_info = self.negotiate(self.bot_info, self.bot_real)
+
+    def negotiate(self, bot_info, bot_real):
+        bot_info.position.x = bot_real.position.x
+        return bot_info
+
+    def start_sensor_threads(self):
+        self.listen_lf = threading.Thread(target=self.get_single_line_follower)
+        self.listen_lf.start()
+
+    def get_sensor_info(self):
+        BotInfo = self.get_single_line_follower()
+        return BotInfo()
+
 
     def initialize_comm(self):
         # topic_name = "swarm_bot" + str(self.bot_info.bot_id)
@@ -70,9 +103,9 @@ class Bot:
         ali.mul_scalar(self.bot_settings.ali_mul)
         coh.mul_scalar(self.bot_settings.coh_mul)
 
-        self.applyForce(sep)
-        self.applyForce(ali)
-        self.applyForce(coh)
+        self.apply_force(sep)
+        self.apply_force(ali)
+        self.apply_force(coh)
 
         self.set_direction()
         self.report_val()
@@ -123,17 +156,17 @@ class Bot:
         return diff_vec
 
     def cohesion(self, visible_bots):
-            steer = Vector(0, 0)
-            for bot in visible_bots:
-                dist = self.distance(bot)
-                steer = self.cohesion_steer(bot, dist, steer, visible_bots)
+        steer = Vector(0, 0)
+        for bot in visible_bots:
+            dist = self.distance(bot)
+            steer = self.cohesion_steer(bot, dist, steer, visible_bots)
 
-            steer.div_scalar(len(visible_bots))
-            return self.seek(steer)
-                # print(str(self.bot_info))
-                # print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
+        steer.div_scalar(len(visible_bots))
+        return self.seek(steer)
+        # print(str(self.bot_info))
+        # print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
 
-            # return Vector(0, 0)
+        # return Vector(0, 0)
 
     def cohesion_steer(self, bot, dist, steer, visible_bots):
         if dist > self.bot_settings.cohesion_distance:
@@ -172,8 +205,14 @@ class Bot:
         steer.limit(self.bot_settings.max_force)
         return steer
 
-    def get_sensor_info(self):
-        pass
+    def get_single_line_follower(self):
+        self.line_event.wait()
+        self.bot_real.position.x += 1
+        # return next_bot_real
+
+        # next_bot_real = copy.deepcopy(self.bot_real)
+        # next_bot_real.position.x += 1
+        # return next_bot_real
 
     def get_model_info(self):
         pass
@@ -214,7 +253,7 @@ class Bot:
     def distance(self, bot):
         return self.bot_info.position.distance(bot.bot_info.position)
 
-    def applyForce(self, sep):
+    def apply_force(self, sep):
         self.bot_info.acceleration.add_vector(sep)
 
     def seek(self, vec):
@@ -257,6 +296,15 @@ class Bot:
     def stop(self):
         self.bot_info.speed.set_xy(0, 0)
 
+    # def pins(self):
+    #     pass
+
+
+    def __del__(self):
+        self.listen_lf.join()
+
+
+
 
 class BotInfo:
     size_x = 20
@@ -291,6 +339,9 @@ class BotInfo:
         return str("bot id: ") + str(self.bot_id) + "\n" + str("position: ") + str(
             self.position) + "\ndirection: " + str(self.dir)
 
+class Hardware:
+    def __init__(self):
+        self.lf_sensor = 0
 
 class Vector:
     def __init__(self, x, y):

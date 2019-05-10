@@ -40,10 +40,18 @@ class Simulator:
                 bot.run()
             for bot in board.all_bots:
                 bot.update()
+            for bot in board.all_bots:
+                bot.update_real_data()
             # board.all_bots[0].move(vec)
             time.sleep(0.1)
             q.put(board)
         logging.debug("Stopping simulatiion")
+
+    def tune_time2position(self):
+        pass
+
+    def tune(self):
+        pass
 
     # def simulate_bots(self, board, q):
     #     time.sleep(3)
