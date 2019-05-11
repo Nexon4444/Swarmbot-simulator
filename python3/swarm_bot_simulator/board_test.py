@@ -67,10 +67,10 @@ with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") a
     app_config = json.load(f)
 
 print(app_config)
-config = Config(app_config)
+# config = Config(app_config)
 
-b = Board(config)
-string = BoardEncoder().encode(b)
+md = MovementData(Vector(0, 1), 0.0)
+string = MovementDataEncoder().encode(md)
 print(string)
 
 

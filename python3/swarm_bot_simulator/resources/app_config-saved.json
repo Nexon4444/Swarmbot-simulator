@@ -31,10 +31,42 @@
       "bot_id": 1,
       "poz_x": 100,
       "poz_y": 100,
-      "speed": [
-        5,
-        1
-      ],
+      "speed": [5, 1],
+      "direction": 0
+    },
+    {
+      "bot_id": 2,
+      "poz_x": 120,
+      "poz_y": 100,
+      "speed":[-3, 0],
+      "direction": 0
+    },
+    {
+      "bot_id": 3,
+      "poz_x": 170,
+      "poz_y": 120,
+      "speed": [4, 2],
+      "direction": 0
+    },
+    {
+      "bot_id": 4,
+      "poz_x": 70,
+      "poz_y": 180,
+      "speed":[-3, 1],
+      "direction": 0
+    },
+    {
+      "bot_id": 5,
+      "poz_x": 140,
+      "poz_y": 140,
+      "speed": [1, 4],
+      "direction": 0
+    },
+    {
+      "bot_id": 6,
+      "poz_x": 120,
+      "poz_y": 80,
+      "speed":[-3, -4],
       "direction": 0
     }
   ]

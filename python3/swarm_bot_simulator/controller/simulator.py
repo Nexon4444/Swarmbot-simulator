@@ -41,6 +41,7 @@ class Simulator:
             for bot in board.all_bots:
                 bot.update()
             for bot in board.all_bots:
+                bot.pass_line()
                 bot.update_real_data()
             # board.all_bots[0].move(vec)
             time.sleep(0.1)

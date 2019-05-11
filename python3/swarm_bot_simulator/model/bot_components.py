@@ -2,15 +2,21 @@
 import json
 
 import logging
-
+from json import JSONEncoder
+logging.basicConfig(level=logging.DEBUG,
+                    format='(%(threadName)-10s) %(message)s',
+                    )
 from swarm_bot_simulator.model.board import Board
 from swarm_bot_simulator.controller.information_transfer import Messenger
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 from vectormath import Vector2
+from swarm_bot_simulator.controller.information_transfer import *
 
 import math
 import copy
+import threading
+
 
 class Bot:
     # last_id = 0
@@ -19,8 +25,10 @@ class Bot:
 
     def __init__(self, parsed_bot_info, communication_settings, bot_settings, board_settings):
         self.bot_info = BotInfo(parsed_bot_info, bot_settings)
-        self.bot_real = BotInfo(parsed_bot_info, bot_settings)
+        self.bot_info_real = BotInfo(parsed_bot_info, bot_settings)
+        self.bot_info_sensor = BotInfo(parsed_bot_info, bot_settings)
 
+        self.movement = Movement(self.bot_info.bot_id, bot_settings)
         self.lock = threading.Lock()
         self.signal = threading.Condition()
         self.line = 0
@@ -36,6 +44,7 @@ class Bot:
         self.bot_settings = bot_settings
         self.board_settings = board_settings
         self.messenger = None
+        self.start_sensor_threads()
 
     def pass_line(self):
         self.counter()
@@ -50,20 +59,19 @@ class Bot:
 
     def update_real_data(self):
         # bot_info_list = self.get_sensor_info()
-        self.bot_info = self.negotiate(self.bot_info, self.bot_real)
+        self.bot_info = self.negotiate(self.bot_info, self.bot_info_sensor)
 
     def negotiate(self, bot_info, bot_real):
         bot_info.position.x = bot_real.position.x
         return bot_info
 
     def start_sensor_threads(self):
-        self.listen_lf = threading.Thread(target=self.get_single_line_follower)
+        self.listen_lf = threading.Thread(target=self.get_single_line_follower, args=[self.line_event])
         self.listen_lf.start()
 
     def get_sensor_info(self):
         BotInfo = self.get_single_line_follower()
         return BotInfo()
-
 
     def initialize_comm(self):
         # topic_name = "swarm_bot" + str(self.bot_info.bot_id)
@@ -95,16 +103,17 @@ class Bot:
 
     def flock(self):
         visible_bots = self.get_visible_bots(self.board)
+
         sep = self.separation(visible_bots)
-        ali = self.alignment(visible_bots)
+        # ali = self.alignment(visible_bots)
         coh = self.cohesion(visible_bots)
 
         sep.mul_scalar(self.bot_settings.sep_mul)
-        ali.mul_scalar(self.bot_settings.ali_mul)
+        # ali.mul_scalar(self.bot_settings.ali_mul)
         coh.mul_scalar(self.bot_settings.coh_mul)
 
         self.apply_force(sep)
-        self.apply_force(ali)
+        # self.apply_force(ali)
         self.apply_force(coh)
 
         self.set_direction()
@@ -161,7 +170,9 @@ class Bot:
             dist = self.distance(bot)
             steer = self.cohesion_steer(bot, dist, steer, visible_bots)
 
-        steer.div_scalar(len(visible_bots))
+        visible_bots_amount = len(visible_bots)
+        if visible_bots_amount is not 0:
+            steer.div_scalar(len(visible_bots))
         return self.seek(steer)
         # print(str(self.bot_info))
         # print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
@@ -184,7 +195,9 @@ class Bot:
             print(str(self.bot_info))
             print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
 
-        steer.div_scalar(len(visible_bots))
+        visible_bot_amount = len(visible_bots)
+        if visible_bot_amount is not 0:
+            steer.div_scalar(visible_bot_amount)
 
         return self.correct_alignment(steer, visible_bots)
 
@@ -205,9 +218,12 @@ class Bot:
         steer.limit(self.bot_settings.max_force)
         return steer
 
-    def get_single_line_follower(self):
-        self.line_event.wait()
-        self.bot_real.position.x += 1
+    def get_single_line_follower(self, line_event):
+        while True:
+            line_event.wait()
+            logging.log(logging.DEBUG, "Sensors reporting robot movement")
+            self.bot_info_sensor.position.x += 1
+            line_event.clear()
         # return next_bot_real
 
         # next_bot_real = copy.deepcopy(self.bot_real)
@@ -296,15 +312,8 @@ class Bot:
     def stop(self):
         self.bot_info.speed.set_xy(0, 0)
 
-    # def pins(self):
-    #     pass
-
-
     def __del__(self):
         self.listen_lf.join()
-
-
-
 
 class BotInfo:
     size_x = 20
@@ -339,9 +348,6 @@ class BotInfo:
         return str("bot id: ") + str(self.bot_id) + "\n" + str("position: ") + str(
             self.position) + "\ndirection: " + str(self.dir)
 
-class Hardware:
-    def __init__(self):
-        self.lf_sensor = 0
 
 class Vector:
     def __init__(self, x, y):
@@ -398,6 +404,7 @@ class Vector:
         if size > max:
             self.x = self.x / size
             self.y = self.y / size
+
     def set_xy(self, x, y):
         self.x = x
         self.y = y
@@ -406,10 +413,10 @@ class Vector:
         return math.atan2(self.x, self.y)
 
     def sub2Vector(self, vec1, vec2):
-        return Vector(vec1.x-vec2.x, vec1.y-vec2.y)
+        return Vector(vec1.x - vec2.x, vec1.y - vec2.y)
 
     def distance(self, vec):
-        return math.sqrt(math.pow(vec.x-self.x, 2) + math.pow(vec.y-self.y, 2))
+        return math.sqrt(math.pow(vec.x - self.x, 2) + math.pow(vec.y - self.y, 2))
 
     def in_borders(self, border):
         if self.x < 0:
@@ -431,3 +438,45 @@ class Vector:
 
     def __str__(self):
         return '[' + str(self.x) + ", " + str(self.y) + ']'
+
+    # def __default(self):
+    #     return self.__dict__
+
+class Movement:
+    def __init__(self, name, communication_settings):
+        self.messenger = Messenger(name=name, communication_settings=communication_settings)
+
+    def move_prim(self):
+        self.messenger.send("move")
+
+    def move(self, bot_info : BotInfo, position: Vector, speed: Vector):
+        pass
+
+    def face_direction(self):
+        pass
+        
+class MovementData:
+    def __init__(self, poz: Vector, dir: float):
+        self.poz = poz
+        self.dir = dir
+
+class MovementDataEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, MovementData):
+            return {
+                'poz': {
+                    'x': o.poz.x,
+                    'y': o.poz.y
+                },
+                'dir': o.dir
+            }
+        else:
+            return json.JSONEncoder.default(self, o)
+
+
+
+class Hardware:
+    def __init__(self):
+        self.lf_sensor = 0
+
+
