@@ -1,7 +1,7 @@
 import time
 from json import JSONEncoder
 import json
-from swarm_bot_simulator.model.server import Server
+# from swarm_bot_simulator.model.server import Server
 from swarm_bot_simulator.controller.information_transfer import Messenger
 
 class Board():
@@ -9,7 +9,7 @@ class Board():
 
     def __init__(self, config):
         self.bot_n = config.bot_n
-        self.server = Server(config)
+        # self.server = Server(config)
         self.server.initialize_comm()
         self.all_bots = config.start_bots
         for bot in self.all_bots:

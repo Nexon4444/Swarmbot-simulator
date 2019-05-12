@@ -1,4 +1,4 @@
-from swarm_bot_simulator.model.bot_components import Bot
+from swarm_bot_simulator.model.bot_components import *
 
 
 class Config:

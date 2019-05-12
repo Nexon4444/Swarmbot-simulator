@@ -1,10 +1,17 @@
 import time
 
 import paho.mqtt.client as mqtt
+import logging
+logging.basicConfig(level=logging.DEBUG,
+                    format='(%(threadName)-10s) %(message)s',
+                    )
 
 
 class Messenger:
-    def __init__(self, name, communication_settings):
+    logging_on = True
+    logging_mess_on = True
+
+    def __init__(self, name: str, communication_settings):
         self.name = name
         self.client = mqtt.Client(str(name) + "_client")
         # self.name_topic = name + "/" + topic
@@ -14,7 +21,7 @@ class Messenger:
         self.client.on_message = self.on_message
         self.main_channel = "main"
 
-        print("connecting to broker", communication_settings.broker)
+        self.log("connecting to broker: " + str(communication_settings.broker))
         self.client.connect(communication_settings.broker, communication_settings.port)
 
         self.client.subscribe(self.create_topic(self.name, self.main_channel))
@@ -24,22 +31,25 @@ class Messenger:
         self.client.subscribe(topic)
 
     def on_log(self, client, userdata, level, buf):
-        print(self.name + " log: " + buf + " ")
+        self.log(self.name + " log: " + buf + " ")
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             # client.connected_flag = True  # set flag
-            print("connected OK")
+            self.log("connected OK")
         else:
-            print("Bad connection Returned code=", rc)
+            self.log("Bad connection Returned code=", rc)
 
     def on_disconnect(self, client, userdata, flags, rc=0):
-        print("Disconnected result code " + str(rc))
+        self.log("Disconnected result code " + str(rc))
 
     def on_message(self, client, userdata, msg):
-        topic = msg.topic
+        # topic = msg.topic
         m_decode = str(msg.payload.decode("utf-8"))
-        print("message received: ", m_decode)
+        print("================================")
+        self.log(self.name + " received message: " + m_decode)
+        if not Messenger.logging_on and Messenger.logging_mess_on:
+            logging.debug(self.name + " received message: ", m_decode)
 
     def send(self, topic=None, message="DEFAULT"):
         if topic is None:
@@ -50,6 +60,10 @@ class Messenger:
     def create_topic(self, *args):
         return '/'.join(args)
 
+    def log(self, msg):
+
+        if Messenger.logging_on:
+            logging.debug(msg)
 
 # def recieve(self):
 #     def connection_execute(self):

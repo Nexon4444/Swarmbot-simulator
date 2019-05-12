@@ -6,6 +6,7 @@ from json import JSONEncoder
 logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
+
 from swarm_bot_simulator.model.board import Board
 from swarm_bot_simulator.controller.information_transfer import Messenger
 from shapely.geometry import Point
@@ -28,7 +29,9 @@ class Bot:
         self.bot_info_real = BotInfo(parsed_bot_info, bot_settings)
         self.bot_info_sensor = BotInfo(parsed_bot_info, bot_settings)
 
-        self.movement = Movement(self.bot_info.bot_id, bot_settings)
+        self.messenger = Messenger(name=str(self.bot_info.bot_id), communication_settings=communication_settings)
+        self.movement = Movement(self.messenger)
+
         self.lock = threading.Lock()
         self.signal = threading.Condition()
         self.line = 0
@@ -313,7 +316,8 @@ class Bot:
         self.bot_info.speed.set_xy(0, 0)
 
     def __del__(self):
-        self.listen_lf.join()
+        pass
+        # self.listen_lf.join()
 
 class BotInfo:
     size_x = 20
@@ -442,38 +446,49 @@ class Vector:
     # def __default(self):
     #     return self.__dict__
 
-class Movement:
-    def __init__(self, name, communication_settings):
-        self.messenger = Messenger(name=name, communication_settings=communication_settings)
+class MovementData:
+    def __init__(self, poz: Vector, direction: float, time: float, command: str):
+        self.poz = poz
+        self.direction = direction
+        self.time = time
+        self.command = command
 
-    def move_prim(self):
-        self.messenger.send("move")
+
+class MovementDataEncoder(JSONEncoder):
+    def default(self, o):
+        if isinstance(o, MovementData):
+            return {
+                # 'poz': {
+                #     'x': o.poz.x,
+                #     'y': o.poz.y
+                # },
+                # 'dir': o.direction,
+                # 'time': o.time,
+                'command': o.command
+            }
+        else:
+            return json.JSONEncoder.default(self, o)
+
+class Movement:
+    MOVE_PRIM = "forward"
+    encoder = MovementDataEncoder()
+
+    def __init__(self, messenger):
+        self.messenger = messenger
+
+    def move_prim(self, time):
+        md = MovementData(poz=Vector(None, None), direction=0.0, time=time, command=Movement.MOVE_PRIM)
+        encoded_message = Movement.encoder.encode(md)
+        self.messenger.send(message=encoded_message)
+
+    def turn_prim(self, time):
+        self.messenger.send(MovementDataEncoder.encode(MovementData(poz=None, direction=None, time=time, command="turn_prim")))
 
     def move(self, bot_info : BotInfo, position: Vector, speed: Vector):
         pass
 
     def face_direction(self):
         pass
-        
-class MovementData:
-    def __init__(self, poz: Vector, dir: float):
-        self.poz = poz
-        self.dir = dir
-
-class MovementDataEncoder(JSONEncoder):
-    def default(self, o):
-        if isinstance(o, MovementData):
-            return {
-                'poz': {
-                    'x': o.poz.x,
-                    'y': o.poz.y
-                },
-                'dir': o.dir
-            }
-        else:
-            return json.JSONEncoder.default(self, o)
-
-
 
 class Hardware:
     def __init__(self):
