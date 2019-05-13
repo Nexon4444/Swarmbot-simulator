@@ -13,6 +13,7 @@ class Messenger:
 
     def __init__(self, name: str, communication_settings):
         self.name = name
+
         self.client = mqtt.Client(str(name) + "_client")
         # self.name_topic = name + "/" + topic
         self.client.on_connect = self.on_connect
@@ -47,12 +48,13 @@ class Messenger:
     def on_message(self, client, userdata, msg):
         # topic = msg.topic
         m_decode = str(msg.payload.decode("utf-8"))
-        print("================================")
+        # print("================================")
         self.log(self.name + " received message: " + m_decode)
         if not Messenger.logging_on and Messenger.logging_mess_on:
             logging.debug((self.name) + " received message: " + m_decode)
 
     def send(self, topic=None, message="DEFAULT"):
+        logging.debug("sent: " + str(message))
         if topic is None:
             topic = self.create_topic(self.name, self.main_channel)
         self.client.publish(topic=topic, payload=message)

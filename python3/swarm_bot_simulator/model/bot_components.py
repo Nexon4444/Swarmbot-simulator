@@ -11,7 +11,6 @@ from swarm_bot_simulator.model.board import Board
 from swarm_bot_simulator.controller.information_transfer import Messenger
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
-from vectormath import Vector2
 from swarm_bot_simulator.controller.information_transfer import *
 
 import math
