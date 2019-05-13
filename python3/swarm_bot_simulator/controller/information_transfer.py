@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class Messenger:
-    logging_on = True
+    logging_on = False
     logging_mess_on = True
 
     def __init__(self, name: str, communication_settings):
@@ -24,10 +24,11 @@ class Messenger:
         self.log("connecting to broker: " + str(communication_settings.broker))
         self.client.connect(communication_settings.broker, communication_settings.port)
 
-        self.client.subscribe(self.create_topic(self.name, self.main_channel))
+        # self.subscribe(self.create_topic(self.name, self.main_channel))
         self.client.loop_start()
 
     def subscribe(self, topic):
+        self.log("Subscribed: " + str(topic))
         self.client.subscribe(topic)
 
     def on_log(self, client, userdata, level, buf):
@@ -49,7 +50,7 @@ class Messenger:
         print("================================")
         self.log(self.name + " received message: " + m_decode)
         if not Messenger.logging_on and Messenger.logging_mess_on:
-            logging.debug(self.name + " received message: ", m_decode)
+            logging.debug((self.name) + " received message: " + m_decode)
 
     def send(self, topic=None, message="DEFAULT"):
         if topic is None:
