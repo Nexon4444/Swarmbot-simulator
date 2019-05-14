@@ -1,5 +1,7 @@
-import paho.mqtt.client as mqtt
+# -*- coding: utf-8 -*-
+# import paho.mqtt.client as mqtt
 import time
+
 from swarm_bot_simulator.controller.information_transfer import Messenger
 '''
 aby uruchomić serwis należy uruchomić broker mosquitto

@@ -254,7 +254,7 @@ class Bot:
 
         visible_bots = []
         self_point = (self.bot_info.position.x, self.bot_info.position.y)  # self.bot_info.position
-        left_cone_angle = self.bot_info.dir - Bot.view_cone / 2
+        left_cone_angle = self.bot_info.dself.x + x,self.y + yir - Bot.view_cone / 2
         right_cone_angle = self.bot_info.dir + Bot.view_cone / 2
 
         side = math.cos(Bot.view_cone / 2) * Bot.view_range
