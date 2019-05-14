@@ -4,7 +4,7 @@
   },
   "communication_settings": {
     "method_is_direct": true,
-    "broker": "localhost",
+    "broker": "192.168.0.106",
     "port": 2000
 
   },
