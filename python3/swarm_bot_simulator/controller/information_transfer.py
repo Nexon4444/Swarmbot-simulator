@@ -1,43 +1,55 @@
 import time
-
+from threading import *
 import paho.mqtt.client as mqtt
 import logging
 logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
 
-
 class Messenger:
-    logging_on = True
+    logging_on = False
     logging_mess_on = True
 
-    def __init__(self, name: str, communication_settings):
+    def __init__(self, name, communication_settings, mess_event):
         self.name = name
 
-        self.client = mqtt.Client(str(name) + "_client")
-        # self.name_topic = name + "/" + topic
-        self.client.on_connect = self.on_connect
-        self.client.on_log = self.on_log
-        self.client.on_disconnect = self.on_disconnect
-        self.client.on_message = self.on_message
-        self.main_channel = "main"
+        self.sender = mqtt.Client(str(name) + "_sender")
+        self.receiver = mqtt.Client(str(name) + "_receiver")
+
+        self.sender.on_connect = self.on_connect
+        self.sender.on_log = self.on_log
+        self.sender.on_disconnect = self.on_disconnect
+
+        self.receiver.on_message = self.on_message
+        # self.main_channel = "main"
+        #threading
 
         self.log("connecting to broker: " + str(communication_settings.broker))
-        self.client.connect(communication_settings.broker, communication_settings.port)
+        self.sender.connect(communication_settings.broker, communication_settings.port)
+        self.receiver.connect(communication_settings.broker, communication_settings.port)
 
-        # self.subscribe(self.create_topic(self.name, self.main_channel))
+        self.receiver_topic = self.create_topic(str(self.name), str("receive"))
+        self.sender_topic = self.create_topic(str(self.name), str("send"))
+
+        self.last_message = ""
+        self.mess_event = mess_event
+        self.cond = Condition()
+        # print ("loop started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+    def listen(self):
+        self.receiver.subscribe(self.receiver_topic)
+        self.receiver.loop_start()
 
     def subscribe(self, topic):
-        self.log("Subscribed: " + str(topic))
-        self.client.subscribe(str(topic))
-
-
-    def start_loop_and_wait(self, tide):
-        self.client.loop_start()
+        # print  topic
+        self.log("\n===========================\nSubscribed: " + str(topic) + "\n===========================")
+        self.receiver.subscribe(topic)
+        # print str("1/main").decode("UTF-8")
+        # self.client.subscribe(str("1/main").decode("UTF-8"))
 
 
     def on_log(self, client, userdata, level, buf):
-        self.log(self.name + " log: " + buf + " ")
+        self.log(str(self.name) + " log: " + str(buf) + " ")
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -51,38 +63,40 @@ class Messenger:
 
     def on_message(self, client, userdata, msg):
         # topic = msg.topic
+        logging.debug("received message: " + str(msg))
         m_decode = str(msg.payload.decode("utf-8"))
-        # print("================================")
-        self.log(self.name + " received message: " + m_decode)
+        # print("=========++++++++++++=============")
+        self.log(str(self.name) + " received message: " + str(m_decode))
         if not Messenger.logging_on and Messenger.logging_mess_on:
-            logging.debug((self.name) + " received message: " + m_decode)
+            logging.debug(str(self.name) + " received message: " + str(m_decode))
+
+        with self.cond:
+            self.last_message = m_decode
+        self.mess_event.set()
 
     def send(self, topic=None, message="DEFAULT"):
-        logging.debug("sent: " + str(message))
+        self.log("sending message: " + str(message))
+
         if topic is None:
-            topic = self.create_topic(self.name, self.main_channel)
-        self.client.publish(topic=topic, payload=message)
+            self.sender.publish(topic=self.sender_topic, payload=message)
+
+        self.sender.publish(topic=topic, payload=message)
 
 
     def create_topic(self, *args):
         return '/'.join(args)
 
     def log(self, msg):
-
         if Messenger.logging_on:
             logging.debug(msg)
 
-    # def recieve(self):
-    #     def connection_execute(self):
-    #         # mqtt.Client.connected_flag=False#create flag in class
-    #
-    #         # self.client.loop_forever(200.0)
-    #
-    #         self.client.publish("swarm_bot2/commands", "my first command")
-    #         time.sleep(10)
-    #         self.client.loop_stop()
-    #         self.client.disconnect()
+
+    def get_last_message(self):
+        with self.cond:
+            return self.last_message
 
     def __del__(self):
-        self.client.loop_stop()
-        self.client.disconnect()
+        self.receiver.loop_stop()
+        self.receiver.disconnect()
+
+        self.sender.disconnect()

@@ -28,8 +28,11 @@ class Bot:
         self.bot_info_real = BotInfo(parsed_bot_info, bot_settings)
         self.bot_info_sensor = BotInfo(parsed_bot_info, bot_settings)
 
-        self.messenger = Messenger(name=str(self.bot_info.bot_id), communication_settings=communication_settings)
-        self.messenger.subscribe(self.bot_info.bot_id)
+        self.mess_event = threading.Event()
+        self.messenger = Messenger(name=str(self.bot_info.bot_id), communication_settings=communication_settings,
+                                   mess_event=self.mess_event)
+
+        # self.messenger.subscribe(self.bot_info.bot_id)
         self.movement = Movement(communication_channel=self.bot_info.bot_id, messenger=self.messenger)
 
         self.lock = threading.Lock()

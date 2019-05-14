@@ -1,3 +1,4 @@
+import threading
 import time
 
 import paho.mqtt.client as mqtt
@@ -20,15 +21,26 @@ def on_message(client, userdata, msg):
     if msg.payload == b"World":
         print("Received message #2, do something else")
 
+def loop(client):
+    client.loop_start()
+
 
 client = mqtt.Client()
+receiver = mqtt.Client()
+receiver.on_connect = on_connect
+receiver.on_message = on_message
+receiver.connect("localhost", 2000)
+# receiver.subscribe("Test")
+receiver.loop_start()
 client.on_connect = on_connect
 client.on_message = on_message
+# t = threading.Thread(target=loop, args=[client])
+# t.start()
 
 client.connect("localhost", 2000)
 client.subscribe(topic="test")
 client.publish('test', 'is this real life?')
-client.loop_start()
+# client.loop_start()
 time.sleep(200)
-client.loop_stop()
+receiver.loop_stop()
 
