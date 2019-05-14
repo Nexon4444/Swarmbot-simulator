@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG,
 
 
 class Messenger:
-    logging_on = False
+    logging_on = True
     logging_mess_on = True
 
     def __init__(self, name: str, communication_settings):
@@ -26,11 +26,15 @@ class Messenger:
         self.client.connect(communication_settings.broker, communication_settings.port)
 
         # self.subscribe(self.create_topic(self.name, self.main_channel))
-        self.client.loop_start()
 
     def subscribe(self, topic):
         self.log("Subscribed: " + str(topic))
-        self.client.subscribe(topic)
+        self.client.subscribe(str(topic))
+
+
+    def start_loop_and_wait(self, tide):
+        self.client.loop_start()
+
 
     def on_log(self, client, userdata, level, buf):
         self.log(self.name + " log: " + buf + " ")
@@ -68,16 +72,16 @@ class Messenger:
         if Messenger.logging_on:
             logging.debug(msg)
 
-# def recieve(self):
-#     def connection_execute(self):
-#         # mqtt.Client.connected_flag=False#create flag in class
-#
-#         # self.client.loop_forever(200.0)
-#
-#         self.client.publish("swarm_bot2/commands", "my first command")
-#         time.sleep(10)
-#         self.client.loop_stop()
-#         self.client.disconnect()
+    # def recieve(self):
+    #     def connection_execute(self):
+    #         # mqtt.Client.connected_flag=False#create flag in class
+    #
+    #         # self.client.loop_forever(200.0)
+    #
+    #         self.client.publish("swarm_bot2/commands", "my first command")
+    #         time.sleep(10)
+    #         self.client.loop_stop()
+    #         self.client.disconnect()
 
     def __del__(self):
         self.client.loop_stop()

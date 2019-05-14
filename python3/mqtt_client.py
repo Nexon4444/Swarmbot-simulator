@@ -1,9 +1,11 @@
+import time
+
 import paho.mqtt.client as mqtt
 
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
-    client.subscribe("Example/test")
+    client.subscribe("test")
     client.subscribe("Example/topic")
 
 
@@ -23,6 +25,10 @@ client = mqtt.Client()
 client.on_connect = on_connect
 client.on_message = on_message
 
-client.connect("192.168.0.106", 2000)
-
+client.connect("localhost", 2000)
+client.subscribe(topic="test")
+client.publish('test', 'is this real life?')
+client.loop_start()
+time.sleep(200)
+client.loop_stop()
 

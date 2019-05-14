@@ -1,10 +1,10 @@
 {
   "view_settings":{
-    "launch": true
+    "launch": false
   },
   "communication_settings": {
     "method_is_direct": true,
-    "broker": "192.168.0.106",
+    "broker": "localhost",
     "port": 2000
 
   },

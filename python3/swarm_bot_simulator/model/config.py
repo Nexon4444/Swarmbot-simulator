@@ -8,7 +8,7 @@ class Config:
         self.bot_settings = BotSettings(app_config["bot_settings"])
         self.view_settings = ViewSettings(app_config["view_settings"])
         self.board_settings = BoardSettings(app_config["board_settings"])
-        self.start_bots = [Bot(b, self.communication_settings, self.bot_settings, self.board_settings) for b in app_config["bots"]]
+        self.swarm_bots = [Bot(b, self.communication_settings, self.bot_settings, self.board_settings) for b in app_config["bots"]]
 
 class CommunicationSettings:
     def __init__(self, communication_settings):

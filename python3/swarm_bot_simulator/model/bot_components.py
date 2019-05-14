@@ -29,7 +29,8 @@ class Bot:
         self.bot_info_sensor = BotInfo(parsed_bot_info, bot_settings)
 
         self.messenger = Messenger(name=str(self.bot_info.bot_id), communication_settings=communication_settings)
-        self.movement = Movement(self.messenger)
+        self.messenger.subscribe(self.bot_info.bot_id)
+        self.movement = Movement(communication_channel=self.bot_info.bot_id, messenger=self.messenger)
 
         self.lock = threading.Lock()
         self.signal = threading.Condition()
@@ -45,7 +46,6 @@ class Bot:
         self.communication_settings = communication_settings
         self.bot_settings = bot_settings
         self.board_settings = board_settings
-        self.messenger = None
         self.start_sensor_threads()
 
     def pass_line(self):
@@ -254,7 +254,7 @@ class Bot:
 
         visible_bots = []
         self_point = (self.bot_info.position.x, self.bot_info.position.y)  # self.bot_info.position
-        left_cone_angle = self.bot_info.dself.x + x,self.y + yir - Bot.view_cone / 2
+        left_cone_angle = self.bot_info.dir - Bot.view_cone / 2
         right_cone_angle = self.bot_info.dir + Bot.view_cone / 2
 
         side = math.cos(Bot.view_cone / 2) * Bot.view_range
@@ -350,7 +350,6 @@ class BotInfo:
     def __str__(self):
         return str("bot id: ") + str(self.bot_id) + "\n" + str("position: ") + str(
             self.position) + "\ndirection: " + str(self.dir)
-
 
 class Vector:
     def __init__(self, x, y):
@@ -452,7 +451,6 @@ class MovementData:
         self.time = time
         self.command = command
 
-
 class MovementDataEncoder(JSONEncoder):
     def default(self, o):
         if isinstance(o, MovementData):
@@ -472,13 +470,14 @@ class Movement:
     MOVE_PRIM = "forward"
     encoder = MovementDataEncoder()
 
-    def __init__(self, messenger):
+    def __init__(self, communication_channel, messenger):
+        self.communication_channel = str(communication_channel)
         self.messenger = messenger
 
     def move_prim(self, time):
         md = MovementData(poz=Vector(None, None), direction=0.0, time=time, command=Movement.MOVE_PRIM)
         encoded_message = Movement.encoder.encode(md)
-        self.messenger.send(message=encoded_message)
+        self.messenger.send(topic=self.communication_channel, message=encoded_message)
 
     def turn_prim(self, time):
         self.messenger.send(MovementDataEncoder.encode(MovementData(poz=None, direction=None, time=time, command="turn_prim")))
@@ -492,5 +491,3 @@ class Movement:
 class Hardware:
     def __init__(self):
         self.lf_sensor = 0
-
-

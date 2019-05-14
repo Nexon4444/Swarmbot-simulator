@@ -10,8 +10,8 @@ class Board():
     def __init__(self, config):
         self.bot_n = config.bot_n
         # self.server = Server(config)
-        self.server.initialize_comm()
-        self.all_bots = config.start_bots
+        # self.server.initialize_comm()
+        self.all_bots = config.swarm_bots
         for bot in self.all_bots:
             bot.update_board_info(self)
             bot.initialize_comm()
@@ -19,7 +19,7 @@ class Board():
         mess = Messenger("TEST", communication_settings=config.communication_settings)
 
         mess.subscribe("server/main")
-        self.server.messenger.send(topic="server/main", message="tralalalalalatralalalalalatralalalalalatralalalalala")
+        # self.server.messenger.send(topic="server/main", message="tralalalalalatralalalalalatralalalalalatralalalalala")
 
 
     def __str__(self):

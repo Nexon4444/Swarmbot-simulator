@@ -17,6 +17,8 @@ with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") a
 
 print(app_config)
 config = Config(app_config)
+config.swarm_bots[0].messenger.subscribe(topic="test") #, message="test dzialaj")
+config.swarm_bots[0].movement.move_prim(5)
 try:
     simulator = Simulator(config)
     simulator.simulate()
