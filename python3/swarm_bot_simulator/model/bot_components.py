@@ -17,7 +17,6 @@ import math
 import copy
 import threading
 
-
 class Bot:
     # last_id = 0
     view_range = 1000
@@ -227,6 +226,7 @@ class Bot:
         while True:
             line_event.wait()
             logging.log(logging.DEBUG, "Sensors reporting robot movement")
+            self.hardware.lf_sensor.add_pulse()
             self.bot_info_sensor.position.x += 1
             line_event.clear()
         # return next_bot_real
@@ -493,4 +493,19 @@ class Movement:
 
 class Hardware:
     def __init__(self):
-        self.lf_sensor = 0
+        self.lf_sensor = LFSensor()
+
+    def get_lf_sensor(self):
+        return self.lf_sensor
+
+class LFSensor:
+    def __init__(self):
+        self.current = 0
+        self.lf_sensor_no_pulses = 0
+        self.lock = threading.Lock()
+
+    def add_pulse(self):
+        with self.lock:
+            self.lf_sensor_no_pulses += 1
+
+

@@ -17,7 +17,6 @@ class Board():
             bot.initialize_comm()
 
         mess = Messenger("TEST", communication_settings=config.communication_settings)
-
         mess.subscribe("server/main")
         # self.server.messenger.send(topic="server/main", message="tralalalalalatralalalalalatralalalalalatralalalalala")
 
@@ -32,6 +31,9 @@ class Board():
     def run(self):
         pass
     #
+    def calculate_locations_from_bot_data(self):
+        pass
+
 
 class BoardEncoder(JSONEncoder):
     def default(self, o):
@@ -40,3 +42,5 @@ class BoardEncoder(JSONEncoder):
         else:
             return json.JSONEncoder.default(self, o)
 
+class BotDataContainer:
+    pass

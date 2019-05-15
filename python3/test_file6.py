@@ -23,30 +23,6 @@ mes2.send(topic="1/receive", message="from mes2")
 # print("---------------------------------------------------")
 # time.sleep(900)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # bot = Bot(app_config["bots"][0], config.communication_settings, config.bot_settings, config.board_settings)
 # bot.movement.move_prim(1)2
 # python3/swarm_bot_simulator/resources/app_config.json

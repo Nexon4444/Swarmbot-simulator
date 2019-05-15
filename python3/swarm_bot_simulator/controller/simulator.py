@@ -43,10 +43,12 @@ class Simulator:
             for bot in board.all_bots:
                 bot.pass_line()
                 bot.update_real_data()
+
+            board.calculate_locations_from_bot_data()
             # board.all_bots[0].move(vec)
             time.sleep(0.1)
             q.put(board)
-        logging.debug("Stopping simulatiion")
+        logging.debug("Stopping simulation")
 
     def tune_time2position(self):
         pass
