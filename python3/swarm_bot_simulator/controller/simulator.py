@@ -8,45 +8,92 @@ import logging
 class Simulator:
     def __init__(self, config):
         self.config = config
+        self.mess_event = threading.Event()
+
+        self.messenger = Messenger("server", config, mess_event=self.mess_event)
 
     def simulate(self):
         q = queue.Queue()
         # q.put()
-        board_thread = threading.Thread(target=self.start_visualization_thread, args=[q])
+        board_activation_event = threading.Event()
+        board_activation_event.clear()
+        board_thread = threading.Thread(target=self.visualization_thread, args=[q, board_activation_event])
         board_thread.start()
+
         if self.config.view_settings.launch is True:
-            visualization_thread = threading.Thread(target=self.start_board_thread, args=[q])
+            visualization_thread = threading.Thread(target=self.board_thread, args=[q, board_activation_event])
             visualization_thread.start()
             visualization_thread.join()
 
         board_thread.join()
 
-    def start_visualization_thread(self, q):
-        vis = Visualizer(self.config.board_settings)
+    def visualization_thread(self, q, board_activation_event: threading.Event()):
+        vis = Visualizer(self.config.board_settings, board_activation_event)
         stop = False
         vis.visualize(q)
         # while not stop:
             # stop = vis.visualize(q)
+    def simulate_movement(self):
+        pass
 
-    def start_board_thread(self, q):
+    def communicate(self, bot_info, board):
+        self.messenger.send()
+
+    # def talk_with_bots(self, q, board_activation_event: threading.Event()):
+    #     board = Board(self.config)
+    #     x = self.config.bot_infos
+    #     bot_infos = copy.deepcopy(self.config.bot_infos)
+    #     all_bots = [Bot(BotInfo(bot_info_parsed, self.config), config=self.config) for bot_info_parsed in self.config.bot_infos]
+    #     all_bot_infos = [BotInfo(bot_info_parsed, self.config) for bot_info_parsed in self.config.bot_infos]
+    #
+    #
+    #     board.update_all_bots(bot_infos)
+    #     q.put(board)
+    #     board_activation_event.set()
+    #     logging.debug("Starting simulation")
+    #     print("SIMULATE_BOTS")
+    #     for i in range(0, 1000):
+    #         for bot_info in all_bot_infos:
+    #             self.communicate(bot_info, board)
+    #             bot.update_board_info(board)
+    #
+    #             bot.run()
+    #         for bot in all_bots:
+    #             bot.update()
+    #         for bot in all_bots:
+    #             bot.pass_line()
+    #             bot.update_real_data()
+    #
+    #         board.calculate_locations_from_bot_data()
+    #         time.sleep(0.1)
+    #         board.update_all_bots(bot_infos)
+    #         q.put(board)
+    #     logging.debug("Stopping simulation")
+
+    def board_thread(self, q, board_activation_event: threading.Event()):
         board = Board(self.config)
+        x = self.config.bot_infos
+        bot_infos = copy.deepcopy(self.config.bot_infos)
+        all_bots = [Bot(BotInfo(bot_info_parsed, self.config), config=self.config) for bot_info_parsed in self.config.bot_infos]
+        board.update_all_bots(bot_infos)
         q.put(board)
-        # vec = Vector(1, 0)
-        # print(str(board.serialize()))
+        board_activation_event.set()
         logging.debug("Starting simulation")
         print("SIMULATE_BOTS")
         for i in range(0, 1000):
-            for bot in board.all_bots:
+            for bot in all_bots:
+                bot.update_board_info(board)
+
                 bot.run()
-            for bot in board.all_bots:
+            for bot in all_bots:
                 bot.update()
-            for bot in board.all_bots:
+            for bot in all_bots:
                 bot.pass_line()
                 bot.update_real_data()
 
             board.calculate_locations_from_bot_data()
-            # board.all_bots[0].move(vec)
             time.sleep(0.1)
+            board.update_all_bots(bot_infos)
             q.put(board)
         logging.debug("Stopping simulation")
 

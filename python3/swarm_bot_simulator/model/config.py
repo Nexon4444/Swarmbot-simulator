@@ -1,5 +1,5 @@
 from swarm_bot_simulator.model.bot_components import *
-
+# from swarm_bot_simulator.model.board import BotDataContainer
 
 class Config:
     def __init__(self, app_config):
@@ -8,7 +8,7 @@ class Config:
         self.bot_settings = BotSettings(app_config["bot_settings"])
         self.view_settings = ViewSettings(app_config["view_settings"])
         self.board_settings = BoardSettings(app_config["board_settings"])
-        self.swarm_bots = [Bot(b, self.communication_settings, self.bot_settings, self.board_settings) for b in app_config["bots"]]
+        self.bot_infos = [BotInfoSettings(parsed_bot) for parsed_bot in app_config["bots"]]
 
 class CommunicationSettings:
     def __init__(self, communication_settings):
@@ -39,3 +39,11 @@ class ViewSettings:
     def __init__(self, view_settings):
         self.launch = view_settings["launch"]
 
+class BotInfoSettings:
+    def __init__(self, bots):
+        self.bot_id = bots["bot_id"]
+        self.poz_x = bots["poz_x"]
+        self.poz_y = bots["poz_y"]
+        self.is_real = bots["is_real"]
+        self.speed = bots["speed"]
+        self.direction = bots["direction"]

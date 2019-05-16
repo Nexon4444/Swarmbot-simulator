@@ -5,6 +5,7 @@ from pathlib import Path
 import cairo
 from math import pi
 from PIL import Image
+from threading import Event
 import math
 from swarm_bot_simulator.model import board
 from shapely.geometry import Point
@@ -20,10 +21,11 @@ class Visualizer:
     white = (255, 255, 255)
     # size = [800, 600]
 
-    def __init__(self, board_settings):
+    def __init__(self, board_settings, board_activation_event: Event):
         # self.board = board
         self.size = [board_settings.border_x, board_settings.border_y]
         self.game_display = pygame.display.set_mode(self.size)
+        self.board_activation_event = board_activation_event
 
     def display_bot(self, bot_image, x, y, angle):
         bot_image = pygame.transform.rotate(bot_image, angle)
@@ -45,6 +47,7 @@ class Visualizer:
         clock = pygame.time.Clock()
         crashed = False
 
+        self.board_activation_event.wait()
         while not crashed:
             board = q.get()
             clock.tick(10)
@@ -54,8 +57,8 @@ class Visualizer:
                     crashed = True
             # display_bot(bot_image, 200, 200, 100)
             # bot1.draw()
-            for bot in board.all_bots:
-                image = BotImage(bot.bot_info, game_display)
+            for key, bot_data in board.bots_info.items():
+                image = BotImage(bot_data, game_display)
                 image.draw()
             # bot1 = BotImage(100, 100, 0, 40, 40, game_display)
             # bot1.change_poz(0, 0, -11)

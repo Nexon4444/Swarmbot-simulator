@@ -1,4 +1,4 @@
-from threading import *
+wfrom threading import *
 import json
 import os
 # from swarm_bot_simulator.model.bot_components import *
@@ -10,13 +10,13 @@ config = Config(app_config)
 e1 = Event()
 e2 = Event()
 
-mes1 = Messenger("1", config.communication_settings, e1)
+# mes1 = Messenger("1", config.communication_settings, e1)
 mes2 = Messenger("2", config.communication_settings, e2)
 
-mes1.listen()
+# mes1.listen()
 mes2.listen()
 
-mes1.send(topic="2/receive", message="from mes1")
+# mes1.send(topic="2/receive", message="from mes1")
 mes2.send(topic="1/receive", message="from mes2")
 
 # mes1.start_loop_and_wait(200)

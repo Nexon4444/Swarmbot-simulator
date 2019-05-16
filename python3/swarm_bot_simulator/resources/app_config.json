@@ -1,6 +1,6 @@
 {
   "view_settings":{
-    "launch": false
+    "launch": true
   },
   "communication_settings": {
     "method_is_direct": true,
@@ -31,6 +31,7 @@
       "bot_id": 1,
       "poz_x": 100,
       "poz_y": 100,
+      "is_real": false,
       "speed": [
         5,
         1

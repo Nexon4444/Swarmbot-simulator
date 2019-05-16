@@ -10,7 +10,7 @@ class Messenger:
     logging_on = False
     logging_mess_on = True
 
-    def __init__(self, name, communication_settings, mess_event):
+    def __init__(self, name, config, mess_event):
         self.name = name
 
         self.sender = mqtt.Client(str(name) + "_sender")
@@ -24,9 +24,9 @@ class Messenger:
         # self.main_channel = "main"
         #threading
 
-        self.log("connecting to broker: " + str(communication_settings.broker))
-        self.sender.connect(communication_settings.broker, communication_settings.port)
-        self.receiver.connect(communication_settings.broker, communication_settings.port)
+        self.log("connecting to broker: " + str(config.communication_settings.broker))
+        self.sender.connect(config.communication_settings.broker, config.communication_settings.port)
+        self.receiver.connect(config.communication_settings.broker, config.communication_settings.port)
 
         self.receiver_topic = self.create_topic(str(self.name), str("receive"))
         self.sender_topic = self.create_topic(str(self.name), str("send"))

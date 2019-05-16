@@ -7,12 +7,12 @@ logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
 
-from swarm_bot_simulator.model.board import Board
+# from swarm_bot_simulator.model.board import Board
 from swarm_bot_simulator.controller.information_transfer import Messenger
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 from swarm_bot_simulator.controller.information_transfer import *
-
+# from swarm_bot_simulator.model.board import Board
 import math
 import copy
 import threading
@@ -22,13 +22,19 @@ class Bot:
     view_range = 1000
     view_cone = 60
 
-    def __init__(self, parsed_bot_info, communication_settings, bot_settings, board_settings):
-        self.bot_info = BotInfo(parsed_bot_info, bot_settings)
-        self.bot_info_real = BotInfo(parsed_bot_info, bot_settings)
-        self.bot_info_sensor = BotInfo(parsed_bot_info, bot_settings)
+    def __init__(self, bot_info, config):
+        self.communication_settings = config.communication_settings
+        self.bot_settings = config.bot_settings
+        self.board_settings = config.board_settings
+        self.bot_info = copy.deepcopy(bot_info)
+        self.bot_info_real = copy.deepcopy(bot_info)
+        self.bot_info_sensor = copy.deepcopy(bot_info)
+        self.config = config
+        # self.bot_info_seBotInfo(parsed_bot_info, config.bot_settings)
+        # self.bot_info_real = BotInfo(parsed_bot_info, config.bot_settings)
 
         self.mess_event = threading.Event()
-        self.messenger = Messenger(name=str(self.bot_info.bot_id), communication_settings=communication_settings,
+        self.messenger = Messenger(name=str(self.bot_info.bot_id), config=config,
                                    mess_event=self.mess_event)
 
         # self.messenger.subscribe(self.bot_info.bot_id)
@@ -45,9 +51,7 @@ class Bot:
         self.name = "swarm_bot" + str(self.bot_info.bot_id)
         # self.bot_info.speed = Vector(0, 0)
         # self.bot_info.acceleration = Vector(0, 0)
-        self.communication_settings = communication_settings
-        self.bot_settings = bot_settings
-        self.board_settings = board_settings
+
         self.start_sensor_threads()
 
     def pass_line(self):
@@ -58,7 +62,7 @@ class Bot:
         with self.lock:
             self.line = self.line + 1
 
-    def update_board_info(self, board: Board):
+    def update_board_info(self, board):
         self.board = board
 
     def update_real_data(self):
@@ -81,7 +85,6 @@ class Bot:
         # topic_name = "swarm_bot" + str(self.bot_info.bot_id)
         self.messenger = Messenger(name=self.name, communication_settings=self.communication_settings)
 
-    # def set_communication(self):
     def comm_out(self):
         self.messenger.send(self.bot_info)
 
@@ -112,9 +115,9 @@ class Bot:
         # ali = self.alignment(visible_bots)
         coh = self.cohesion(visible_bots)
 
-        sep.mul_scalar(self.bot_settings.sep_mul)
+        sep.mul_scalar(self.config.bot_settings.sep_mul)
         # ali.mul_scalar(self.bot_settings.ali_mul)
-        coh.mul_scalar(self.bot_settings.coh_mul)
+        coh.mul_scalar(self.config.bot_settings.coh_mul)
 
         self.apply_force(sep)
         # self.apply_force(ali)
@@ -244,15 +247,15 @@ class Bot:
         else:
             return self.get_model_info()
 
-    def get_visible_bots(self, model: Board):
+    def get_visible_bots(self, model):
         '''
         Function to get all the bots visible in a triangle got by counting the sides
+        :type model: Board
         :return:
         '''
         assert isinstance(self.bot_settings.view_is_omni, bool)
         if self.bot_settings.view_is_omni is True:
-            all_bots_cp = model.all_bots[:]
-            all_bots_cp.remove(self)
+            all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in model.bots_info.items() if bot_info.bot_id != self.bot_info.bot_id}
             return all_bots_cp
 
         visible_bots = []
@@ -290,13 +293,7 @@ class Bot:
     def run(self):
         self.flock()
         self.borders()
-
-    def __str__(self):
-        return ("\nbot ID: " + str(self.bot_info.bot_id)
-                + "\nposition: " + str(self.bot_info.position)
-                + "\nspeed: " + str(self.bot_info.speed)
-                + "\naccel: " + str(self.bot_info.acceleration)
-                + "\ndir: " + str(self.bot_info.dir))
+        return self.bot_info
 
     def borders(self):
         next_pos = self.bot_info.position + self.bot_info.speed
@@ -321,25 +318,33 @@ class Bot:
         pass
         # self.listen_lf.join()
 
+    def __str__(self):
+        return ("\nbot ID: " + str(self.bot_info.bot_id)
+                + "\nposition: " + str(self.bot_info.position)
+                + "\nspeed: " + str(self.bot_info.speed)
+                + "\naccel: " + str(self.bot_info.acceleration)
+                + "\ndir: " + str(self.bot_info.dir))
+
 class BotInfo:
     size_x = 20
     size_y = 20
 
-    def __init__(self, bot_info_parsed, bot_settings):
-        self.bot_id = bot_info_parsed["bot_id"]
-        self.dir = float(bot_info_parsed["direction"])
-        self.position = Vector(float(bot_info_parsed["poz_x"]), float(bot_info_parsed["poz_y"]))
+    def __init__(self, bot_info_parsed, config):
+        self.is_real = bot_info_parsed.is_real
+        self.bot_id = bot_info_parsed.bot_id
+        self.dir = float(bot_info_parsed.direction)
+        self.position = Vector(float(bot_info_parsed.poz_x), float(bot_info_parsed.poz_y))
         self.acceleration = Vector(0, 0)
 
-        speed_vec = bot_info_parsed["speed"]
+        speed_vec = Vector(bot_info_parsed.speed[0], bot_info_parsed.speed[1])
 
-        if bot_info_parsed["speed"][0] > bot_settings.max_speed:
-            speed_vec.x = bot_settings.max_speed
+        if bot_info_parsed.speed[0] > config.bot_settings.max_speed:
+            speed_vec.x = config.bot_settings.max_speed
 
-        if bot_info_parsed["speed"][1] > bot_settings.max_speed:
-            speed_vec.y = bot_settings.max_speed
+        if bot_info_parsed.speed[1] > config.bot_settings.max_speed:
+            speed_vec.y = config.bot_settings.max_speed
 
-        self.speed = Vector(speed_vec[0], speed_vec[1])
+        self.speed = Vector(speed_vec.x, speed_vec.y)
 
     def serialize(self):
         message = {
