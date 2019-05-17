@@ -4,7 +4,8 @@ import json
 import copy
 # from swarm_bot_simulator.model.server import Server
 from swarm_bot_simulator.controller.information_transfer import Messenger
-from swarm_bot_simulator.model.bot_components import BotInfo, Bot
+from swarm_bot_simulator.model.bot_components import BotInfo, Bot, MovementDataEncoder
+
 
 class Board:
     # all_bots: list()
@@ -46,9 +47,12 @@ class Board:
 
 
 class BoardEncoder(JSONEncoder):
+    mde = MovementDataEncoder()
     def default(self, o):
         if isinstance(o, Board):
-            return object.__dict__
+            return {
+                "bots_info": [BoardEncoder.mde.encode(bot_info) for bot_info in o.bots_info]
+            }
         else:
             return json.JSONEncoder.default(self, o)
 

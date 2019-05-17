@@ -1,14 +1,17 @@
+import json
 import time
 from threading import *
 import paho.mqtt.client as mqtt
 import logging
+from ast import literal_eval
 logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
 
 class Messenger:
-    logging_on = False
+    logging_on = True
     logging_mess_on = True
+
 
     def __init__(self, name, config, mess_event):
         self.name = name
@@ -31,9 +34,12 @@ class Messenger:
         self.receiver_topic = self.create_topic(str(self.name), str("receive"))
         self.sender_topic = self.create_topic(str(self.name), str("send"))
 
+        self.client_topics = list()
+
+        self.cond = Condition()
         self.last_message = ""
         self.mess_event = mess_event
-        self.cond = Condition()
+        self.listen()
         # print ("loop started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     def listen(self):
@@ -47,6 +53,8 @@ class Messenger:
         # print str("1/main").decode("UTF-8")
         # self.client.subscribe(str("1/main").decode("UTF-8"))
 
+    def add_client(self, topic):
+        self.client_topics.append(topic)
 
     def on_log(self, client, userdata, level, buf):
         self.log(str(self.name) + " log: " + str(buf) + " ")
@@ -71,16 +79,18 @@ class Messenger:
             logging.debug(str(self.name) + " received message: " + str(m_decode))
 
         with self.cond:
-            self.last_message = m_decode
+            message_dict = literal_eval(m_decode)
+            self.last_message = Message.create_message_from_string(m_decode)
         self.mess_event.set()
 
     def send(self, topic=None, message="DEFAULT"):
-        self.log("sending message: " + str(message))
+        self.log("sending message: " + str(message) + " on topic: " + str(topic))
 
         if topic is None:
-            self.sender.publish(topic=self.sender_topic, payload=message)
+            for client_topic in self.client_topics:
+                self.sender.publish(topic=client_topic, payload=message)
 
-        self.sender.publish(topic=topic, payload=message)
+        self.sender.publish(topic=str(topic), payload=str(message))
 
 
     def create_topic(self, *args):
@@ -90,6 +100,16 @@ class Messenger:
         if Messenger.logging_on:
             logging.debug(msg)
 
+    @property
+    def last_message(self):
+        with self.cond:
+            to_return = self._last_message
+        return to_return
+
+    @last_message.setter
+    def last_message(self, value):
+        with self.cond:
+            self._last_message = value
 
     def get_last_message(self):
         with self.cond:
@@ -100,3 +120,37 @@ class Messenger:
         self.receiver.disconnect()
 
         self.sender.disconnect()
+
+class MTYPE:
+    BOARD = "BOARD"
+    SIMPLE = "SIMPLE"
+
+class Message:
+    def get_message_type_from_string(self, type_str):
+        if type_str == "BOARD":
+            return MTYPE.BOARD
+
+        elif type_str == "SIMPLE":
+            return MTYPE.SIMPLE
+
+        else:
+            return None
+
+    def create_message_from_string(self, mess_str):
+        message_dict = literal_eval(mess_str)
+        return Message(Message.get_message_type_from_string(message_dict["type"]),
+                                    json.dumps(message_dict["message"]))
+
+    def __init__(self, type, message):
+        self.type = type
+        self.message = message
+
+class MessageEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Message):
+            return {
+                "type": o.type,
+                "message": o.message
+            }
+        else:
+            return json.JSONEncoder.default(self, o)
