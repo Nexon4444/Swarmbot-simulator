@@ -63,7 +63,6 @@ class Simulator:
             for bot_info in all_bot_infos:
                 self.communicate(bot_info, board)
                 bot.update_board_info(board)
-
                 bot.run()
             for bot in all_bots:
                 bot.update()

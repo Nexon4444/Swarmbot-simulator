@@ -5,7 +5,7 @@
   "communication_settings": {
     "method_is_direct": true,
     "broker": "localhost",
-    "port": 2000
+    "port": 1883
 
   },
   "board_settings": {
