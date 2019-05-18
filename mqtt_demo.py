@@ -1,27 +1,177 @@
-import paho.mqtt.client as mqtt #import the client1
+import json
 import time
-############
-def on_message(client, userdata, message):
-    print("message received " ,str(message.payload.decode("utf-8")))
-    print("message topic=",message.topic)
-    print("message qos=",message.qos)
-    print("message retain flag=",message.retain)
+from threading import *
+import paho.mqtt.client as mqtt
+import logging
+from ast import literal_eval
+logging.basicConfig(level=logging.DEBUG,
+                    format='(%(threadName)-10s) %(message)s',
+                    )
+last_message = None
+class Messenger:
+    logging_on = True
+    logging_mess_on = True
 
-def on_connect():
-    print ("connected")
 
-broker_address="192.168.0.110"
-#broker_address="iot.eclipse.org"
-print("creating new instance")
-client = mqtt.Client("P1") #create new instance
-client.on_message=on_message #attach function to callback
-client.on_connect=on_connect()
-print("connecting to broker")
-client.connect(broker_address, port=2000) #connect to broker
-client.loop_start() #start the loop
-print("Subscribing to topic","house/bulbs/bulb1")
-client.subscribe("house/bulbs/bulb1")
-# print("Publishing message to topic","house/bulbs/bulb1")
-# client.publish("house/bulbs/bulb1","OFF")
-client.loop_start() #stop the loop
-time.sleep(200) # wait
+    def __init__(self, name, config, mess_event):
+        self.name = name
+
+        self.sender = mqtt.Client(str(name) + "_sender")
+        self.receiver = mqtt.Client(str(name) + "_receiver")
+
+        self.sender.on_connect = self.on_connect
+        self.sender.on_log = self.on_log
+        self.sender.on_disconnect = self.on_disconnect
+
+        self.receiver.on_message = self.on_message
+        # self.main_channel = "main"
+        #threading
+
+        self.log("connecting to broker: " + str(config.communication_settings.broker))
+        self.sender.connect(config.communication_settings.broker, config.communication_settings.port)
+        self.receiver.connect(config.communication_settings.broker, config.communication_settings.port)
+
+        self.receiver_topic = self.create_topic(str(self.name), str("receive"))
+        self.sender_topic = self.create_topic(str(self.name), str("send"))
+
+        self.client_topics = list()
+
+        self.last_message_lock = Lock()
+        self.cond = Condition()
+        self.last_message = None
+        self.mess_event = mess_event
+        self.listen()
+        # print ("loop started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+    def listen(self):
+        self.receiver.subscribe(self.receiver_topic)
+        self.receiver.loop_start()
+
+    def subscribe(self, topic):
+        # print  topic
+        self.log("\n===========================\nSubscribed: " + str(topic) + "\n===========================")
+        self.receiver.subscribe(topic)
+        # print str("1/main").decode("UTF-8")
+        # self.client.subscribe(str("1/main").decode("UTF-8"))
+
+    def add_client(self, topic):
+        self.client_topics.append(topic)
+
+    def on_log(self, client, userdata, level, buf):
+        self.log(str(self.name) + " log: " + str(buf) + " ")
+
+    def on_connect(self, client, userdata, flags, rc):
+        if rc == 0:
+            # client.connected_flag = True  # set flag
+            self.log("connected OK")
+        else:
+            self.log("Bad connection Returned code=", rc)
+
+    def on_disconnect(self, client, userdata, flags, rc=0):
+        self.log("Disconnected result code " + str(rc))
+
+    def on_message(self, client, userdata, msg):
+        global last_message
+        # topic = msg.topic
+        # self.x = 3
+        logging.debug("received message: " + str(msg))
+        m_decode = str(msg.payload.decode("utf-8"))
+        # print("=========++++++++++++=============")
+        self.log(str(self.name) + " received message: " + str(m_decode))
+        if not Messenger.logging_on and Messenger.logging_mess_on:
+            logging.debug(str(self.name) + " received message: " + str(m_decode))
+
+        # with self.cond:
+
+        last_message = (self.create_message_from_string(m_decode))
+        # self.last_message = (self.create_message_from_string(m_decode))
+        # self.last_message =
+        f="qweqwe"
+        self.mess_event.set()
+
+    def send(self, topic=None, message="DEFAULT"):
+        self.log("sending message: " + str(message) + " on topic: " + str(topic))
+
+        if topic is None:
+            for client_topic in self.client_topics:
+                self.sender.publish(topic=client_topic, payload=message, retain=True)
+
+        self.sender.publish(topic=str(topic), payload=str(message))
+
+    def get_message_type_from_string(self, type_str):
+        if type_str == "BOARD":
+            return MTYPE.BOARD
+
+        elif type_str == "SIMPLE":
+            return MTYPE.SIMPLE
+
+        else:
+            return None
+
+    def create_message_from_string(self, mess_str):
+        message_dict = literal_eval(mess_str)
+        json_loaded = json.loads(message_dict["message"])
+        return Message(self.get_message_type_from_string(message_dict["type"]),
+                       json.loads(json_loaded))
+
+    def create_topic(self, *args):
+        return '/'.join(args)
+
+    def log(self, msg):
+        if Messenger.logging_on:
+            logging.debug(msg)
+
+    def set_last_message(self, message):
+        with self.last_message_lock:
+            self.last_message = message
+
+    def get_last_message(self):
+        # with self.last_message_lock:
+        #     to_return = self.last_message
+        # return to_return
+        global last_message
+        return last_message
+
+
+    # @property
+    # def last_message(self):
+    #     with self.last_message_lock:
+    #         to_return = self.last_message
+    #     return to_return
+    #
+    # @last_message.setter
+    # def last_message(self, value):
+    #     with self.last_message_lock:
+    #         self.last_message = value
+    #
+    # def get_last_message(self):
+    #     with self.last_message_lock:
+    #         return self.last_message
+
+    def __del__(self):
+        self.receiver.loop_stop()
+        self.receiver.disconnect()
+
+        self.sender.disconnect()
+
+class MTYPE:
+    BOARD = "BOARD"
+    SIMPLE = "SIMPLE"
+
+class Message:
+    def __init__(self, type, message):
+        self.type = type
+        self.message = message
+
+    def __str__(self):
+        return str(self.__dict__)
+
+class MessageEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, Message):
+            return {
+                "type": o.type,
+                "message": o.message
+            }
+        else:
+            return json.JSONEncoder.default(self, o)

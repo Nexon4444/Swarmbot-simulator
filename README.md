@@ -90,7 +90,7 @@ Usunięcie katalogów roboczych
 Instalacja modułów potrzebnych przy projekcie:
 
 ###Bibliografia
-
+https://books.google.pl/books?id=mF9dDwAAQBAJ&pg=PA133&lpg=PA133&dq=mqtt+on+message+how+to+save+message+python&source=bl&ots=3LIhcZ5eCt&sig=ACfU3U1JZzfRVblnJsxtDV7luHMzwC6log&hl=pl&sa=X&ved=2ahUKEwjqjO3T1aLiAhWLl4sKHSO0Ab0Q6AEwCXoECAkQAQ#v=onepage&q=mqtt%20on%20message%20how%20to%20save%20message%20python&f=false
 https://www.intel.com/content/dam/support/us/en/documents/edison/sb/edison-module_HG_331189.pdf
 
 --------------------------- outdated ------------------------------  
