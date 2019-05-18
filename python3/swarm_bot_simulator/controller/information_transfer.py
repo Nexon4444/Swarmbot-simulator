@@ -102,9 +102,9 @@ class Messenger:
 
         if topic is None:
             for client_topic in self.client_topics:
-                self.sender.publish(topic=client_topic, payload=message, retain=True)
+                self.sender.publish(topic=client_topic, payload=message)
         else:
-            self.sender.publish(topic=topic, payload=message, retain=True)
+            self.sender.publish(topic=topic, payload=message)
         self.sender.last_message = message
 
     @staticmethod
@@ -141,8 +141,9 @@ class Messenger:
         # with self.last_message_lock:
         #     to_return = self.last_message
         # return to_return
-        global last_message
-        return last_message
+        # global last_message
+        # loaded = json.loads(last_message["message"])
+        return Messenger.create_message_from_string(self.receiver.last_message)
 
 
     # @property

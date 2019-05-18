@@ -19,10 +19,11 @@ try:
     mess = Messenger(1, config, e)
     # mess.listen()
     # time.sleep(5)
-    simulator.communicate(BotInfo(bot_info_parsed=config.bot_infos[0], config=config), board)
+    # simulator.communicate(BotInfo(bot_info_parsed=config.bot_infos[0], config=config), board)
     # board = json.loads(mess.last_message)
     # print(str(mess.last_message))
     # time.sleep(3)
+
     print(str(Messenger.create_message_from_string(mess.receiver.last_message)))
     # simulator.simulate()
 
