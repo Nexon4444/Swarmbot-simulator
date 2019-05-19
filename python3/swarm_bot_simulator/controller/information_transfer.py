@@ -126,7 +126,10 @@ class Messenger:
     @staticmethod
     def create_message_from_string(mess_str):
         message_dict = literal_eval(mess_str)
-        json_loaded = json.loads(message_dict["message"])
+        if "message" in message_dict:
+            json_loaded = json.loads(message_dict["message"])
+        else:
+            json_loaded = None
 
         return Message(Messenger.get_message_type_from_string(message_dict["type"]),
                        json_loaded)
@@ -168,6 +171,7 @@ class MSIMPLE:
 
 class MMACRO:
     MEAUSRE_LINE = "measure_line"
+
 # class MCOMPLEX:
 
 
