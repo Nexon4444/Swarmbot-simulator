@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.DEBUG,
                     )
 
 # from swarm_bot_simulator.model.board import Board
-from swarm_bot_simulator.controller.information_transfer import Messenger
+# from swarm_bot_simulator.controller.information_transfer import Messenger
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
 from swarm_bot_simulator.controller.information_transfer import *

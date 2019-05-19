@@ -11,9 +11,9 @@ board = Board(config)
 try:
     simulator = Simulator(config)
     e = threading.Event()
-    message = Message(MTYPE.SIMPLE, MovementData(Vector(0, 1), 90.0, 3, Movement.MOVE_PRIM))
+    message = Message(MTYPE.SIMPLE, MovementData(Vector(0, 1), 90.0, 1, Movement.MOVE_PRIM))
 
-    server = Messenger("server", config, e)
+    server = Messenger("server", config.communication_settings.broker, config.communication_settings.port, e)
     server.add_client("1/receive")
     server.send(message=message)
 

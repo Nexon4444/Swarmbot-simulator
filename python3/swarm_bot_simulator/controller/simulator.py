@@ -11,7 +11,8 @@ class Simulator:
         self.config = config
         self.mess_event = threading.Event()
 
-        self.messenger = Messenger("server", config, mess_event=self.mess_event)
+        self.messenger = Messenger("server", config.communication_settings.broker, config.communication_settings.port,
+                                   mess_event=self.mess_event)
 
     def simulate(self):
         q = queue.Queue()

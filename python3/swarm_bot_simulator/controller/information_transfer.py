@@ -1,5 +1,6 @@
 import json
 import time
+from swarm_bot_simulator.model.bot_components import MovementDataEncoder, MovementData
 from threading import *
 import paho.mqtt.client as mqtt
 import logging
@@ -144,7 +145,6 @@ class Messenger:
     def get_last_message(self):
         if self.receiver.last_message is not None:
             return Messenger.create_message_from_string(self.receiver.last_message)
-
         else:
             return None
 
@@ -158,6 +158,7 @@ class MTYPE:
     BOARD = "BOARD"
     SIMPLE = "SIMPLE"
     COMPLEX = "COMPLEX"
+    MACRO = "MACRO"
 
 class MSIMPLE:
     FORWARD = "forward"
@@ -165,6 +166,8 @@ class MSIMPLE:
     TURN_RIGHT = "turn_right"
     TURN_LEFT = "turn_left"
 
+class MMACRO:
+    MEAUSRE_LINE = "measure_line"
 # class MCOMPLEX:
 
 
@@ -188,10 +191,12 @@ class Message:
 
 class MessageEncoder(json.JSONEncoder):
     def default(self, o):
+        mde = MovementDataEncoder()
         if isinstance(o, Message):
-            return {
-                "type": o.type,
-                "message": o.message
-            }
+            if isinstance(o.message, MovementData):
+                return {
+                    "type": o.type,
+                    "message": mde.encode(o.message)
+                }
         else:
             return json.JSONEncoder.default(self, o)
