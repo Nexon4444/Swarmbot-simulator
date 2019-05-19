@@ -19,23 +19,28 @@ class Messenger:
         self.sender = mqtt.Client(str(name) + "_sender")
         self.receiver = mqtt.Client(str(name) + "_receiver")
 
+        self.sender.is_connected = False
+        self.receiver.is_connected = False
+
         self.sender.on_connect = self.on_connect
         self.sender.on_log = self.on_log
         self.sender.on_disconnect = self.on_disconnect
 
         self.receiver.on_message = self.on_message
+        self.receiver.on_connect = self.on_connect
         # self.main_channel = "main"
         #threading
 
-        self.log("connecting to broker: " + str(config.communication_settings.broker))
-        self.sender.connect(config.communication_settings.broker, config.communication_settings.port)
-        self.receiver.connect(config.communication_settings.broker, config.communication_settings.port)
+        # self.log("connecting to broker: " + str(config.communication_settings.broker))
+        self.sender.connect(host=config.communication_settings.broker, port=config.communication_settings.port)
+        self.receiver.connect(host=config.communication_settings.broker, port=config.communication_settings.port)
 
         self.receiver_topic = self.create_topic(str(self.name), str("receive"))
         self.sender_topic = self.create_topic(str(self.name), str("send"))
 
         self.receiver.last_message = None
         self.sender.last_message = None
+
 
         self.client_topics = list()
 
@@ -45,6 +50,9 @@ class Messenger:
         self.mess_event = mess_event
         self.listen()
         # print ("loop started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+    def check_connections(self):
+        self.log("sender is connected? - " + str(self.sender.is_connected))
+        self.log("receiver is connected? - " + str(self.receiver.is_connected))
 
     def listen(self):
         self.receiver.subscribe(self.receiver_topic)
@@ -64,13 +72,16 @@ class Messenger:
         self.log(str(self.name) + " log: " + str(buf) + " ")
 
     def on_connect(self, client, userdata, flags, rc):
+
         if rc == 0:
             # client.connected_flag = True  # set flag
-            self.log("connected OK")
+            self.log("client id: + " + client._client_id + " connected OK")
+            client.is_connected = True
         else:
             self.log("Bad connection Returned code=", rc)
 
     def on_disconnect(self, client, userdata, flags, rc=0):
+        self.is_connected = False
         self.log("Disconnected result code " + str(rc))
 
     def on_message(self, client, userdata, msg):
