@@ -96,29 +96,31 @@ class Messenger:
             logging.debug(str(self.name) + " received message: " + str(m_decode))
         self.receiver.mess_event.set()
         message = self.create_message_from_string(m_decode)
-
+        x=3
     def send(self, topic=None, message="DEFAULT"):
         if isinstance(message, Message):
             me = MessageEncoder()
             message = me.encode(message)
 
-        self.log("sending message: " + str(message) + " on topic: " + str(topic))
-
         if topic is None:
             for client_topic in self.client_topics:
+                self.log("sending message: " + str(message) + " on topic: " + str(client_topic))
                 self.sender.publish(topic=client_topic, payload=message)
         else:
+            self.log("sending message: " + str(message) + " on topic: " + str(topic))
             self.sender.publish(topic=topic, payload=message)
 
         self.sender.last_message = message
 
     @staticmethod
     def get_message_type_from_string(type_str):
-        if type_str == "BOARD":
-            return MTYPE.BOARD
-
-        elif type_str == "SIMPLE":
-            return MTYPE.SIMPLE
+        if type_str in [mtype_str for key, mtype_str in MTYPE.__dict__.items()]:
+            return MTYPE.__dict__[type_str]
+        # if type_str == "BOARD":
+        #     return MTYPE.BOARD
+        #
+        # elif type_str == "SIMPLE":
+        #     return MTYPE.SIMPLE
 
         else:
             return None
@@ -201,6 +203,10 @@ class MessageEncoder(json.JSONEncoder):
                 return {
                     "type": o.type,
                     "message": mde.encode(o.message)
+                }
+            else:
+                return {
+                    "type": o.type,
                 }
         else:
             return json.JSONEncoder.default(self, o)
