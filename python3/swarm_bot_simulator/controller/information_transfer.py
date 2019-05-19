@@ -157,9 +157,16 @@ class Messenger:
 class MTYPE:
     BOARD = "BOARD"
     SIMPLE = "SIMPLE"
+    COMPLEX = "COMPLEX"
 
 class MSIMPLE:
     FORWARD = "forward"
+    REVERSE = "reverse"
+    TURN_RIGHT = "turn_right"
+    TURN_LEFT = "turn_left"
+
+# class MCOMPLEX:
+
 
 class Message:
     def __init__(self, type, message):
