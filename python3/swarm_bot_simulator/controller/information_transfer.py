@@ -13,57 +13,57 @@ class Messenger:
     logging_mess_on = True
 
 
-    def __init__(self, name, config, mess_event):
+    def __init__(self, name, broker, port, mess_event):
         self.name = name
 
         self.sender = mqtt.Client(str(name) + "_sender")
         self.receiver = mqtt.Client(str(name) + "_receiver")
 
-        self.sender.is_connected = False
-        self.receiver.is_connected = False
-
+        # self.sender.
         self.sender.on_connect = self.on_connect
         self.sender.on_log = self.on_log
         self.sender.on_disconnect = self.on_disconnect
+        self.sender.on_subscribe = self.on_subscribe
 
-        self.receiver.on_message = self.on_message
         self.receiver.on_connect = self.on_connect
+        self.receiver.on_message = self.on_message
+        self.receiver.on_subscribe = self.on_subscribe
+        self.receiver.mess_event = mess_event
         # self.main_channel = "main"
         #threading
 
-        # self.log("connecting to broker: " + str(config.communication_settings.broker))
-        self.sender.connect(host=config.communication_settings.broker, port=config.communication_settings.port)
-        self.receiver.connect(host=config.communication_settings.broker, port=config.communication_settings.port)
+        self.log("connecting to broker: " + str(broker))
+        self.sender.connect(broker, port)
+        self.receiver.connect(broker, port)
 
         self.receiver_topic = self.create_topic(str(self.name), str("receive"))
         self.sender_topic = self.create_topic(str(self.name), str("send"))
 
+        self.receiver.subscribe(self.receiver_topic)
+
         self.receiver.last_message = None
         self.sender.last_message = None
-
 
         self.client_topics = list()
 
         self.last_message_lock = Lock()
         self.cond = Condition()
         self.last_message = None
-        self.mess_event = mess_event
         self.listen()
         # print ("loop started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-    def check_connections(self):
-        self.log("sender is connected? - " + str(self.sender.is_connected))
-        self.log("receiver is connected? - " + str(self.receiver.is_connected))
 
     def listen(self):
-        self.receiver.subscribe(self.receiver_topic)
         self.receiver.loop_start()
 
     def subscribe(self, topic):
         # print  topic
-        self.log("\n===========================\nSubscribed: " + str(topic) + "\n===========================")
+
         self.receiver.subscribe(topic)
         # print str("1/main").decode("UTF-8")
         # self.client.subscribe(str("1/main").decode("UTF-8"))
+
+    def on_subscribe(self, client, userdata, mid, granted_qos):
+        self.log("\n===========================\nSubscribed: " + str(client) + "\n===========================")
 
     def add_client(self, topic):
         self.client_topics.append(topic)
@@ -72,16 +72,13 @@ class Messenger:
         self.log(str(self.name) + " log: " + str(buf) + " ")
 
     def on_connect(self, client, userdata, flags, rc):
-
         if rc == 0:
             # client.connected_flag = True  # set flag
-            self.log("client id: + " + client._client_id + " connected OK")
-            client.is_connected = True
+            self.log("connected OK")
         else:
             self.log("Bad connection Returned code=", rc)
 
     def on_disconnect(self, client, userdata, flags, rc=0):
-        self.is_connected = False
         self.log("Disconnected result code " + str(rc))
 
     def on_message(self, client, userdata, msg):
@@ -96,13 +93,8 @@ class Messenger:
 
         if not Messenger.logging_on and Messenger.logging_mess_on:
             logging.debug(str(self.name) + " received message: " + str(m_decode))
-
+        self.receiver.mess_event.set()
         message = self.create_message_from_string(m_decode)
-        # with self.cond:
-        # with self.cond:
-        # self.last_message = (self.create_message_from_string(m_decode))
-        # self.last_message =
-        # self.mess_event.set()
 
     def send(self, topic=None, message="DEFAULT"):
         if isinstance(message, Message):
@@ -116,6 +108,7 @@ class Messenger:
                 self.sender.publish(topic=client_topic, payload=message)
         else:
             self.sender.publish(topic=topic, payload=message)
+
         self.sender.last_message = message
 
     @staticmethod
@@ -149,28 +142,11 @@ class Messenger:
             self.last_message = message
 
     def get_last_message(self):
-        # with self.last_message_lock:
-        #     to_return = self.last_message
-        # return to_return
-        # global last_message
-        # loaded = json.loads(last_message["message"])
-        return Messenger.create_message_from_string(self.receiver.last_message)
+        if self.receiver.last_message is not None:
+            return Messenger.create_message_from_string(self.receiver.last_message)
 
-
-    # @property
-    # def last_message(self):
-    #     with self.last_message_lock:
-    #         to_return = self.last_message
-    #     return to_return
-    #
-    # @last_message.setter
-    # def last_message(self, value):
-    #     with self.last_message_lock:
-    #         self.last_message = value
-    #
-    # def get_last_message(self):
-    #     with self.last_message_lock:
-    #         return self.last_message
+        else:
+            return None
 
     def __del__(self):
         self.receiver.loop_stop()
@@ -182,18 +158,22 @@ class MTYPE:
     BOARD = "BOARD"
     SIMPLE = "SIMPLE"
 
+class MSIMPLE:
+    FORWARD = "forward"
+
 class Message:
     def __init__(self, type, message):
-        from swarm_bot_simulator.model.board import BoardEncoder
-        from swarm_bot_simulator.model.bot_components import MovementDataEncoder
-        if type is MTYPE.BOARD:
-            be = BoardEncoder()
-            self.message = be.encode(message)
-        elif type is MTYPE.SIMPLE:
-            mde = MovementDataEncoder()
-            self.message = mde.encode(message)
-        else:
-            self.message = message
+        # from model.board import BoardEncoder
+        # from model.bot_components import MovementDataEncoder
+        # if type is MTYPE.BOARD:
+        #     be = BoardEncoder()
+        #     self.message = be.encode(message)
+        # elif type is MTYPE.SIMPLE:
+        #     mde = MovementDataEncoder()
+        #     self.message = mde.encode(message)
+        # else:
+        #     self.message = message
+        self.message = message
         self.type = type
 
     def __str__(self):
