@@ -1,6 +1,8 @@
 import json
 import time
-from swarm_bot_simulator.model.bot_components import MovementDataEncoder, MovementData
+# from swarm_bot_simulator.model.bot_components import MovementDataEncoder, MovementData, BotInfo, BotInfoEncoder, Vector, VectorEncoder
+import swarm_bot_simulator.model.bot_components as comp
+# import MovementDataEncoder, MovementData, BotInfo, BotInfoEncoder, Vector, VectorEncoder
 from threading import *
 import paho.mqtt.client as mqtt
 import logging
@@ -12,7 +14,6 @@ last_message = None
 class Messenger:
     logging_on = True
     logging_mess_on = True
-
 
     def __init__(self, name, broker, port, mess_event):
         self.name = name
@@ -46,6 +47,7 @@ class Messenger:
         self.sender.last_message = None
 
         self.client_topics = list()
+        self.wait_topics = list()
 
         self.last_message_lock = Lock()
         self.cond = Condition()
@@ -66,8 +68,11 @@ class Messenger:
     def on_subscribe(self, client, userdata, mid, granted_qos):
         self.log("\n===========================\nSubscribed: " + str(client) + "\n===========================")
 
-    def add_client(self, topic):
+    def add_topic_to_send(self, topic):
         self.client_topics.append(topic)
+
+    def add_client(self, bot_info):
+        self.add_topic_to_send(self.create_topic(bot_info.bot_id, "receive"))
 
     def on_log(self, client, userdata, level, buf):
         self.log(str(self.name) + " log: " + str(buf) + " ")
@@ -94,9 +99,11 @@ class Messenger:
 
         if not Messenger.logging_on and Messenger.logging_mess_on:
             logging.debug(str(self.name) + " received message: " + str(m_decode))
+
         self.receiver.mess_event.set()
-        message = self.create_message_from_string(m_decode)
-        x=3
+        # message = self.create_message_from_string(m_decode)
+        # x=3
+
     def send(self, topic=None, message="DEFAULT"):
         if isinstance(message, Message):
             me = MessageEncoder()
@@ -133,11 +140,14 @@ class Messenger:
         else:
             json_loaded = None
 
+        # mess_type = message_dict["type"]
+        # if mess_type is MTYPE.BOT_INFO:
+        #     return Message(mess_type, BotInfo(json_loaded))
         return Message(Messenger.get_message_type_from_string(message_dict["type"]),
                        json_loaded)
 
     def create_topic(self, *args):
-        return '/'.join(args)
+        return '/'.join([str(arg) for arg in args])
 
     def log(self, msg):
         if Messenger.logging_on:
@@ -149,7 +159,8 @@ class Messenger:
 
     def get_last_message(self):
         if self.receiver.last_message is not None:
-            return Messenger.create_message_from_string(self.receiver.last_message)
+            with self.last_message_lock:
+                return Messenger.create_message_from_string(self.receiver.last_message)
         else:
             return None
 
@@ -161,20 +172,29 @@ class Messenger:
 
 class MTYPE:
     BOARD = "BOARD"
+    BOT_INFO = "BOT_INFO"
     SIMPLE = "SIMPLE"
     COMPLEX = "COMPLEX"
     MACRO = "MACRO"
+    ALGORITHM_COMMAND = "ALGORITHM_COMMAND"
+    SERVER = "SERVER"
 
 class MSIMPLE:
-    FORWARD = "forward"
-    REVERSE = "reverse"
-    TURN_RIGHT = "turn_right"
-    TURN_LEFT = "turn_left"
+    FORWARD = "FORWARD"
+    REVERSE = "REVERSE"
+    TURN_RIGHT = "TURN_RIGHT"
+    TURN_LEFT = "TURN_LEFT"
 
 class MMACRO:
-    MEAUSRE_LINE = "measure_line"
+    MEASURE_LINE = "MEASURE_LINE"
 
+class MALGORITHM_COMMAND:
+    STOP = "STOP"
+
+class MSERVER:
+    READY = "READY"
 # class MCOMPLEX:
+
 
 
 class Message:
@@ -189,6 +209,16 @@ class Message:
         #     self.message = mde.encode(message)
         # else:
         #     self.message = message
+        if isinstance(message, dict) and type == MTYPE.BOT_INFO:
+            bot_info = comp.BotInfo()
+            bot_info.from_dict(message)
+            message = bot_info
+
+        elif isinstance(message, dict) and type == MTYPE.BOARD:
+            board = comp.Board()
+            board.from_dict(message)
+            message = board
+
         self.message = message
         self.type = type
 
@@ -197,12 +227,35 @@ class Message:
 
 class MessageEncoder(json.JSONEncoder):
     def default(self, o):
-        mde = MovementDataEncoder()
+        be = comp.BoardEncoder()
+        mde = comp.MovementDataEncoder()
+        bie = comp.BotInfoEncoder()
         if isinstance(o, Message):
-            if isinstance(o.message, MovementData):
+            if isinstance(o.message, comp.Board):
+                return {
+                    "type": o.type,
+                    "message": be.encode(o.message)
+                }
+            elif isinstance(o.message, comp.BotInfo):
+                return {
+                    "type": o.type,
+                    "message": bie.encode(o.message)
+                }
+
+            elif isinstance(o.message, comp.MovementData):
                 return {
                     "type": o.type,
                     "message": mde.encode(o.message)
+                }
+            elif isinstance(o.message, comp.Board):
+                return {
+                    "type": o.type,
+                    "message": mde.encode(o.message)
+                }
+            elif isinstance(o.message, str):
+                return {
+                    "type": o.type,
+                    "message": json.dumps(o.message)
                 }
             else:
                 return {

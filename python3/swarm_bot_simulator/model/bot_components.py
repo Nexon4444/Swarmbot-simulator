@@ -2,57 +2,104 @@
 import json
 
 import logging
+from ast import literal_eval
 from json import JSONEncoder
 logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
 
 # from swarm_bot_simulator.model.board import Board
-# from swarm_bot_simulator.controller.information_transfer import Messenger
+# import swarm_bot_simulator.controller.information_transfer as it
 from shapely.geometry import Point
 from shapely.geometry.polygon import Polygon
-from swarm_bot_simulator.controller.information_transfer import *
+import swarm_bot_simulator.controller.information_transfer as it
 # from swarm_bot_simulator.model.board import Board
 import math
 import copy
 import threading
-
 class Bot:
     # last_id = 0
     view_range = 1000
     view_cone = 60
 
-    def __init__(self, bot_info, config):
+    # def __init__(self, bot_info, info_sent_event, config):
+    def __init__(self, bot_id, config):
+        self.bot_id = bot_id
         self.communication_settings = config.communication_settings
         self.bot_settings = config.bot_settings
         self.board_settings = config.board_settings
-        self.bot_info = copy.deepcopy(bot_info)
-        self.bot_info_real = copy.deepcopy(bot_info)
-        self.bot_info_sensor = copy.deepcopy(bot_info)
+
         self.config = config
+        self.bot_info = None
+        self.bot_info_real = None
+        self.bot_info_sensor = None
+        # self.info_sent_event = info_sent_event
         # self.bot_info_seBotInfo(parsed_bot_info, config.bot_settings)
         # self.bot_info_real = BotInfo(parsed_bot_info, config.bot_settings)
 
         self.mess_event = threading.Event()
-        self.messenger = Messenger(name=str(self.bot_info.bot_id), config=config,
-                                   mess_event=self.mess_event)
+        self.messenger = it.Messenger(name=str(bot_id),
+                                      broker=config.communication_settings.broker,
+                                      port=config.communication_settings.port,
+                                      mess_event=self.mess_event)
 
         # self.messenger.subscribe(self.bot_info.bot_id)
-        self.movement = Movement(communication_channel=self.bot_info.bot_id, messenger=self.messenger)
+        self.movement = Movement(communication_channel=bot_id, messenger=self.messenger)
 
         self.lock = threading.Lock()
         self.signal = threading.Condition()
         self.line = 0
         self.line_event = threading.Event()
         self.board = None
+
         self.hardware = Hardware()
         self.listen_lf = None
-        # self.model = model
-        self.name = "swarm_bot" + str(self.bot_info.bot_id)
+        self.board = None
+        self.name = "swarm_bot" + str(bot_id)
         # self.bot_info.speed = Vector(0, 0)
         # self.bot_info.acceleration = Vector(0, 0)
 
         self.start_sensor_threads()
+
+    def start_thread(self):
+        t_bot = threading.Thread(target=self.run)
+        t_bot.start()
+
+    def run(self):
+        self.get_init_info_from_server()
+        while self.should_continue():
+            self.flock()
+            self.borders()
+            self.send_info_to_server()
+        return self.bot_info
+
+    def should_continue(self):
+        last_message = self.messenger.get_last_message()
+        if last_message.type == it.MTYPE.ALGORITHM_COMMAND:
+            if last_message.message == it.MALGORITHM_COMMAND.STOP:
+                return False
+        return True   
+        
+    def get_init_info_from_server(self):
+        self.mess_event.wait()
+        received = self.messenger.get_last_message()
+        if received.type == it.MTYPE.SERVER:
+            self.messenger.add_topic_to_send(str(received.message))
+
+    def get_info_from_server(self):
+        self.mess_event.wait()
+        # bot_info = BotInfo()
+        received = self.messenger.get_last_message()
+        self.board = received.message
+        x = received.message.bots_info["1"]
+        self.set_init_values(received.message.bots_info[str(self.bot_id)])
+        self.mess_event.clear()
+        # self.messenger.
+
+    def set_init_values(self, bot_info):
+        self.bot_info = copy.deepcopy(bot_info)
+        self.bot_info_real = copy.deepcopy(bot_info)
+        self.bot_info_sensor = copy.deepcopy(bot_info)
 
     def pass_line(self):
         self.counter()
@@ -83,7 +130,7 @@ class Bot:
 
     def initialize_comm(self):
         # topic_name = "swarm_bot" + str(self.bot_info.bot_id)
-        self.messenger = Messenger(name=self.name, communication_settings=self.communication_settings)
+        self.messenger = it.Messenger(name=self.name, communication_settings=self.communication_settings)
 
     def comm_out(self):
         self.messenger.send(self.bot_info)
@@ -93,7 +140,7 @@ class Bot:
 
     def update_data(self):
         self.comm_out(self.bot_info.serialize())
-        self.model = self.comm_in()
+        self.board = self.comm_in()
 
     def designate_coords(self):
         self.update_data()
@@ -255,7 +302,8 @@ class Bot:
         '''
         assert isinstance(self.bot_settings.view_is_omni, bool)
         if self.bot_settings.view_is_omni is True:
-            all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in model.bots_info.items() if bot_info.bot_id != self.bot_info.bot_id}
+            all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in model.bots_info.items()
+                           if bot_info.bot_id != self.bot_info.bot_id}
             return all_bots_cp
 
         visible_bots = []
@@ -290,11 +338,6 @@ class Bot:
         # desired.invert()
         return desired
 
-    def run(self):
-        self.flock()
-        self.borders()
-        return self.bot_info
-
     def borders(self):
         next_pos = self.bot_info.position + self.bot_info.speed
         if next_pos.in_borders(Vector(self.board_settings.border_x, self.board_settings.border_y)) is False:
@@ -325,26 +368,48 @@ class Bot:
                 + "\naccel: " + str(self.bot_info.acceleration)
                 + "\ndir: " + str(self.bot_info.dir))
 
+    def send_info_to_server(self):
+        pass
+
+
 class BotInfo:
     size_x = 20
     size_y = 20
 
-    def __init__(self, bot_info_parsed, config):
-        self.is_real = bot_info_parsed.is_real
-        self.bot_id = bot_info_parsed.bot_id
-        self.dir = float(bot_info_parsed.direction)
-        self.position = Vector(float(bot_info_parsed.poz_x), float(bot_info_parsed.poz_y))
-        self.acceleration = Vector(0, 0)
+    # def __init__(self, bot_info_parsed, config):
+    def __init__(self, bot_info_parsed=None):
+        if bot_info_parsed is not None:
+            self.is_real = bot_info_parsed.is_real
+            self.bot_id = bot_info_parsed.bot_id
+            self.dir = float(bot_info_parsed.direction)
+            self.position = Vector(float(bot_info_parsed.poz_x), float(bot_info_parsed.poz_y))
+            self.acceleration = Vector(0, 0)
+            self.speed = Vector(bot_info_parsed.speed[0], bot_info_parsed.speed[1])
 
-        speed_vec = Vector(bot_info_parsed.speed[0], bot_info_parsed.speed[1])
+        else:
+            self.is_real = None
+            self.bot_id = None
+            self.dir = None
+            self.position = None
+            self.acceleration = None
+            self.speed = None
 
-        if bot_info_parsed.speed[0] > config.bot_settings.max_speed:
-            speed_vec.x = config.bot_settings.max_speed
+    def from_dict(self, bot_info_dict):
+        self.is_real = bot_info_dict["is_real"]
+        self.bot_id = bot_info_dict["bot_id"]
+        self.dir = bot_info_dict["dir"]
 
-        if bot_info_parsed.speed[1] > config.bot_settings.max_speed:
-            speed_vec.y = config.bot_settings.max_speed
+        position = Vector()
+        position.list2vector(bot_info_dict["position"])
+        self.position = position
 
-        self.speed = Vector(speed_vec.x, speed_vec.y)
+        acceleration = Vector()
+        acceleration.list2vector(bot_info_dict["acceleration"])
+        self.acceleration = acceleration
+
+        speed = Vector()
+        speed.list2vector(bot_info_dict["speed"])
+        self.speed = speed
 
     def serialize(self):
         message = {
@@ -367,16 +432,22 @@ class BotInfoEncoder(JSONEncoder):
                 "is_real": o.is_real,
                 "bot_id": o.bot_id,
                 "dir": o.dir,
-                "position": ve.encode(o.position),
-                "acceleration": ve.encode(o.acceleration)
+                "position": [o.position.x, o.position.y],
+                "speed": [o.speed.x, o.speed.y],
+                "acceleration": [o.acceleration.x, o.acceleration.y]
             }
         else:
             return json.JSONEncoder.default(self, o)
+
 class Vector:
-    def __init__(self, x, y):
+    def __init__(self, x=None, y=None):
         self.x = x
         self.y = y
         # self.y = y
+
+    def list2vector(self, vector_list):
+        self.x = vector_list[0]
+        self.y = vector_list[1]
 
     def div_scalar(self, scalar):
         self.x = self.x / scalar
@@ -399,8 +470,6 @@ class Vector:
 
     def magnitude(self):
         return math.sqrt(self.x * self.x + self.y * self.y)
-
-    # def size(self):
 
     def mul_vector(self, vec):
         self.x = self.x * vec.x
@@ -471,6 +540,7 @@ class VectorEncoder(JSONEncoder):
             return [o.x, o.y]
         else:
             return json.JSONEncoder.default(self, o)
+
 class MovementData:
     def __init__(self, poz: Vector, direction: float, time: float, command: str):
         self.poz = poz
@@ -507,7 +577,7 @@ class Movement:
     def turn_prim(self, time):
         self.messenger.send(MovementDataEncoder.encode(MovementData(poz=None, direction=None, time=time, command="turn_prim")))
 
-    def move(self, bot_info : BotInfo, position: Vector, speed: Vector):
+    def move(self, bot_info: BotInfo, position: Vector, speed: Vector):
         pass
 
     def face_direction(self):
@@ -530,4 +600,54 @@ class LFSensor:
         with self.lock:
             self.lf_sensor_no_pulses += 1
 
+class Board:
+    def __init__(self, config=None):
+        if config is not None:
+            self.bots_info = {
+                bot_info_parsed.bot_id: BotInfo(bot_info_parsed=bot_info_parsed) for
+                bot_info_parsed in config.bot_infos}
+        else:
+            self.bots_info = None
 
+    def from_dict(self, board_dict):
+        bots_info_to_parse = json.loads(board_dict["bots_info"])
+
+        bots_infos_dicts = {key: json.loads(bot_info_to_parse) for key, bot_info_to_parse in bots_info_to_parse.items()}
+        self.bots_info = {key: BotInfo() for key, bot_info in bots_info_to_parse.items()}
+        for key, bot_info in self.bots_info.items():
+            bot_info.from_dict(bots_infos_dicts[key])
+        # self.bots_info = {key: empty_bot_infos[key].from_dict(bots_infos_dicts[key]) for key, bot_info in empty_bot_infos.items()}
+        qweqwey = 1
+        # bot_info = BotInfo()
+        # bot_info.dict2bot_info(json.loads(x["1"]))
+        # self.bots_info = json.load(board_dict["bots_info"])
+        # json_loaded = json.loads(self.bots_info)
+        # message_dict = literal_eval(self.bots_info)
+        #
+        # x=3
+
+    def __str__(self):
+        # bot_list = [str(bot) for bot in self.all_bots_data]
+        return "\n".join(self.__dict__)
+
+    def calibrate(self):
+        pass
+
+    def run(self):
+        pass
+    #
+    def calculate_locations_from_bot_data(self):
+        pass
+
+class BoardEncoder(JSONEncoder):
+    bie = BotInfoEncoder()
+    def default(self, o):
+        if isinstance(o, Board):
+            board = o
+            z = board.bots_info.items()
+            return {
+                "bots_info": json.dumps({bot_info.bot_id: BoardEncoder.bie.encode(bot_info) for key, bot_info
+                              in o.bots_info.items()})
+            }
+        else:
+            return json.JSONEncoder.default(self, o)

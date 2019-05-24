@@ -7,7 +7,6 @@ from math import pi
 from PIL import Image
 from threading import Event
 import math
-from swarm_bot_simulator.model import board
 from shapely.geometry import Point
 from threading import Thread
 from swarm_bot_simulator.model.bot_components import Bot, BotInfo

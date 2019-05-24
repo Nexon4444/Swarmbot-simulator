@@ -14,7 +14,7 @@ try:
     message = Message(MTYPE.SIMPLE, MovementData(Vector(0, 1), 90.0, 3, Movement.MOVE_PRIM))
 
     server = Messenger("server", config, e)
-    server.add_client("1/receive")
+    server.add_topic_to_send("1/receive")
     server.send(message=message)
 
     time.sleep(300)
