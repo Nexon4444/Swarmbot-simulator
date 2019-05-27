@@ -5,7 +5,6 @@ import warnings
 import os
 
 from swarm_bot_simulator.controller.simulator import Simulator
-from swarm_bot_simulator.model.board import *
 from swarm_bot_simulator.model.config import *
 from swarm_bot_simulator.view.visualize import *
 from swarm_bot_simulator.model.bot_components import *

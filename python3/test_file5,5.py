@@ -1,6 +1,8 @@
-from swarm_bot_simulator.model.bot_components import *
+from swarm_bot_simulator.utilities.util import *
 
-md = MovementData(poz=Vector(0, 0), direction=0.0, time=1, command=Movement.MOVE_PRIM)
-me = MovementDataEncoder()
-json_command = me.encode(md)
-print(json_command)
+for i in range(0, 5):
+    log_flush("Time taken: ", 0, i)
+# log_flush("Time taken: ", 0, 2)
+# log_flush("Time taken: ", 0, 3)
+# log_flush("Time taken: ", 0, 4)
+# log_flush("Time taken: ", 0, 5)
