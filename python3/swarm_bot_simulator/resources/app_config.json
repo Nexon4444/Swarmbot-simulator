@@ -28,12 +28,23 @@
   },
   "bots": [
     {
-      "bot_id": 1,
+      "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
       "is_real": false,
       "speed": [
         5,
+        1
+      ],
+      "direction": 0
+    },
+    {
+      "bot_id": "2",
+      "poz_x": 150,
+      "poz_y": 200,
+      "is_real": false,
+      "speed": [
+        4,
         1
       ],
       "direction": 0

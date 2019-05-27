@@ -17,6 +17,7 @@ import swarm_bot_simulator.controller.information_transfer as it
 import math
 import copy
 import threading
+
 class Bot:
     # last_id = 0
     view_range = 1000
@@ -24,7 +25,7 @@ class Bot:
 
     # def __init__(self, bot_info, info_sent_event, config):
     def __init__(self, bot_id, config):
-        self.bot_id = bot_id
+        self.bot_id = str(bot_id)
         self.communication_settings = config.communication_settings
         self.bot_settings = config.bot_settings
         self.board_settings = config.board_settings
@@ -67,32 +68,60 @@ class Bot:
 
     def run(self):
         self.get_init_info_from_server()
-        while self.should_continue():
+        self.send_ready_to_server()
+        while True:
+            self.get_info_from_server()
+            self.send_ready_to_server()
+            if self.should_continue() is False:
+                break
+
             self.flock()
             self.borders()
-            self.send_info_to_server()
-        return self.bot_info
+            self.update()
+            # self.update_board_info()
+            self.send_bot_info_to_server()
+            # self.send_board_to_server()
+
+            # self.send_info_to_server()
+        # return self.bot_info
+
+    def send_board_to_server(self):
+        mes = it.Message(id=self.bot_id, type=it.MTYPE.BOARD, content=self.board)
+        self.messenger.send(message=mes)
+
+    def send_bot_info_to_server(self):
+        mes = it.Message(id=self.bot_id, type=it.MTYPE.BOT_INFO, content=self.bot_info)
+        self.messenger.send(message=mes)
+
+    def send_ready_to_server(self):
+        mes = it.Message(id=self.bot_id, type=it.MTYPE.SERVER, content=it.MSERVER.READY)
+        self.messenger.send(message=mes)
 
     def should_continue(self):
+        self.mess_event.wait()
         last_message = self.messenger.get_last_message()
         if last_message.type == it.MTYPE.ALGORITHM_COMMAND:
-            if last_message.message == it.MALGORITHM_COMMAND.STOP:
+            self.mess_event.clear()
+            if last_message.content == it.MALGORITHM_COMMAND.STOP:
                 return False
-        return True   
-        
+            elif last_message.content == it.MALGORITHM_COMMAND.CONTINUE:
+                return True
+        # return True
+
     def get_init_info_from_server(self):
         self.mess_event.wait()
         received = self.messenger.get_last_message()
         if received.type == it.MTYPE.SERVER:
-            self.messenger.add_topic_to_send(str(received.message))
+            self.messenger.add_topic_to_send(str(received.content))
+            self.mess_event.clear()
 
     def get_info_from_server(self):
         self.mess_event.wait()
         # bot_info = BotInfo()
         received = self.messenger.get_last_message()
-        self.board = received.message
-        x = received.message.bots_info["1"]
-        self.set_init_values(received.message.bots_info[str(self.bot_id)])
+        self.board = received.content
+        # x = received.content.bots_info["1"]
+        self.set_init_values(received.content.bots_info[str(self.bot_id)])
         self.mess_event.clear()
         # self.messenger.
 
@@ -109,8 +138,8 @@ class Bot:
         with self.lock:
             self.line = self.line + 1
 
-    def update_board_info(self, board):
-        self.board = board
+    def update_board_info(self):
+        self.board.bots_info[self.bot_id] = self.bot_info
 
     def update_real_data(self):
         # bot_info_list = self.get_sensor_info()
@@ -156,7 +185,7 @@ class Bot:
         print(str(self))
 
     def flock(self):
-        visible_bots = self.get_visible_bots(self.board)
+        visible_bots = self.get_visible_bots()
 
         sep = self.separation(visible_bots)
         # ali = self.alignment(visible_bots)
@@ -175,11 +204,11 @@ class Bot:
 
     def separation(self, visible_bots):
         steer = Vector(0, 0)
-        for bot in visible_bots:
-            dist = self.distance(bot)
-            steer = self.separation_steer(bot, dist, steer, visible_bots)
+        for key, bot_info in visible_bots.items():
+            dist = self.distance(bot_info)
+            steer = self.separation_steer(bot_info, dist, steer, visible_bots)
             print(str(self.bot_info))
-            print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
+            print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
 
         self.correct_separation(steer, visible_bots)
         # steer.invert()
@@ -212,17 +241,17 @@ class Bot:
             steer.sub_vector(self.bot_info.speed)
             steer.limit(self.bot_settings.max_force)
 
-    def points2vector(self, bot):
-        diff_poz = Point(bot.bot_info.position.x - self.bot_info.position.x,
-                         bot.bot_info.position.y - self.bot_info.position.y)
+    def points2vector(self, bot_info):
+        diff_poz = Point(bot_info.position.x - self.bot_info.position.x,
+                         bot_info.position.y - self.bot_info.position.y)
         diff_vec = Vector(diff_poz.x, diff_poz.y)
         return diff_vec
 
     def cohesion(self, visible_bots):
         steer = Vector(0, 0)
-        for bot in visible_bots:
-            dist = self.distance(bot)
-            steer = self.cohesion_steer(bot, dist, steer, visible_bots)
+        for key, bot_info in visible_bots.items():
+            dist = self.distance(bot_info)
+            steer = self.cohesion_steer(bot_info, dist, steer, visible_bots)
 
         visible_bots_amount = len(visible_bots)
         if visible_bots_amount is not 0:
@@ -243,11 +272,11 @@ class Bot:
 
     def alignment(self, visible_bots):
         steer = Vector(0, 0)
-        for bot in visible_bots:
-            dist = self.distance(bot)
-            steer = self.alignment_steer(bot, dist, steer, visible_bots)
+        for key, bot_info in visible_bots.items():
+            dist = self.distance(bot_info)
+            steer = self.alignment_steer(bot_info, dist, steer, visible_bots)
             print(str(self.bot_info))
-            print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
+            print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
 
         visible_bot_amount = len(visible_bots)
         if visible_bot_amount is not 0:
@@ -294,7 +323,7 @@ class Bot:
         else:
             return self.get_model_info()
 
-    def get_visible_bots(self, model):
+    def get_visible_bots(self):
         '''
         Function to get all the bots visible in a triangle got by counting the sides
         :type model: Board
@@ -302,28 +331,28 @@ class Bot:
         '''
         assert isinstance(self.bot_settings.view_is_omni, bool)
         if self.bot_settings.view_is_omni is True:
-            all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in model.bots_info.items()
+            all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in self.board.bots_info.items()
                            if bot_info.bot_id != self.bot_info.bot_id}
             return all_bots_cp
 
-        visible_bots = []
-        self_point = (self.bot_info.position.x, self.bot_info.position.y)  # self.bot_info.position
-        left_cone_angle = self.bot_info.dir - Bot.view_cone / 2
-        right_cone_angle = self.bot_info.dir + Bot.view_cone / 2
+        # visible_bots = []
+        # self_point = (self.bot_info.position.x, self.bot_info.position.y)  # self.bot_info.position
+        # left_cone_angle = self.bot_info.dir - Bot.view_cone / 2
+        # right_cone_angle = self.bot_info.dir + Bot.view_cone / 2
+        #
+        # side = math.cos(Bot.view_cone / 2) * Bot.view_range
+        # left = (math.sin(left_cone_angle) * side, math.cos(left_cone_angle) * side)
+        # right = (math.sin(right_cone_angle) * side, math.cos(right_cone_angle) * side)
+        # triangle = Polygon([self_point, right, left])
+        #
+        # for bot in model.all_bots:
+        #     if triangle.contains(Point(bot.bot_info.position.x, bot.bot_info.position.y)):
+        #         visible_bots.append(bot)
 
-        side = math.cos(Bot.view_cone / 2) * Bot.view_range
-        left = (math.sin(left_cone_angle) * side, math.cos(left_cone_angle) * side)
-        right = (math.sin(right_cone_angle) * side, math.cos(right_cone_angle) * side)
-        triangle = Polygon([self_point, right, left])
+        # return visible_bots
 
-        for bot in model.all_bots:
-            if triangle.contains(Point(bot.bot_info.position.x, bot.bot_info.position.y)):
-                visible_bots.append(bot)
-
-        return visible_bots
-
-    def distance(self, bot):
-        return self.bot_info.position.distance(bot.bot_info.position)
+    def distance(self, bot_info):
+        return self.bot_info.position.distance(bot_info.position)
 
     def apply_force(self, sep):
         self.bot_info.acceleration.add_vector(sep)
@@ -367,10 +396,6 @@ class Bot:
                 + "\nspeed: " + str(self.bot_info.speed)
                 + "\naccel: " + str(self.bot_info.acceleration)
                 + "\ndir: " + str(self.bot_info.dir))
-
-    def send_info_to_server(self):
-        pass
-
 
 class BotInfo:
     size_x = 20
@@ -617,7 +642,6 @@ class Board:
         for key, bot_info in self.bots_info.items():
             bot_info.from_dict(bots_infos_dicts[key])
         # self.bots_info = {key: empty_bot_infos[key].from_dict(bots_infos_dicts[key]) for key, bot_info in empty_bot_infos.items()}
-        qweqwey = 1
         # bot_info = BotInfo()
         # bot_info.dict2bot_info(json.loads(x["1"]))
         # self.bots_info = json.load(board_dict["bots_info"])
