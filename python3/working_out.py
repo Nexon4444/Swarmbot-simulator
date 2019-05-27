@@ -11,9 +11,14 @@ board = Board(config)
 try:
     simulator = Simulator(config)
     e = threading.Event()
-    message = Message(MTYPE.SIMPLE, MovementData(Vector(0, 1), 90.0, 3, Movement.MOVE_PRIM))
+    bot_info = BotInfo()
+    bot_info.from_dict({"is_real": True, "bot_id": "1", "dir": 0, "position": [0, 0], "acceleration": [0, 0], "speed": [1, 1]})
+    message = Message("1", MTYPE.BOT_INFO, bot_info)
 
-    server = Messenger("server", config, e)
+    server = Messenger(name="server",
+                       broker=config.communication_settings.broker,
+                       port=config.communication_settings.port,
+                       mess_event=e)
     server.add_topic_to_send("1/receive")
     server.send(message=message)
 
