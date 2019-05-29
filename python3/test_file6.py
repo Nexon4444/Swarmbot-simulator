@@ -1,43 +1,33 @@
-wfrom threading import *
-import json
-import os
-# from swarm_bot_simulator.model.bot_components import *
-from swarm_bot_simulator.model.config import *
-app_config = None
-with open(os.path.join("swarm_bot_simulator", "resources", "app_config.json"), "r", encoding="utf-8") as f:
-    app_config = json.load(f)
-config = Config(app_config)
-e1 = Event()
-e2 = Event()
-
-# mes1 = Messenger("1", config.communication_settings, e1)
-mes2 = Messenger("2", config.communication_settings, e2)
-
-# mes1.listen()
-mes2.listen()
-
-# mes1.send(topic="2/receive", message="from mes1")
-mes2.send(topic="1/receive", message="from mes2")
-
-# mes1.start_loop_and_wait(200)
-# print("---------------------------------------------------")
-# time.sleep(900)
-
-# bot = Bot(app_config["bots"][0], config.communication_settings, config.bot_settings, config.board_settings)
-# bot.movement.move_prim(1)2
-# python3/swarm_bot_simulator/resources/app_config.json
-
-import paho.mqtt.client as mqtt #import the client1
+import paho.mqtt.client as mqtt
+import logging
 import time
-############
-# def on_message(client, userdata, message):
-#     print("message received " ,str(message.payload.decode("utf-8")))
-#
-# client = mqtt.Client("P1") #create new instance
-# client.on_message=on_message #attach function to callback
-# print("connecting to broker")
-# client.connect("192.168.0.106", port=2000) #connect to broker
-# client.loop_start() #start the loop
-# client.subscribe("test")
-# time.sleep(200) # wait
-# client.loop_stop() #stop the loop
+logging.basicConfig(level=logging.DEBUG,
+                    format='(%(threadName)-10s) %(message)s',
+                    )
+def on_message(client, userdata, msg):
+    logging.debug(str(msg.payload.decode("utf-8")))
+
+def on_connect(client, userdata, flags, rc):
+    if rc == 0:
+        # client.connected_flag = True  # set flag
+        logging.debug("connected OK")
+    else:
+        logging.debug("Bad connection Returned code=", rc)
+
+
+client = mqtt.Client("client")
+client.on_message = on_message
+client.on_connect = on_connect
+client.connect("192.168.0.106", port=2000)
+client.subscribe(topic="1/receive")
+client.loop_start()
+
+client2 = mqtt.Client("client2")
+client2.on_connect = on_connect
+client2.on_message = on_message
+client2.connect("192.168.0.106", port=2000)
+# client2.loop_start()
+client2.publish(topic="2/receive", payload="asdasdasdasd")
+
+client.loop_stop()
+# time.sleep(50)

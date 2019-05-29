@@ -5,7 +5,7 @@
   "communication_settings": {
     "method_is_direct": true,
     "broker": "192.168.0.106",
-    "port": 1883
+    "port": 2000
 
   },
   "board_settings": {

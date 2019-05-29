@@ -90,6 +90,7 @@ class Messenger:
 
     def on_disconnect(self, client, userdata, flags, rc=0):
         self.log("Disconnected result code " + str(rc))
+        self.receiver.loop_stop()
 
     def on_message(self, client, userdata, msg):
         # global last_message
