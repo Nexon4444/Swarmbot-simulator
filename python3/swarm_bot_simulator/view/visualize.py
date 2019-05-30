@@ -37,7 +37,7 @@ class Visualizer:
         y = (600 * 0.8)
         x = (800 * 0.45)
         # bot_image = pygame.image.load(os.path.join('resources', 'car.png'))
-        print("visualization started")
+        logging.debug("visualization started")
         game_display = pygame.display.set_mode(self.size)
         pygame.draw.rect(game_display, Visualizer.black, (x, y, 100, 100))
         pygame.display.set_caption('Swarmbot visualization')

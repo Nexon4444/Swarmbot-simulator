@@ -12,7 +12,6 @@ import threading, queue
 import logging
 
 class Simulator:
-
     def __init__(self, config):
         self.id = 0
         self.config = config
@@ -23,7 +22,7 @@ class Simulator:
         #     bot_info_parsed.bot_id: BotInfo(bot_info_parsed=bot_info_parsed) for
         #     bot_info_parsed in config.bot_infos}
         # self.bots = [Bot(config, self.info_sent_events[bot_info.id], bot_info) for bot_info in config.bot_infos]
-        self.bots = [Bot(bot_info.bot_id, config) for bot_info in config.bot_infos]
+        self.bots = [Bot(bot_info.bot_id, config) for bot_info in config.bot_infos if bot_info.is_real is not True]
         self.messenger = Messenger("server", config.communication_settings.broker, config.communication_settings.port,
                                    mess_event=self.mess_event)
         for bot_info in config.bot_infos:
@@ -48,6 +47,7 @@ class Simulator:
         t_talk.join()
 
     def visualization_thread(self, q, board_activation_event: threading.Event()):
+        board_activation_event.wait()
         vis = Visualizer(self.config.board_settings, board_activation_event)
         stop = False
         vis.visualize(q)
@@ -99,11 +99,11 @@ class Simulator:
 
                     all_messages_received = False
                     end = time.time()
-                    log_flush("NOT ALL READY messages received from all bots, waiting for: ", start, end)
+                    logging.debug("NOT ALL READY messages received from all bots")
                     # logging.debug("NOT ALL READY messages received from all bots")
                     break
 
-            time.sleep(0.01)
+            time.sleep(0.1)
 
         print("\n")
         logging.debug("READY messages received from all bots")
@@ -142,7 +142,7 @@ class Simulator:
                     end = time.time()
                     log_flush("NOT ALL BOARD messages received from all bots: ", start, end)
                     break
-            time.sleep(0.01)
+            time.sleep(1)
 
         print("\n")
         logging.debug("BOARD messages received from all bots")
@@ -249,7 +249,7 @@ class Simulator:
     #         for bot in board.all_bots:
     #             bot.run()
     #         q.put(board)
-    #     logging.damount of testosteron on nofap
+    #     logging.
     def calculate_positions(self, bot_infos_dict):
         for key, bot_info in bot_infos_dict.items():
             self.board.bots_info[key] = bot_infos_dict[key]

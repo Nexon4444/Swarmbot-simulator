@@ -55,6 +55,7 @@ class Messenger:
 
         self.last_message_lock = Lock()
         self.cond = Condition()
+
         # self.last_messages = Queue.queue()
         self.listen()
         # print ("loop started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")

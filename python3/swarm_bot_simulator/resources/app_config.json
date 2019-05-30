@@ -31,7 +31,7 @@
       "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
-      "is_real": false,
+      "is_real": true,
       "speed": [
         5,
         1
