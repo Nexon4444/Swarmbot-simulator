@@ -1,5 +1,6 @@
 # from swarm_bot_simulator.model.board import *
-from typing import Dict, Any
+# from typing import Dict, Any
+import time
 
 from swarm_bot_simulator.controller.information_transfer import Message
 from swarm_bot_simulator.view.visualize import *
@@ -46,7 +47,7 @@ class Simulator:
 
         t_talk.join()
 
-    def visualization_thread(self, q, board_activation_event: threading.Event()):
+    def visualization_thread(self, q, board_activation_event):
         board_activation_event.wait()
         vis = Visualizer(self.config.board_settings, board_activation_event)
         stop = False
@@ -87,7 +88,7 @@ class Simulator:
         """
         start = time.time()
         all_messages_received = False
-        messages: Dict[int, Message] = dict()
+        messages = dict()
         while all_messages_received is False:
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)
@@ -111,7 +112,7 @@ class Simulator:
     def await_boards(self):
         start = time.time()
         all_messages_received = False
-        messages: Dict[int, Message] = dict()
+        messages = dict()
         while all_messages_received is False:
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)
@@ -131,7 +132,7 @@ class Simulator:
         received_messages = None
         start = time.time()
         all_messages_received = False
-        messages: Dict[int, Message] = dict()
+        messages = dict()
         while all_messages_received is False:
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)

@@ -1,6 +1,4 @@
-import asyncio
 import json
-import time
 # from swarm_bot_simulator.model.bot_components import MovementDataEncoder, MovementData, BotInfo, BotInfoEncoder, Vector, VectorEncoder
 from queue import Queue
 

@@ -145,22 +145,6 @@ class Control(object):
         print ("rturning")
         self.move_nonstop(1, 0.5, 1, 0, 1, 0)
 
-    # def move_front_until_sensor_act(self):
-    #     e = threading.Event()
-    #     con = Control()
-    #     # q = Queue()
-    #     # q.put(1)
-    #     # con.forward_nonstop()
-    #     # time.sleep(1)
-    #     # con.stop()
-    #     t = threading.Thread(target=self.movement_front_until_event, args=[con, e])
-    #     t2 = threading.Thread(target=self.get_sensor_info, args=[e])
-    #     t.start()
-    #     t2.start()
-    #
-    #     t.join()
-    #     t2.join()
-
     def measure_turn_rate(self, e, speed):
         # e = threading.Event()
         number_of_turns = 5
@@ -217,30 +201,10 @@ class Control(object):
         # t_measure.join()
         t_sensor.join()
 
-    # def get_sensor_info(self, q):
-    #     gpio = mraa.Gpio(Control.sensor_pin_id)
-    #     while (True):
-    #         s = gpio.read()
-    #         print s
-    #         q.put(s)
-    #
-    # def movement_front(self, q):
-    #     x = 0def activate_sensor_1lf(self):
         t_sensor_lf = threading.Thread(target=self.get_sensor_info, args=[self.sensor_event_1lf, 0, Control.sensor_1lf])
         t_sensor_lf.start()
         t_sensor_lf.join()
-    #     for i in range(0, 10):
-    #         if q.get() is 0:
-    #             exit()
-    #         print "q: " + q.get()
-    #         self.forward(float(1))
-    #         print "x =" + str(x)
-    #         x = x + 1
     def measure_line(self):
-        # print ("put robot on a calibration sheet, enter '1' to continue")
-        # entered = input("put robot on a calibration sheet, enter '1' to continue: ")
-        # while (entered is not 1):
-        #     entered = input("put robot on a calibration sheet, enter '1' to continue: ")
         q = Queue()
 
         e = threading.Event()
