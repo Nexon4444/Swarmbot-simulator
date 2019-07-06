@@ -527,6 +527,10 @@ class Vector:
         self.y = y
 
     def get_angle(self):
+        """
+        Counts the angle between vertical facing vector, and self vector
+        :return: returns angle in radians
+        """
         return math.atan2(self.x, self.y)
 
     def sub2Vector(self, vec1, vec2):

@@ -26,6 +26,7 @@ try:
                        broker=config.communication_settings.broker,
                        port=config.communication_settings.port,
                        mess_event=e)
+
     server.add_topic_to_send("1/receive")
     server.send(topic="1/receive", message=message)
 

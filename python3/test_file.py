@@ -1,83 +1,54 @@
-# Import a library of functions called 'pygame'
-import pygame
-from math import pi
+import numpy as np
+import cv2
+import time
+import requests
+import threading
+from threading import Thread, Event, ThreadError
 
-# Initialize the game engine
-pygame.init()
 
-# Define the colors we will use in RGB format
-BLACK = (0, 0, 0)
-WHITE = (255, 255, 255)
-BLUE = (0, 0, 255)
-GREEN = (0, 255, 0)
-RED = (255, 0, 0)
+class Cam():
 
-# Set the height and width of the screen
-size = [400, 300]
-screen = pygame.display.set_mode(size)
+    def __init__(self, url):
 
-pygame.display.set_caption("Example code for the draw module")
+        self.stream = requests.get(url, stream=True)
+        self.thread_cancelled = False
+        self.thread = Thread(target=self.run)
+        print ("camera initialised")
 
-# Loop until the user clicks the close button.
-done = False
-clock = pygame.time.Clock()
+    def start(self):
+        self.thread.start()
+        print ("camera stream started")
 
-while not done:
+    def run(self):
+        byte_struct = bytes("", 'utf-8')
+        while not self.thread_cancelled:
+            try:
+                byte_struct += self.stream.raw.read(1024)
+                a = byte_struct.find('\xff\xd8')
+                b = byte_struct.find('\xff\xd9')
+                if a != -1 and b != -1:
+                    jpg = byte_struct[a:b + 2]
 
-    # This limits the while loop to a max of 10 times per second.
-    # Leave this out and we will use all CPU we can.
-    clock.tick(10)
+                    byte_struct = byte_struct[b + 2:]
+                    img = cv2.imdecode(np.fromstring(jpg, dtype=np.uint8), cv2.IMREAD_COLOR)
+                    cv2.imshow('cam', img)
+                    if cv2.waitKey(1) == 27:
+                        exit(0)
+            except ThreadError:
+                self.thread_cancelled = True
 
-    for event in pygame.event.get():  # User did something
-        if event.type == pygame.QUIT:  # If user clicked close
-            done = True  # Flag that we are done so we exit this loop
+    def is_running(self):
+        return self.thread.isAlive()
 
-    # All drawing code happens after the for loop and but
-    # inside the main while done==False loop.
+    def shut_down(self):
+        self.thread_cancelled = True
+        # block while waiting for thread to terminate
+        while self.thread.isAlive():
+            time.sleep(1)
+        return True
 
-    # Clear the screen and set the screen background
-    screen.fill(WHITE)
 
-    # Draw on the screen a GREEN line from (0,0) to (50.75)
-    # 5 pixels wide.
-    pygame.draw.line(screen, GREEN, [0, 0], [50, 30], 5)
-
-    # Draw on the screen a GREEN line from (0,0) to (50.75)
-    # 5 pixels wide.
-    pygame.draw.lines(screen, BLACK, False, [[0, 80], [50, 90], [200, 80], [220, 30]], 5)
-
-    # Draw on the screen a GREEN line from (0,0) to (50.75)
-    # 5 pixels wide.
-    pygame.draw.aaline(screen, GREEN, [0, 50], [50, 80], True)
-
-    # Draw a rectangle outline
-    pygame.draw.rect(screen, BLACK, [75, 10, 50, 20], 2)
-
-    # Draw a solid rectangle
-    pygame.draw.rect(screen, BLACK, [150, 10, 50, 20])
-
-    # Draw an ellipse outline, using a rectangle as the outside boundaries
-    pygame.draw.ellipse(screen, RED, [225, 10, 50, 20], 2)
-
-    # Draw an solid ellipse, using a rectangle as the outside boundaries
-    pygame.draw.ellipse(screen, RED, [300, 10, 50, 20])
-
-    # This draws a triangle using the polygon command
-    pygame.draw.polygon(screen, BLACK, [[100, 100], [0, 200], [200, 200]], 5)
-
-    # Draw an arc as part of an ellipse.
-    # Use radians to determine what angle to draw.
-    pygame.draw.arc(screen, BLACK, [210, 75, 150, 125], 0, pi / 2, 2)
-    pygame.draw.arc(screen, GREEN, [210, 75, 150, 125], pi / 2, pi, 2)
-    pygame.draw.arc(screen, BLUE, [210, 75, 150, 125], pi, 3 * pi / 2, 2)
-    pygame.draw.arc(screen, RED, [210, 75, 150, 125], 3 * pi / 2, 2 * pi, 2)
-
-    # Draw a circle
-    pygame.draw.circle(screen, BLUE, [60, 250], 40)
-
-    # Go ahead and update the screen with what we've drawn.
-    # This MUST happen after all the other drawing commands.
-    pygame.display.flip()
-
-# Be IDLE friendly
-pygame.quit()
+if __name__ == "__main__":
+    url = 'http://192.168.0.108:8080/?action=stream'
+    cam = Cam(url)
+    cam.start()
