@@ -18,8 +18,13 @@ class ShapeDetector:
     # show_images = False
     show_images = True
 
-    def __init__(self):
-        pass
+    def __init__(self, config):
+        self.config = config
+        if config["camera_settings"]["launch_analysis_windows"] is True:
+            ShapeDetector.show_images = True
+        else:
+            ShapeDetector.show_images = False
+
 
     def angle(self, seg1, seg2, dist_point):
         Ax = seg1[0]
@@ -135,7 +140,7 @@ class ShapeDetector:
         board_img = np.zeros((800, 800, 3), np.uint8)
         cv2.drawContours(board_img, [box_contour], 0, (0, 255, 0), 3)
         cv2.drawContours(board_img, [triangle_contour], 0, (0, 0, 255), 3)
-        self.show_and_wait(board_img, "board")
+        self.show_and_wait(board_img, "board+marker visualized")
         return board_parameters, marker_parameters
 
     def create_contour_from_list(self, list_of_points):
@@ -227,7 +232,7 @@ class ShapeDetector:
         box = np.int0(box)
 
         rect_par = self.rectangle_params(box)
-
+        rect_par = (int(rect_par[0]), int(rect_par[1]))
         M = cv2.moments(box)
         cX = int((M["m10"] / M["m00"]))
         cY = int((M["m01"] / M["m00"]))
@@ -338,7 +343,7 @@ class ShapeDetector:
         # cv2.imshow('mask', mask)
         # cv2.imshow('res', res)
         eroded = cv2.erode(res, None, iterations=2)
-        self.show_and_wait(eroded, "eroded")
+        self.show_and_wait(eroded, "marker")
         gray = cv2.cvtColor(eroded, cv2.COLOR_BGR2GRAY)
         return gray
 
@@ -351,17 +356,19 @@ class ShapeDetector:
 
         blurred = cv2.GaussianBlur(eroded, (5, 5), 0)
         thresh = cv2.threshold(blurred, 80, 255, cv2.THRESH_BINARY)[1]
-        self.show_and_wait(thresh, "thresh")
+        self.show_and_wait(thresh, "board-thresh")
 
         return thresh
 
 
 class Camera:
-
+    def __init__(self, config):
+        self.config = config
+        self.photo_url = config["camera_settings"]["photo_url"]
+        self.shape_detector = ShapeDetector(config)
     def load_video(self):
-        url = "http://192.168.0.108:8080/shot.jpg"
         while True:
-            img_resp = requests.get(url=url)
+            img_resp = requests.get(url=self.photo_url)
             im_arr = np.array(bytearray(img_resp.content), dtype=np.uint8)
             img = cv2.imdecode(im_arr, -1)
             # newX, newY = img.shape[1], img.shape[0]
@@ -371,17 +378,30 @@ class Camera:
             if cv2.waitKey(1) == 27:
                 break
 
+    def load_photo(self, path=None):
+        if path is None:
+            img_resp = requests.get(url=self.photo_url)
+            im_arr = np.array(bytearray(img_resp.content), dtype=np.uint8)
+            img = cv2.imdecode(im_arr, -1)
+        else:
+            img = cv2.imread(path)
+
+        return self.analyze(img)
+
     def analyze(self, frame):
-        sd = ShapeDetector()
+        # sd = ShapeDetector()
         try:
-            print(str(sd.analyze_image(frame, 0.4)))
+            frame_data = self.shape_detector.analyze_image(frame, self.config["camera_settings"]["resize"])
+            print(str(frame_data))
+            return frame_data
         except ValueError as e:
             print("IMAGE ERROR")
             print(e)
 
 
-camera = Camera()
-camera.load_video()
+
+# camera = Camera()
+# camera.load_video()
 # v = Vector(-1, 0)
 # print(str(math.degrees(v.get_angle())))
 

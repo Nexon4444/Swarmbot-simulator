@@ -24,13 +24,15 @@ class Bot:
     view_cone = 60
 
     # def __init__(self, bot_info, info_sent_event, config):
-    def __init__(self, bot_id, config):
+    def __init__(self, bot_id, broker, port):
         self.bot_id = str(bot_id)
-        self.communication_settings = config.communication_settings
-        self.bot_settings = config.bot_settings
-        self.board_settings = config.board_settings
+        # self.communication_settings = config["communication_settings"]
+        # self.bot_settings = config["bot_settings"]
+        # self.board_settings = config["board_settings"]
+        self.bot_settings = None
+        self.board_settings = None
 
-        self.config = config
+        self.config = None
         self.bot_info = None
         self.bot_info_real = None
         self.bot_info_sensor = None
@@ -40,8 +42,8 @@ class Bot:
 
         self.mess_event = threading.Event()
         self.messenger = it.Messenger(name=str(bot_id),
-                                      broker=config.communication_settings.broker,
-                                      port=config.communication_settings.port,
+                                      broker=broker,
+                                      port=port,
                                       mess_event=self.mess_event)
 
         # self.messenger.subscribe(self.bot_info.bot_id)
@@ -67,8 +69,14 @@ class Bot:
         t_bot.start()
 
     def run(self):
+
+
         self.get_init_info_from_server()
         self.send_ready_to_server()
+
+        self.get_config_from_server()
+        self.send_ready_to_server()
+
         while True:
             self.get_info_from_server()
             self.send_ready_to_server()
@@ -124,6 +132,21 @@ class Bot:
         self.set_init_values(received.content.bots_info[str(self.bot_id)])
         self.mess_event.clear()
         # self.messenger.
+
+    def get_config_from_server(self):
+        self.mess_event.wait()
+        # bot_info = BotInfo()
+        received = self.messenger.get_last_message()
+        self.set_config_values(received.content)
+        # x = received.content.bots_info["1"]
+
+        # self.set_init_values(received.content.bots_info[str(self.bot_id)])
+        self.mess_event.clear()
+
+    def set_config_values(self, config):
+        self.config = config
+        self.bot_settings = config["bot_settings"]
+        self.board_settings = config["board_settings"]
 
     def set_init_values(self, bot_info):
         self.bot_info = copy.deepcopy(bot_info)
@@ -191,9 +214,9 @@ class Bot:
         # ali = self.alignment(visible_bots)
         coh = self.cohesion(visible_bots)
 
-        sep.mul_scalar(self.config.bot_settings.sep_mul)
+        sep.mul_scalar(self.config["bot_settings"]["sep_mul"])
         # ali.mul_scalar(self.bot_settings.ali_mul)
-        coh.mul_scalar(self.config.bot_settings.coh_mul)
+        coh.mul_scalar(self.config["bot_settings"]["coh_mul"])
 
         self.apply_force(sep)
         # self.apply_force(ali)
@@ -221,7 +244,7 @@ class Bot:
     def separation_steer(self, bot, dist, steer, visible_bots):
         # self.distance()
         # diff = Vector2(0, 0)
-        if self.bot_settings.separation_distance < dist:
+        if self.bot_settings["separation_distance"] < dist:
             return Vector(0, 0)
 
         diff_vec = self.points2vector(bot)
@@ -237,9 +260,9 @@ class Bot:
             steer.div_scalar(len(visible_bots))
         if steer.magnitude() > 0:
             steer.normalize()
-            steer.mul_scalar(self.bot_settings.max_speed)
+            steer.mul_scalar(self.bot_settings["max_speed"])
             steer.sub_vector(self.bot_info.speed)
-            steer.limit(self.bot_settings.max_force)
+            steer.limit(self.bot_settings["max_force"])
 
     def points2vector(self, bot_info):
         diff_poz = Point(bot_info.position.x - self.bot_info.position.x,
@@ -263,7 +286,7 @@ class Bot:
         # return Vector(0, 0)
 
     def cohesion_steer(self, bot, dist, steer, visible_bots):
-        if dist > self.bot_settings.cohesion_distance:
+        if dist > self.bot_settings["cohesion_distance"]:
             return steer
 
         steer.add_vector(self.points2vector(bot))
@@ -329,8 +352,8 @@ class Bot:
         :type model: Board
         :return:
         '''
-        assert isinstance(self.bot_settings.view_is_omni, bool)
-        if self.bot_settings.view_is_omni is True:
+        assert isinstance(self.bot_settings["view_mode_is_omni"], bool)
+        if self.bot_settings["view_mode_is_omni"] is True:
             all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in self.board.bots_info.items()
                            if bot_info.bot_id != self.bot_info.bot_id}
             return all_bots_cp
@@ -361,22 +384,22 @@ class Bot:
         desired = Vector(0, 0)
         desired.add_vector(vec)
         desired.normalize()
-        desired.mul_scalar(self.bot_settings.max_speed)
+        desired.mul_scalar(self.bot_settings["max_speed"])
         desired.sub_vector(self.bot_info.speed)
-        desired.limit(self.bot_settings.max_force)
+        desired.limit(self.bot_settings["max_force"])
         # desired.invert()
         return desired
 
     def borders(self):
         next_pos = self.bot_info.position + self.bot_info.speed
-        if next_pos.in_borders(Vector(self.board_settings.border_x, self.board_settings.border_y)) is False:
+        if next_pos.in_borders(Vector(self.board_settings["border_x"], self.board_settings["border_y"])) is False:
             self.stop()
 
     def update(self):
         self.bot_info.acceleration.mul_scalar(1)
 
         self.bot_info.speed.add_vector(self.bot_info.acceleration)
-        self.bot_info.speed.limit(self.bot_settings.max_speed)
+        self.bot_info.speed.limit(self.bot_settings["max_speed"])
         self.bot_info.position.add_vector(self.bot_info.speed)
         self.bot_info.acceleration.mul_scalar(0)
 
@@ -397,6 +420,7 @@ class Bot:
                 + "\naccel: " + str(self.bot_info.acceleration)
                 + "\ndir: " + str(self.bot_info.dir))
 
+
 class BotInfo:
     size_x = 20
     size_y = 20
@@ -404,13 +428,13 @@ class BotInfo:
     # def __init__(self, bot_info_parsed, config):
     def __init__(self, bot_info_parsed=None):
         if bot_info_parsed is not None:
-            self.is_real = bot_info_parsed.is_real
-            self.bot_id = bot_info_parsed.bot_id
-            self.dir = float(bot_info_parsed.direction)
-            self.position = Vector(float(bot_info_parsed.poz_x), float(bot_info_parsed.poz_y))
+            self.is_real = bot_info_parsed["is_real"]
+            self.bot_id = bot_info_parsed["bot_id"]
+            self.dir = float(bot_info_parsed["direction"])
+            self.position = Vector(float(bot_info_parsed["poz_x"]), float(bot_info_parsed["poz_y"]))
             self.acceleration = Vector(0, 0)
-            self.speed = Vector(bot_info_parsed.speed[0], bot_info_parsed.speed[1])
-
+            self.speed = Vector(bot_info_parsed["speed"][0], bot_info_parsed["speed"][1])
+            self.color = bot_info_parsed["color"]
         else:
             self.is_real = None
             self.bot_id = None
@@ -418,6 +442,7 @@ class BotInfo:
             self.position = None
             self.acceleration = None
             self.speed = None
+            self.color = None
 
     def from_dict(self, bot_info_dict):
         self.is_real = bot_info_dict["is_real"]
@@ -435,6 +460,7 @@ class BotInfo:
         speed = Vector()
         speed.list2vector(bot_info_dict["speed"])
         self.speed = speed
+        self.color = bot_info_dict["color"]
 
     def serialize(self):
         message = {
@@ -459,7 +485,8 @@ class BotInfoEncoder(JSONEncoder):
                 "dir": o.dir,
                 "position": [o.position.x, o.position.y],
                 "speed": [o.speed.x, o.speed.y],
-                "acceleration": [o.acceleration.x, o.acceleration.y]
+                "acceleration": [o.acceleration.x, o.acceleration.y],
+                "color": o.color
             }
         else:
             return json.JSONEncoder.default(self, o)
@@ -633,8 +660,8 @@ class Board:
     def __init__(self, config=None):
         if config is not None:
             self.bots_info = {
-                bot_info_parsed.bot_id: BotInfo(bot_info_parsed=bot_info_parsed) for
-                bot_info_parsed in config.bot_infos}
+                bot_info_parsed["bot_id"]: BotInfo(bot_info_parsed=bot_info_parsed) for
+                bot_info_parsed in config["bots"]}
         else:
             self.bots_info = None
 

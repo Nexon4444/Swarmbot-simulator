@@ -69,13 +69,13 @@ class Messenger:
         # self.client.subscribe(str("1/main").decode("UTF-8"))
 
     def on_subscribe(self, client, userdata, mid, granted_qos):
-        self.log("\n===========================\nSubscribed: " + str(client) + "\n===========================")
+        self.log("Subscribed: " + str(client) + "")
 
     def add_topic_to_send(self, topic):
         self.client_topics.append(topic)
 
     def add_client(self, bot_info):
-        self.add_topic_to_send(self.create_topic(bot_info.bot_id, "receive"))
+        self.add_topic_to_send(self.create_topic(bot_info["bot_id"], "receive"))
 
     def on_log(self, client, userdata, level, buf):
         self.log(str(self.name) + " log: " + str(buf) + " ")
@@ -83,7 +83,8 @@ class Messenger:
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
             # client.connected_flag = True  # set flag
-            self.log("connected OK")
+            pass
+            # self.log("connected OK")
         else:
             self.log("Bad connection Returned code=", rc)
 
@@ -148,7 +149,14 @@ class Messenger:
         # mess_type = message_dict["type"]
         # if mess_type is MTYPE.BOT_INFO:
         #     return Message(mess_type, BotInfo(json_loaded))
-        return Message(message_dict["id"], Messenger.get_message_type_from_string(message_dict["type"]),
+        logging.debug('mess_str: ' + str(mess_str))
+        logging.debug('message_dict: ' + str(message_dict))
+        # logging.debug('message_dict["id"]: ' + str(message_dict["id"]))
+        logging.debug('Messenger.get_message_type_from_string(message_dict["type"]): ' + str(Messenger.get_message_type_from_string(message_dict["type"])))
+        logging.debug('json_loaded: ' + str(json_loaded))
+
+        return Message(message_dict["id"],
+                       Messenger.get_message_type_from_string(message_dict["type"]),
                        json_loaded)
 
     def create_topic(self, *args):
@@ -174,7 +182,8 @@ class Messenger:
         if self.receiver.last_messages:
             with self.last_message_lock:
                 # print(self.receiver.last_messages.get())
-                return Messenger.create_message_from_string(self.receiver.last_messages.get())
+                received = self.receiver.last_messages.get()
+                return Messenger.create_message_from_string(received)
         else:
             return None
 
@@ -184,6 +193,8 @@ class Messenger:
 
         self.sender.disconnect()
 
+class ID:
+    ALL = 0
 class MTYPE:
     BOARD = "BOARD"
     BOT_INFO = "BOT_INFO"
@@ -192,6 +203,7 @@ class MTYPE:
     MACRO = "MACRO"
     ALGORITHM_COMMAND = "ALGORITHM_COMMAND"
     SERVER = "SERVER"
+    CONFIG = "CONFIG"
 
 class MSIMPLE:
     FORWARD = "FORWARD"
@@ -232,6 +244,11 @@ class Message:
             board.from_dict(content)
             content = board
 
+        # elif isinstance(content, dict) and type == MTYPE.CONFIG:
+        #     config = content
+            # board.from_dict(content)
+            # content = board
+
         self.id = id
         self.content = content
         self.type = type
@@ -271,6 +288,12 @@ class MessageEncoder(json.JSONEncoder):
                     "message": mde.encode(o.content)
                 }
             elif isinstance(o.content, str):
+                return {
+                    "id": o.id,
+                    "type": o.type,
+                    "message": json.dumps(o.content)
+                }
+            elif isinstance(o.content, dict):
                 return {
                     "id": o.id,
                     "type": o.type,

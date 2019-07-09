@@ -3,20 +3,52 @@ import json
 import subprocess
 import warnings
 import os
-
+import subprocess
 from swarm_bot_simulator.controller.simulator import Simulator
+from swarm_bot_simulator.controller.camera import Camera
 from swarm_bot_simulator.model.config import *
 from swarm_bot_simulator.view.visualize import *
 from swarm_bot_simulator.model.bot_components import *
-from
+from swarm_bot_simulator.resources.config import config
 
-app_config = None
+mosquitto_path = os.path.join(config["communication_settings"]["server_path"])
+port = config["communication_settings"]["port"]
+# os.system("cmd")
+# os.system(str(mosquitto_path) + str (" -p ") + str(port))
+subprocess.Popen([str(mosquitto_path), "-p", str(port)])
+# subprocess.Popen([ls, "-p", port])
 
-with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") as f:
-    app_config = json.load(f)
+config = config
+config_dumped = json.dumps(config)
+print(config_dumped)
+config_loaded = json.loads(config_dumped)
 
-print(app_config)
-config = Config(app_config)
+img_path = "E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\python3\\swarm_bot_simulator\\resources\\trojkat.jpg"
+camera = Camera(config)
+photo_params = camera.load_photo(img_path)
+board_params = photo_params[0]
+board_width = board_params[1][0]
+board_height = board_params[1][1]
+
+marker_params = photo_params[1]
+marker_poz_x = marker_params[0][0]
+marker_poz_y = marker_params[0][1]
+marker_direction = marker_params[1]
+
+if config["bots"][0]["is_real"] is True:
+    config["bots"][0]["direction"] = marker_direction
+    config["bots"][0]["poz_x"] = marker_poz_x
+    config["bots"][0]["poz_y"] = marker_poz_y
+
+config["board_settings"] = {}
+config["board_settings"]["border_x"] = board_width
+config["board_settings"]["border_y"] = board_height
+
+# with open(os.path.join("resources", "app_config.json"), "r", encoding="utf-8") as f:
+#     app_config = json.load(f)
+
+print(config)
+# config = Config(app_config)
 # config.swarm_bots[0].messenger.subscribe(topic="test") #, message="test dzialaj")
 # config.swarm_bots[0].movement.move_prim(5)
 try:

@@ -22,7 +22,7 @@ class Visualizer:
 
     def __init__(self, board_settings, board_activation_event: Event):
         # self.board = board
-        self.size = [board_settings.border_x, board_settings.border_y]
+        self.size = [board_settings["border_x"], board_settings["border_y"]]
         self.game_display = pygame.display.set_mode(self.size)
         self.board_activation_event = board_activation_event
 
@@ -75,12 +75,15 @@ class Visualizer:
 
 
 class BotImage:
-    blue = (0, 0, 204)
-    BLACK = (0, 0, 0)
-    WHITE = (255, 255, 255)
-    BLUE = (0, 0, 255)
-    GREEN = (0, 255, 0)
-    RED = (255, 0, 0)
+    COLOURS = {
+        "BLACK": (0, 0, 0),
+        "WHITE": (1, 1, 1),
+        "BLUE": (0, 0, 1),
+        "GREEN": (0, 1, 0),
+        "RED": (1, 0, 0),
+        "YELLOW": (1, 1, 0),
+        "ORANGE": (1, 0.6, 0)
+    }
 
     def __init__(self, bot_info, game_display):
         # self.image_orginal = image
@@ -91,6 +94,7 @@ class BotImage:
         self.size_x = BotInfo.size_x
         self.size_y = BotInfo.size_y
         self.game_display = game_display
+        self.color = BotImage.COLOURS[bot_info.color]
 
     def change_poz(self, x, y, dir):
         self.position.x = self.position.x + x
@@ -118,13 +122,13 @@ class BotImage:
 
         surface = cairo.ImageSurface(cairo.FORMAT_ARGB32, WIDTH, HEIGHT)
         cr = cairo.Context(surface)
-        cr.set_source_rgb(0, 0, 1)
+        cr.set_source_rgb(self.color[0], self.color[1], self.color[2])
         cr.translate(WIDTH / 2, HEIGHT / 2)
         cr.scale(WIDTH, HEIGHT)
         cr.rotate(dir)
         cr.rectangle(-0.2, -0.3, 0.4, 0.6)
         cr.fill()
-        cr.set_source_rgb(1, 0, 0)
+        cr.set_source_rgb(BotImage.COLOURS["ORANGE"][0], BotImage.COLOURS["ORANGE"][1], BotImage.COLOURS["ORANGE"][2])
         cr.rectangle(0.2, 0.05, 0.1, 0.2)
         cr.fill()
         cr.rectangle(-0.2, 0.05, -0.1, 0.2)
