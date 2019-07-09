@@ -1,20 +1,22 @@
-{
+config = {
+
   "view_settings":{
-    "launch": true
+    "launch": True
   },
   "communication_settings": {
-    "method_is_direct": true,
-    "broker": "192.168.0.103",
+    "method_is_direct": True,
+    "server_path": "E:\\mosquitto\\mosquitto.exe",
+    "broker": "localhost",
     "port": 2000
 
   },
   "camera_settings": {
-    "border_x": 800,
-    "border_y": 600,
-
+    "photo_url": "http://192.168.0.108:8080/shot.jpg",
+    "launch_analysis_windows": True,
+    "resize": 0.5
   },
   "bot_settings": {
-    "view_mode_is_omni": true,
+    "view_mode_is_omni": True,
     "separation_distance": 100,
     "alignment_distance": 200,
     "cohesion_distance": 200,
@@ -32,23 +34,25 @@
       "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
-      "is_real": true,
+      "is_real": False,
       "speed": [
         5,
         1
       ],
-      "direction": 0
+      "color": "RED",
+      "direction": 180
     },
     {
       "bot_id": "2",
       "poz_x": 150,
       "poz_y": 200,
-      "is_real": false,
+      "is_real": False,
       "speed": [
         4,
         1
       ],
-      "direction": 0
+      "color": "BLUE",
+      "direction": 180
     }
   ]
 }
