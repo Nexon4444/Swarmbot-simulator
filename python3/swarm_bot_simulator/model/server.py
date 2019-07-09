@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 # import paho.mqtt.client as mqtt
-import time
-
-from swarm_bot_simulator.controller.information_transfer import Messenger
-'''
-aby uruchomić serwis należy uruchomić broker mosquitto
-E:\Program Files\mosquitto 
-'''
-class Server:
-    def __init__(self, config):
-        self.name = "server"
-        self.bot_n = config.bot_n
-        self.all_bot_info = config.start_bots
-        self.config = config
-        self.messenger = None
-
-    def print_all_info(self):
-        for bot_info in self.all_bot_info:
-            print(str(bot_info.id) + str(bot_info.poz_x) + str(bot_info.poz_y) + str(bot_info.direction))
-
-    def get_info(self):
-        return self.all_bot_info
-
-    def initialize_comm(self):
-        self.messenger = Messenger(self.name, self.config.communication_settings)
-
+# import time
+#
+# from swarm_bot_simulator.controller.information_transfer import Messenger
+# '''
+# aby uruchomić serwis należy uruchomić broker mosquitto
+# E:\Program Files\mosquitto
+# '''
+# class Server:
+#     def __init__(self, config):
+#         self.name = "server"
+#         self.bot_n = config.bot_n
+#         self.all_bot_info = config.start_bots
+#         self.config = config
+#         self.messenger = None
+#
+#     def print_all_info(self):
+#         for bot_info in self.all_bot_info:
+#             print(str(bot_info.id) + str(bot_info.poz_x) + str(bot_info.poz_y) + str(bot_info.direction))
+#
+#     def get_info(self):
+#         return self.all_bot_info
+#
+#     def initialize_comm(self):
+#         self.messenger = Messenger(self.name, self.config.communication_settings)
+#
 
     #
     # def on_log(self, client, userdata, level, buf):
