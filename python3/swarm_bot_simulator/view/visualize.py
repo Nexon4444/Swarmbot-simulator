@@ -1,8 +1,8 @@
 import pygame
-# import cairocffi as cairo
+import cairocffi as cairo
 import os
 from pathlib import Path
-import cairo
+# from gi.repository import cairo
 from math import pi
 from PIL import Image
 from threading import Event
@@ -110,7 +110,8 @@ class BotImage:
             img = Image.frombuffer(
                 'RGBA', (cairo_surface.get_width(),
                          cairo_surface.get_height()),
-                cairo_surface.get_data().tobytes(), 'raw', 'BGRA', 0, 1)
+                bytes(cairo_surface.get_data()), 'raw', 'BGRA', 0, 1)
+                # cairo_surface.get_data().tobytes(), 'raw', 'BGRA', 0, 1)
 
             return img.tobytes('raw', 'RGBA', 0, 1)
         return pygame.image.frombuffer(

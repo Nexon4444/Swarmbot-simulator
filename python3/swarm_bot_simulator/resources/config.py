@@ -12,7 +12,7 @@ config = {
   },
   "camera_settings": {
     "photo_url": "http://192.168.0.108:8080/shot.jpg",
-    "launch_analysis_windows": True,
+    "launch_analysis_windows": False,
     "resize": 0.5
   },
   "bot_settings": {
@@ -27,7 +27,22 @@ config = {
     "coh_mul": 1.0,
 
     "max_speed": 5,
-    "max_force": 1
+    "max_force": 1,
+
+    "width": 20,
+    "height": 40,
+
+    "left_motor": (-9, -15),
+    "right_motor": (-9, 15),
+    "center_mass": (0, 0),
+    "mass": 200,
+    "inertia": "SQUARE"
+
+
+
+
+
+
   },
   "bots": [
     {

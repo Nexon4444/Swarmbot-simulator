@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
 # if sys.version_info 
-from Queue import Queue
+from queue import Queue
 
 class Control(object):
     sensor_1lf = 45

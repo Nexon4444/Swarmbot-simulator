@@ -7,15 +7,14 @@ import subprocess
 from swarm_bot_simulator.controller.simulator import Simulator
 from swarm_bot_simulator.controller.camera import Camera
 from swarm_bot_simulator.model.config import *
-from swarm_bot_simulator.view.visualize import *
-from swarm_bot_simulator.model.bot_components import *
 from swarm_bot_simulator.resources.config import config
 
-mosquitto_path = os.path.join(config["communication_settings"]["server_path"])
-port = config["communication_settings"]["port"]
+def launch_mosquitto(port):
+    subprocess.Popen(["mosquitto", "-p", str(port)])
+launch_mosquitto(config["communication_settings"]["port"])
 # os.system("cmd")
 # os.system(str(mosquitto_path) + str (" -p ") + str(port))
-subprocess.Popen([str(mosquitto_path), "-p", str(port)])
+
 # subprocess.Popen([ls, "-p", port])
 
 config = config
@@ -23,7 +22,7 @@ config_dumped = json.dumps(config)
 print(config_dumped)
 config_loaded = json.loads(config_dumped)
 
-img_path = "E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\python3\\swarm_bot_simulator\\resources\\trojkat.jpg"
+img_path = "/home/nexon/Projects/Swarmbot-simulator/python3/swarm_bot_simulator/resources/trojkat.jpg"
 camera = Camera(config)
 photo_params = camera.load_photo(img_path)
 board_params = photo_params[0]

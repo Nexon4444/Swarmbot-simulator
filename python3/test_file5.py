@@ -1,27 +1,28 @@
-import threading
+import pymunk
 import time
-import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='(%(threadName)-10s) %(message)s',
-                    )
+space = pymunk.Space()
+# space.gravity = (0, -200)
+mass = 50
+poly_square = pymunk.Poly.create_box(None, size=(50, 50))
+poly_moment = pymunk.moment_for_poly(mass, poly_square.get_vertices())
+poly_body = pymunk.Body()
+poly_square = poly_body
+poly_body.position = 250, 100
 
-e = threading.Event()
-def func():
-    for i in range(0, 100):
-        e.wait()
-        print("1")
-        e.clear()
+poly_body.mass = 200
+poly_body.moment = 500
+poly_body.position = 50, 50
 
-def allow():
-    for i in range(0, 100):
-        e.set()
-        time.sleep(1)
+space.add(poly_body)
 
-t1 = threading.Thread(target=func)
-t2 = threading.Thread(target=allow)
 
-t1.start()
-t2.start()
 
-t1.join()
-t2.join()
+while True:
+    space.step(0.02)
+    poly_square.apply_force_at_local_point((0, 300), (-10, 0))
+    # poly_body.force = 0, 200
+    print(poly_body.position)
+    print(poly_body.angle)
+    print(poly_body.force)
+    print("\n")
+    time.sleep(0.5)

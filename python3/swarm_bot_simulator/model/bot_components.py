@@ -17,6 +17,8 @@ import swarm_bot_simulator.controller.information_transfer as it
 import math
 import copy
 import threading
+from math import cos, sin
+from swarm_bot_simulator.model.physical import PhysicalCalculator
 
 class Bot:
     # last_id = 0
@@ -69,8 +71,6 @@ class Bot:
         t_bot.start()
 
     def run(self):
-
-
         self.get_init_info_from_server()
         self.send_ready_to_server()
 
@@ -85,13 +85,30 @@ class Bot:
 
             self.flock()
             self.borders()
+            self.move()
             self.update()
-            # self.update_board_info()
             self.send_bot_info_to_server()
             # self.send_board_to_server()
 
             # self.send_info_to_server()
         # return self.bot_info
+
+    def move(self):
+        if self.config["bots"]["is_real"] is True:
+            self.orientiate()
+        else:
+            self.mock_orientiate()
+            # self.mock_front()
+
+    def orientiate(self):
+        calc = PhysicalCalculator()
+        self.bot_info_achieved = calc.calculate(self.bot_info.get_data_to_calc())
+        
+    def mock_turn(self, dir):
+        pass
+
+    def mock_front(self, length):
+        pass
 
     def send_board_to_server(self):
         mes = it.Message(id=self.bot_id, type=it.MTYPE.BOARD, content=self.board)
@@ -197,8 +214,8 @@ class Bot:
     def designate_coords(self):
         self.update_data()
 
-    def move(self, vec):
-        self.bot_info.position.add_vector(vec)
+    # def move(self, vec):
+    #     self.bot_info.position.add_vector(vec)
         # self.update_data()
 
     def calibrate(self):
@@ -420,12 +437,10 @@ class Bot:
                 + "\naccel: " + str(self.bot_info.acceleration)
                 + "\ndir: " + str(self.bot_info.dir))
 
-
 class BotInfo:
     size_x = 20
     size_y = 20
 
-    # def __init__(self, bot_info_parsed, config):
     def __init__(self, bot_info_parsed=None):
         if bot_info_parsed is not None:
             self.is_real = bot_info_parsed["is_real"]
@@ -491,20 +506,111 @@ class BotInfoEncoder(JSONEncoder):
         else:
             return json.JSONEncoder.default(self, o)
 
+class Line:
+    def __init__(self, A, B, C):
+        self.A = A
+        self.B = B
+        self.C = C
+
+    def turn(self, turn_point, degrees):
+        A = self.A
+        B = self.B
+        C = self.C
+
+        x0 = turn_point[0]
+        y0 = turn_point[1]
+
+        x1 = cos(degrees)*x0 - sin(degrees)*y0
+        y1 = sin(degrees)*x0 + cos(degrees)*y0
+
+
+        # theta = math.atan(B/A)
+        # beta = theta+degrees
+        #
+        # p = -C/math.sqrt(A**2 + B**2)
+        # pnew = p + x0*(math.cos(beta)-math.cos(theta)) + y0 * (math.sin(beta)-math.sin(theta))
+        # x=3
+
+
+    def get_point_a_length_away_from(self, point, distance):
+        xp = point[0]
+        yp = point[1]
+
+        r = distance
+
+        A = self.A
+        B = self.B
+        C = self.C
+
+        if A != 0:
+            a = B**2/A**2+1
+            b = 2*C*B/A**2+2*B*xp/A-2*yp
+            c = C**2/A**2+2*C*xp/A + xp ** 2 + yp ** 2 - r ** 2
+
+            delta = b**2-4*a*c
+            y1 = (-b-math.sqrt(delta))/(2*a)
+            y2 = (-b+math.sqrt(delta))/(2*a)
+
+            x1 = -(C+B*y1)/A
+            x2 = -(C+B*y2)/A
+
+        else:
+            a = 1
+            b = -2*xp
+            c = xp**2 + C**2/B**2 + 2*C/B*yp + yp**2*(C/B+yp)**2+yp**2-r**2
+
+            delta = b ** 2 - 4 * a * c
+            x1 = (-b - math.sqrt(delta)) / (2 * a)
+            x2 = (-b + math.sqrt(delta)) / (2 * a)
+
+            y1 = y2 = -C/B
+
+        return [(x1, y1), (x2, y2)]
+
 class Vector:
-    def __init__(self, x=None, y=None):
-        self.x = x
-        self.y = y
+    def __init__(self, *args):
+        args = list(args)
+        if len(args) == 2:
+            self.x = args[0]
+            self.y = args[1]
+        elif len(args) == 3:
+            self.points_direction2vector(args[0], args[1], args[2])
         # self.y = y
 
     def list2vector(self, vector_list):
         self.x = vector_list[0]
         self.y = vector_list[1]
 
+    def points_direction2vector(self, direction, point1, point2):
+        x1, y1 = point1
+        x2, y2 = point2
+
+        A = y2 - y1
+        B = -(x2 - x1)
+        C = y1*x2 - x1*y2
+
+        vec = Vector(A, B)
+
+        if Vector.almost_equals(vec.get_angle(), direction, math.pi/2):
+            self.set_xy(vec.x, vec.y)
+        else:
+            vec.invert()
+            self.set_xy(vec.x, vec.y)
+
+    def get_perpendicular_line_equation(self, point):
+        x = point[0]
+        y = point[1]
+
+        A = self.x
+        B = self.y
+        C = -(A*x + B*y)
+
+        return Line(A, B, C)
+
     def div_scalar(self, scalar):
         self.x = self.x / scalar
         self.y = self.y / scalar
-        # , self.vec.y / scalar)
+    # , self.vec.y / scalar)
 
     def add_vector(self, vec):
         self.x = self.x + vec.x
@@ -586,6 +692,14 @@ class Vector:
 
     def __str__(self):
         return '[' + str(self.x) + ", " + str(self.y) + ']'
+
+    @staticmethod
+    def almost_equals(val1, val2, span):
+        if val1 <= val2 + span and val1 >= val2 - span:
+            return True
+
+        else:
+            return False
 
     # def __default(self):
     #     return self.__dict__
@@ -706,3 +820,7 @@ class BoardEncoder(JSONEncoder):
             }
         else:
             return json.JSONEncoder.default(self, o)
+
+l = Line(0.0, 1, 0)
+print(str(l.get_point_a_length_away_from((0, 0), math.sqrt(1))))
+l.turn((0, 0), math.pi/2)

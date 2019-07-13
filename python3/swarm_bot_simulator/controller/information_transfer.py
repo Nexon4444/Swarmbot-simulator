@@ -2,7 +2,7 @@ import json
 # from swarm_bot_simulator.model.bot_components import MovementDataEncoder, MovementData, BotInfo, BotInfoEncoder, Vector, VectorEncoder
 from queue import Queue
 
-import swarm_bot_simulator.model.bot_components as comp
+# import swarm_bot_simulator.model.bot_components as comp
 # import MovementDataEncoder, MovementData, BotInfo, BotInfoEncoder, Vector, VectorEncoder
 from threading import *
 import paho.mqtt.client as mqtt
@@ -224,6 +224,7 @@ class MSERVER:
 
 class Message:
     def __init__(self, id, type, content):
+        import swarm_bot_simulator.model.bot_components as comp
         # from model.board import BoardEncoder
         # from model.bot_components import MovementDataEncoder
         # if type is MTYPE.BOARD:
@@ -258,6 +259,7 @@ class Message:
 
 class MessageEncoder(json.JSONEncoder):
     def default(self, o):
+        import swarm_bot_simulator.model.bot_components as comp
         be = comp.BoardEncoder()
         mde = comp.MovementDataEncoder()
         bie = comp.BotInfoEncoder()
