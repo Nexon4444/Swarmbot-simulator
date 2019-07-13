@@ -16,7 +16,7 @@ class PhysicalCalculator:
 
 
     def calculate(self, speed, force, time):
-
+        pass
         # dp = time*speed_right
         # dl = time*speed_left
         #

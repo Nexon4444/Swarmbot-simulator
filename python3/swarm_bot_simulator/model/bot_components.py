@@ -94,6 +94,7 @@ class Bot:
         # return self.bot_info
 
     def move(self):
+        return
         if self.config["bots"]["is_real"] is True:
             self.orientiate()
         else:
