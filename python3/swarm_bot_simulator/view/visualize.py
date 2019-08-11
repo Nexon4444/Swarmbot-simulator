@@ -14,11 +14,8 @@ import logging
 
 class Visualizer:
     log = True
-    # width = 20
-    # height = 20
     black = (0, 0, 0)
     white = (255, 255, 255)
-    # size = [800, 600]
 
     def __init__(self, board_settings, board_activation_event: Event):
         # self.board = board

@@ -1,6 +1,8 @@
+import pyglet
 import pymunk
 import time
 space = pymunk.Space()
+
 # space.gravity = (0, -200)
 mass = 50
 poly_square = pymunk.Poly.create_box(None, size=(50, 50))
@@ -16,6 +18,7 @@ poly_body.position = 50, 50
 space.add(poly_body)
 
 
+window = pyglet.window.Window(1280, 720, "SimulatedBot Visualizer", resizable=False)
 
 while True:
     space.step(0.02)
@@ -26,3 +29,7 @@ while True:
     print(poly_body.force)
     print("\n")
     time.sleep(0.5)
+
+
+if __name__ == "__main__":
+    pyglet.clock.s

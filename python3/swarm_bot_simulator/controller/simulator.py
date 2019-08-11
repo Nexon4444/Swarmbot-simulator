@@ -151,6 +151,14 @@ class Simulator:
         logging.debug("BOARD messages received from all bots")
         return received_messages
 
+    # def send_order(self, order):
+    #     me = MessageEncoder()
+    #
+    #     if order == "continue":
+    #         encoded_string = me.encode(Message(self.id, MTYPE.ALGORITHM_COMMAND, MALGORITHM_COMMAND.CONTINUE))
+    #         self.messenger.send(message=encoded_string)
+    #     else
+
     def send_continue(self):
         me = MessageEncoder()
         encoded_string = me.encode(Message(self.id, MTYPE.ALGORITHM_COMMAND, MALGORITHM_COMMAND.CONTINUE))
@@ -200,4 +208,7 @@ class Simulator:
 
     def visualize_data(self, q):
         q.put(self.board)
+
+    def simulate_simple_movement(self):
+        pass
 

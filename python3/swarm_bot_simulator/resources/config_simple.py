@@ -1,6 +1,6 @@
 config = {
   "simulation_settings":{
-    "simple_commands": False
+    "simple_commands": True
   },
   "view_settings":{
     "launch": True
@@ -34,6 +34,8 @@ config = {
     "width": 20,
     "height": 40,
 
+    "time_distance_ratio": 0.1,
+
     "left_motor": (-9, -15),
     "right_motor": (-9, 15),
     "center_mass": (0, 0),
@@ -51,6 +53,12 @@ config = {
         5,
         1
       ],
+
+      "orders": [
+      ("FORWARD", 50)
+      ],
+
+
       "color": "RED",
       "direction": 180
     },
@@ -62,6 +70,9 @@ config = {
       "speed": [
         4,
         1
+      ],
+      "orders": [
+      ("FORWARD", 50)
       ],
       "color": "BLUE",
       "direction": 180

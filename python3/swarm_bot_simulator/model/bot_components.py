@@ -1,9 +1,10 @@
 # from swarm_bot_simulator.model.config import PozInfo
 import json
-
+from enum import Enum
 import logging
 from ast import literal_eval
 from json import JSONEncoder
+from swarm_bot_simulator.utilities.util import Vector, VectorEncoder
 logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
@@ -18,7 +19,14 @@ import math
 import copy
 import threading
 from math import cos, sin
-from swarm_bot_simulator.model.physical import PhysicalCalculator
+from swarm_bot_simulator.model.physical import SimulatedBot
+import swarm_bot_simulator.controller.hardware as hardware
+
+class Commands:
+    FORWARD = "FORWARD"
+    TURN = "TURN"
+
+
 
 class Bot:
     # last_id = 0
@@ -27,7 +35,7 @@ class Bot:
 
     # def __init__(self, bot_info, info_sent_event, config):
     def __init__(self, bot_id, broker, port):
-        self.bot_id = str(bot_id)
+        self.id = str(bot_id)
         # self.communication_settings = config["communication_settings"]
         # self.bot_settings = config["bot_settings"]
         # self.board_settings = config["board_settings"]
@@ -38,6 +46,7 @@ class Bot:
         self.bot_info = None
         self.bot_info_real = None
         self.bot_info_sensor = None
+        self.simulated_bot = None
         # self.info_sent_event = info_sent_event
         # self.bot_info_seBotInfo(parsed_bot_info, config.bot_settings)
         # self.bot_info_real = BotInfo(parsed_bot_info, config.bot_settings)
@@ -77,6 +86,36 @@ class Bot:
         self.get_config_from_server()
         self.send_ready_to_server()
 
+        if self.config["simulation_settings"]["simple_commands"] is True:
+            self.run_flocking_algorithm()
+        else:
+            self.run_simple()
+            # self.send_board_to_server()
+
+            # self.send_info_to_server()
+        # return self.bot_info
+    # def run_commands(self):
+
+    def run_simple(self):
+        for command in self.config["bots"][self.id]["orders"]:
+            self.execute_order(command)
+
+    def execute_order(self, order):
+        if self.config["bots"][self.id]["is_real"] is True:
+            #TODO executing commands for real bots
+            pass
+
+        else:
+            self.simulate_move(order)
+
+    def simulate_move(self, order):
+        if order[0] is Commands.FORWARD:
+            self.forward(order)
+
+    def forward(self, order):
+        pass
+
+    def run_flocking_algorithm(self):
         while True:
             self.get_info_from_server()
             self.send_ready_to_server()
@@ -85,16 +124,11 @@ class Bot:
 
             self.flock()
             self.borders()
-            self.move()
+            # self.move()
             self.update()
             self.send_bot_info_to_server()
-            # self.send_board_to_server()
 
-            # self.send_info_to_server()
-        # return self.bot_info
-
-    def move(self):
-        return
+    def move(self, ):
         if self.config["bots"]["is_real"] is True:
             self.orientiate()
         else:
@@ -102,7 +136,7 @@ class Bot:
             # self.mock_front()
 
     def orientiate(self):
-        calc = PhysicalCalculator()
+        calc = SimulatedBot()
         self.bot_info_achieved = calc.calculate(self.bot_info.get_data_to_calc())
         
     def mock_turn(self, dir):
@@ -112,15 +146,15 @@ class Bot:
         pass
 
     def send_board_to_server(self):
-        mes = it.Message(id=self.bot_id, type=it.MTYPE.BOARD, content=self.board)
+        mes = it.Message(id=self.id, type=it.MTYPE.BOARD, content=self.board)
         self.messenger.send(message=mes)
 
     def send_bot_info_to_server(self):
-        mes = it.Message(id=self.bot_id, type=it.MTYPE.BOT_INFO, content=self.bot_info)
+        mes = it.Message(id=self.id, type=it.MTYPE.BOT_INFO, content=self.bot_info)
         self.messenger.send(message=mes)
 
     def send_ready_to_server(self):
-        mes = it.Message(id=self.bot_id, type=it.MTYPE.SERVER, content=it.MSERVER.READY)
+        mes = it.Message(id=self.id, type=it.MTYPE.SERVER, content=it.MSERVER.READY)
         self.messenger.send(message=mes)
 
     def should_continue(self):
@@ -147,7 +181,7 @@ class Bot:
         received = self.messenger.get_last_message()
         self.board = received.content
         # x = received.content.bots_info["1"]
-        self.set_init_values(received.content.bots_info[str(self.bot_id)])
+        self.set_init_values(received.content.bots_info[str(self.id)])
         self.mess_event.clear()
         # self.messenger.
 
@@ -180,7 +214,7 @@ class Bot:
             self.line = self.line + 1
 
     def update_board_info(self):
-        self.board.bots_info[self.bot_id] = self.bot_info
+        self.board.bots_info[self.id] = self.bot_info
 
     def update_real_data(self):
         # bot_info_list = self.get_sensor_info()
@@ -507,210 +541,6 @@ class BotInfoEncoder(JSONEncoder):
         else:
             return json.JSONEncoder.default(self, o)
 
-class Line:
-    def __init__(self, A, B, C):
-        self.A = A
-        self.B = B
-        self.C = C
-
-    def turn(self, turn_point, degrees):
-        A = self.A
-        B = self.B
-        C = self.C
-
-        x0 = turn_point[0]
-        y0 = turn_point[1]
-
-        x1 = cos(degrees)*x0 - sin(degrees)*y0
-        y1 = sin(degrees)*x0 + cos(degrees)*y0
-
-
-        # theta = math.atan(B/A)
-        # beta = theta+degrees
-        #
-        # p = -C/math.sqrt(A**2 + B**2)
-        # pnew = p + x0*(math.cos(beta)-math.cos(theta)) + y0 * (math.sin(beta)-math.sin(theta))
-        # x=3
-
-
-    def get_point_a_length_away_from(self, point, distance):
-        xp = point[0]
-        yp = point[1]
-
-        r = distance
-
-        A = self.A
-        B = self.B
-        C = self.C
-
-        if A != 0:
-            a = B**2/A**2+1
-            b = 2*C*B/A**2+2*B*xp/A-2*yp
-            c = C**2/A**2+2*C*xp/A + xp ** 2 + yp ** 2 - r ** 2
-
-            delta = b**2-4*a*c
-            y1 = (-b-math.sqrt(delta))/(2*a)
-            y2 = (-b+math.sqrt(delta))/(2*a)
-
-            x1 = -(C+B*y1)/A
-            x2 = -(C+B*y2)/A
-
-        else:
-            a = 1
-            b = -2*xp
-            c = xp**2 + C**2/B**2 + 2*C/B*yp + yp**2*(C/B+yp)**2+yp**2-r**2
-
-            delta = b ** 2 - 4 * a * c
-            x1 = (-b - math.sqrt(delta)) / (2 * a)
-            x2 = (-b + math.sqrt(delta)) / (2 * a)
-
-            y1 = y2 = -C/B
-
-        return [(x1, y1), (x2, y2)]
-
-class Vector:
-    def __init__(self, *args):
-        args = list(args)
-        if len(args) == 2:
-            self.x = args[0]
-            self.y = args[1]
-        elif len(args) == 3:
-            self.points_direction2vector(args[0], args[1], args[2])
-        # self.y = y
-
-    def list2vector(self, vector_list):
-        self.x = vector_list[0]
-        self.y = vector_list[1]
-
-    def points_direction2vector(self, direction, point1, point2):
-        x1, y1 = point1
-        x2, y2 = point2
-
-        A = y2 - y1
-        B = -(x2 - x1)
-        C = y1*x2 - x1*y2
-
-        vec = Vector(A, B)
-
-        if Vector.almost_equals(vec.get_angle(), direction, math.pi/2):
-            self.set_xy(vec.x, vec.y)
-        else:
-            vec.invert()
-            self.set_xy(vec.x, vec.y)
-
-    def get_perpendicular_line_equation(self, point):
-        x = point[0]
-        y = point[1]
-
-        A = self.x
-        B = self.y
-        C = -(A*x + B*y)
-
-        return Line(A, B, C)
-
-    def div_scalar(self, scalar):
-        self.x = self.x / scalar
-        self.y = self.y / scalar
-    # , self.vec.y / scalar)
-
-    def add_vector(self, vec):
-        self.x = self.x + vec.x
-        self.y = self.y + vec.y
-
-    def normalize(self):
-        m = self.magnitude()
-
-        if m > 0:
-            self.x = self.x / m
-            self.y = self.y / m
-        else:
-            self.x = 0
-            self.y = 0
-
-    def magnitude(self):
-        return math.sqrt(self.x * self.x + self.y * self.y)
-
-    def mul_vector(self, vec):
-        self.x = self.x * vec.x
-        self.y = self.y * vec.y
-
-    def mul_scalar(self, scalar):
-        self.x = self.x * scalar
-        self.y = self.y * scalar
-
-    def invert(self):
-        self.x = -self.x
-        self.y = -self.y
-
-    def sub_vector(self, vec):
-        self.x = self.x - vec.x
-        self.y = self.y - vec.y
-
-    def limit(self, max):
-        size = self.magnitude()
-
-        if size is 0:
-            return
-
-        if size > max:
-            self.x = self.x / size
-            self.y = self.y / size
-
-    def set_xy(self, x, y):
-        self.x = x
-        self.y = y
-
-    def get_angle(self):
-        """
-        Counts the angle between vertical facing vector, and self vector
-        :return: returns angle in radians
-        """
-        return math.atan2(self.x, self.y)
-
-    def sub2Vector(self, vec1, vec2):
-        return Vector(vec1.x - vec2.x, vec1.y - vec2.y)
-
-    def distance(self, vec):
-        return math.sqrt(math.pow(vec.x - self.x, 2) + math.pow(vec.y - self.y, 2))
-
-    def in_borders(self, border):
-        if self.x < 0:
-            return False
-        elif self.y < 0:
-            return False
-        elif self.x > border.x:
-            return False
-        elif self.y > border.y:
-            return False
-        else:
-            return True
-
-    def __add__(self, other):
-        return Vector(self.x + other.x, self.y + other.y)
-
-    def __sub__(self, other):
-        return Vector(self.x - other.x, self.y - other.y)
-
-    def __str__(self):
-        return '[' + str(self.x) + ", " + str(self.y) + ']'
-
-    @staticmethod
-    def almost_equals(val1, val2, span):
-        if val1 <= val2 + span and val1 >= val2 - span:
-            return True
-
-        else:
-            return False
-
-    # def __default(self):
-    #     return self.__dict__
-
-class VectorEncoder(JSONEncoder):
-    def default(self, o):
-        if isinstance(o, Vector):
-            return [o.x, o.y]
-        else:
-            return json.JSONEncoder.default(self, o)
 
 class MovementData:
     def __init__(self, poz: Vector, direction: float, time: float, command: str):
