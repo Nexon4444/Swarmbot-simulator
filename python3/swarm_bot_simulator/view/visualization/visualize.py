@@ -9,7 +9,8 @@ from threading import Event
 import math
 from shapely.geometry import Point
 from threading import Thread
-from swarm_bot_simulator.model.bot_components import Bot, BotInfo
+from swarm_bot_simulator.model.algorithm.bot_components import Bot, BotInfo
+# from swarm_bot_simulator.model.algorithm import Bot, BotInfo
 import logging
 
 class Visualizer:
@@ -132,3 +133,6 @@ class BotImage:
         cr.rectangle(-0.2, 0.05, -0.1, 0.2)
         cr.fill()
         return surface
+
+class ObstacleImage:
+    pass

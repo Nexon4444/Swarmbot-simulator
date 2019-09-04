@@ -11,7 +11,7 @@ from queue import Queue
 import math
 # import swarm_bot_simulator.view.visualize as vis
 
-window = pyglet.window.Window(1280, 720, "SimulatedBot Visualizer", resizable=False)
+window = pyglet.window.Window(1280, 720, "SimulatedBot Visualizer", resizable=False) #ODKOMENTUJ TO
 
 
 class SimulatedBot:
@@ -202,7 +202,7 @@ def on_draw():
                              )
 
 
-simbot.visualize()
+# simbot.visualize() #ODKOMENTUJ TO
 # visualizer = vis.Visualizer()
 # q = queue.Queue()
 # sim_t = Thread(target=simbot.simulate(), args=q)

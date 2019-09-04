@@ -7,24 +7,24 @@ import numpy as np
 from scipy.spatial import distance
 import operator
 import swarm_bot_simulator.utilities.util
-from swarm_bot_simulator.model.bot_components import Vector
+from swarm_bot_simulator.model.algorithm.bot_components import Vector
+# from swarm_bot_simulator.model.algorithm import Vector
 import imutils
 from shapely.geometry import LineString
 
 
-class ShapeDetector:
-    # wait_for_key_press = False
+class Detector:
     wait_for_key_press = False
+    # wait_for_key_press = True
     # show_images = False
     show_images = True
 
     def __init__(self, config):
         self.config = config
         if config["camera_settings"]["launch_analysis_windows"] is True:
-            ShapeDetector.show_images = True
+            Detector.show_images = True
         else:
-            ShapeDetector.show_images = False
-
+            Detector.show_images = False
 
     def angle(self, seg1, seg2, dist_point):
         Ax = seg1[0]
@@ -158,9 +158,9 @@ class ShapeDetector:
 
     def show_and_wait(self, image, name):
         # my_var_name = [k for k, v in locals().iteritems() if v == image][0]
-        if ShapeDetector.show_images:
+        if Detector.show_images:
             cv2.imshow(name, image)
-            if ShapeDetector.wait_for_key_press:
+            if Detector.wait_for_key_press:
                 cv2.waitKey(0)
 
     def detect_shape(self, c):
@@ -201,6 +201,7 @@ class ShapeDetector:
     def contourize(self, img):
         cnts = cv2.findContours(img.copy(), cv2.RETR_EXTERNAL,
                                 cv2.CHAIN_APPROX_SIMPLE)
+
         cnts = imutils.grab_contours(cnts)
         return cnts
 
@@ -324,7 +325,6 @@ class ShapeDetector:
     def filter_marker(self, image):
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         lower_red = np.array([160, 50, 50])
-
         upper_red = np.array([180, 255, 255])
 
         mask1 = cv2.inRange(hsv, lower_red, upper_red)
@@ -339,20 +339,22 @@ class ShapeDetector:
         # that only the blue coloured objects are highlighted
         # and stored in res
         res = cv2.bitwise_and(image, image, mask=mask)
+
         # cv2.imshow('image', image)
         # cv2.imshow('mask', mask)
-        # cv2.imshow('res', res)
+        self.show_and_wait(res, "res filtered")
         eroded = cv2.erode(res, None, iterations=2)
         self.show_and_wait(eroded, "marker")
         gray = cv2.cvtColor(eroded, cv2.COLOR_BGR2GRAY)
         return gray
 
     def filter_board(self, img):
+        self.show_and_wait(img, "board-original")
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        # self.show_and_wait(gray, "gray")
+        self.show_and_wait(gray, "board-gray")
 
         eroded = cv2.erode(gray, None, iterations=2)
-        # self.show_and_wait(eroded, "eroded")
+        self.show_and_wait(eroded, "board-eroded")
 
         blurred = cv2.GaussianBlur(eroded, (5, 5), 0)
         thresh = cv2.threshold(blurred, 80, 255, cv2.THRESH_BINARY)[1]
@@ -361,11 +363,12 @@ class ShapeDetector:
         return thresh
 
 
-class Camera:
+class VideoAnalyzer:
     def __init__(self, config):
         self.config = config
         self.photo_url = config["camera_settings"]["photo_url"]
-        self.shape_detector = ShapeDetector(config)
+        self.shape_detector = Detector(config)
+
     def load_video(self):
         while True:
             img_resp = requests.get(url=self.photo_url)
@@ -398,8 +401,11 @@ class Camera:
             print("IMAGE ERROR")
             print(e)
 
-
-
+# from swarm_bot_simulator.resources.config import config
+# img_path = "/home/nexon/Projects/Swarmbot-simulator/python3/swarm_bot_simulator/resources/trojkat.jpg"
+# img = cv2.imread(img_path)
+# det = Detector(config)
+# det.analyze_image(img, 0.3)
 # camera = Camera()
 # camera.load_video()
 # v = Vector(-1, 0)

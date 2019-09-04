@@ -1,12 +1,8 @@
 # -*- coding: utf-8 -*-
-import json
-import subprocess
 import warnings
-import os
 import subprocess
-from swarm_bot_simulator.controller.simulator import Simulator
-from swarm_bot_simulator.controller.camera import Camera
-from swarm_bot_simulator.model.config import *
+from swarm_bot_simulator.model.simulation.simulator import Simulator
+from swarm_bot_simulator.model.image_detection import Camera
 from swarm_bot_simulator.resources.config import config
 
 def launch_mosquitto(port):

@@ -1,6 +1,5 @@
-from swarm_bot_simulator.controller.simulator import *
-from swarm_bot_simulator.controller.information_transfer import *
-from swarm_bot_simulator.model.config import *
+from swarm_bot_simulator.model.simulation.simulator import *
+from swarm_bot_simulator.model.communication.information_transfer import *
 
 app_config = None
 with open(os.path.join("swarm_bot_simulator", "resources", "app_config.json"), "r", encoding="utf-8") as f:

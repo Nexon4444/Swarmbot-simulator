@@ -1,10 +1,9 @@
 # from swarm_bot_simulator.model.config import PozInfo
 import json
-from enum import Enum
 import logging
-from ast import literal_eval
 from json import JSONEncoder
-from swarm_bot_simulator.utilities.util import Vector, VectorEncoder
+from swarm_bot_simulator.utilities.util import Vector, VectorEncoder, Line
+
 logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
@@ -12,15 +11,13 @@ logging.basicConfig(level=logging.DEBUG,
 # from swarm_bot_simulator.model.board import Board
 # import swarm_bot_simulator.controller.information_transfer as it
 from shapely.geometry import Point
-from shapely.geometry.polygon import Polygon
-import swarm_bot_simulator.controller.information_transfer as it
+import swarm_bot_simulator.model.communication.information_transfer as it
 # from swarm_bot_simulator.model.board import Board
 import math
 import copy
 import threading
-from math import cos, sin
-from swarm_bot_simulator.model.physical import SimulatedBot
-import swarm_bot_simulator.controller.hardware as hardware
+# from swarm_bot_simulator.model.simulation.physical import SimulatedBot
+
 
 class Commands:
     FORWARD = "FORWARD"
@@ -87,9 +84,10 @@ class Bot:
         self.send_ready_to_server()
 
         if self.config["simulation_settings"]["simple_commands"] is True:
-            self.run_flocking_algorithm()
-        else:
             self.run_simple()
+
+        else:
+            self.run_flocking_algorithm()
             # self.send_board_to_server()
 
             # self.send_info_to_server()

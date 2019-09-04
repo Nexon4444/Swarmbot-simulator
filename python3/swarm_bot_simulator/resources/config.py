@@ -13,9 +13,17 @@ config = {
 
   },
   "camera_settings": {
-    "photo_url": "http://192.168.0.108:8080/shot.jpg",
+    "photo_url": "http://192.168.0.109:8080/shot.jpg",
     "launch_analysis_windows": False,
     "resize": 0.5
+  },
+  "board_settings": {
+    "real_width": 32,
+    "real_height": 78
+  },
+  "real_settings": {
+    "pwm": 0.7,
+    "cm_per_sec": 56.93
   },
   "bot_settings": {
     "view_mode_is_omni": True,
@@ -38,7 +46,11 @@ config = {
     "right_motor": (-9, 15),
     "center_mass": (0, 0),
     "mass": 200,
-    "inertia": "SQUARE"
+    "inertia": "SQUARE",
+    "gauss": {
+      "x": (),
+      "y": ()
+    }
 
   },
   "bots": [
@@ -58,6 +70,54 @@ config = {
       "bot_id": "2",
       "poz_x": 150,
       "poz_y": 200,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "3",
+      "poz_x": 100,
+      "poz_y": 200,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "4",
+      "poz_x": 200,
+      "poz_y": 200,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "5",
+      "poz_x": 250,
+      "poz_y": 200,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "6",
+      "poz_x": 150,
+      "poz_y": 300,
       "is_real": False,
       "speed": [
         4,

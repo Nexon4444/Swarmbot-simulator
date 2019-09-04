@@ -31,7 +31,10 @@ class Vector:
     def __init__(self, *args):
         import pymunk
         args = list(args)
-        if len(args) == 1 and isinstance(args[0], Vector):
+        if len(args) == 0:
+            pass
+
+        elif len(args) == 1 and isinstance(args[0], Vector):
             self.x = args[0].x
             self.y = args[0].y
 
@@ -261,7 +264,7 @@ class Line:
         r = distance
 
         A = self.A
-        B = self.B90
+        B = self.B
         C = self.C
 
         if A != 0:
@@ -290,12 +293,12 @@ class Line:
         return [(x1, y1), (x2, y2)]
 
 # print(cos(4*math.pi/2))
-vec = Vector(2*math.pi/4)
-
-print(str(vec))
-vec.turn(math.pi/2)
-print(str(vec))
-print(str(math.degrees(vec.get_angle())))
+# vec = Vector(2*math.pi/4)
+#
+# print(str(vec))
+# vec.turn(math.pi/2)
+# print(str(vec))
+# print(str(math.degrees(vec.get_angle())))
 # import time, sys
 #
 # t = 0

@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
 import json
-import subprocess
 import warnings
-import os
 import subprocess
-from swarm_bot_simulator.controller.simulator import Simulator
-from swarm_bot_simulator.controller.camera import Camera
-from swarm_bot_simulator.model.config import *
+from swarm_bot_simulator.model.simulation.simulator import Simulator
+from swarm_bot_simulator.model.image_detection.video_analyzer import VideoAnalyzer
 from swarm_bot_simulator.resources.config import config
 
 def launch_mosquitto(port):
@@ -23,7 +20,7 @@ print(config_dumped)
 config_loaded = json.loads(config_dumped)
 
 img_path = "/home/nexon/Projects/Swarmbot-simulator/python3/swarm_bot_simulator/resources/trojkat.jpg"
-camera = Camera(config)
+camera = VideoAnalyzer(config)
 photo_params = camera.load_photo(img_path)
 board_params = photo_params[0]
 board_width = board_params[1][0]
@@ -33,6 +30,13 @@ marker_params = photo_params[1]
 marker_poz_x = marker_params[0][0]
 marker_poz_y = marker_params[0][1]
 marker_direction = marker_params[1]
+
+# config["real_settings"] = {}
+config["real_settings"]["pixel_2_real_ratio"] = board_width/config["board_settings"]["real_width"]
+# if board_width > board_height:
+#
+# else:
+# config["real_bot_settings"] = {"real_time_max": }
 
 if config["bots"][0]["is_real"] is True:
     config["bots"][0]["direction"] = marker_direction

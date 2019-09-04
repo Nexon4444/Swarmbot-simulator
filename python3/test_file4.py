@@ -1,5 +1,5 @@
 from sympy.physics.vector import *
-from swarm_bot_simulator.model.bot_components import Vector
+from swarm_bot_simulator.model.algorithm import Vector
 
 
 class PhysicalCalculator:

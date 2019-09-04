@@ -3,10 +3,10 @@
 import time
 
 # from swarm_bot_simulator.controller.information_transfer import Message
-from swarm_bot_simulator.view.visualize import Visualizer
+from swarm_bot_simulator.model.algorithm.bot_components import Board, Bot
+from swarm_bot_simulator.view.visualization.visualize import Visualizer
 # from swarm_bot_simulator.model.bot_components import *
-from swarm_bot_simulator.model.config import *
-from swarm_bot_simulator.controller.information_transfer import *
+from swarm_bot_simulator.model.communication.information_transfer import *
 from swarm_bot_simulator.utilities.util import merge_two_dicts, log_flush
 
 import threading, queue

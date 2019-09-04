@@ -17,9 +17,6 @@ add mosquitto.exe to path variable
     
     setx path "%path%;E:\mosquitto"
 
-
-
-
     pip install simple-pid
 
 # Instalacja oprogramowania na Intel Edison
