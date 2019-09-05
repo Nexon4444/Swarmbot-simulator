@@ -14,8 +14,8 @@ logging.basicConfig(level=logging.DEBUG,
 last_message = None
 
 class Messenger:
-    logging_on = True
-    logging_mess_on = True
+    logging_on = False
+    logging_mess_on = False
 
     def __init__(self, name, broker, port, mess_event):
         self.name = name
@@ -149,11 +149,11 @@ class Messenger:
         # mess_type = message_dict["type"]
         # if mess_type is MTYPE.BOT_INFO:
         #     return Message(mess_type, BotInfo(json_loaded))
-        logging.debug('mess_str: ' + str(mess_str))
-        logging.debug('message_dict: ' + str(message_dict))
+        # logging.debug('mess_str: ' + str(mess_str))
+        # logging.debug('message_dict: ' + str(message_dict))
         # logging.debug('message_dict["id"]: ' + str(message_dict["id"]))
-        logging.debug('Messenger.get_message_type_from_string(message_dict["type"]): ' + str(Messenger.get_message_type_from_string(message_dict["type"])))
-        logging.debug('json_loaded: ' + str(json_loaded))
+        # logging.debug('Messenger.get_message_type_from_string(message_dict["type"]): ' + str(Messenger.get_message_type_from_string(message_dict["type"])))
+        # logging.debug('json_loaded: ' + str(json_loaded))
 
         return Message(message_dict["id"],
                        Messenger.get_message_type_from_string(message_dict["type"]),

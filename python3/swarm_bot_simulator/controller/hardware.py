@@ -41,6 +41,12 @@ class Control(object):
             "1lf": Sensor(Control.sensor_1lf, self.sensor_event_1lf, config=config)
         }
 
+    def turn(self, time, pwm):
+        if time < 0:
+            self.lrotate_for(time, pwm)
+        else:
+            self.rrotate_for(time, pwm)
+
     def move(self, xpa, xpb, xa1, xa2, xb1, xb2, t):
         # time.sleep(0.1)
         mraa.pwma.write(xpa)
@@ -59,9 +65,13 @@ class Control(object):
         mraa.pwma.write(0)
         # time.sleep(0.1)
 
-    def forward(self, tide):
-        print("driving forward")
-        self.move(1, 1, 1, 0, 1, 0, tide)
+    def forward(self, tide, pwm):
+        # print("driving forward")
+        self.move(pwm, pwm, 1, 0, 1, 0, tide)
+
+    # def forward(self, tide):
+    #     print("driving forward")
+    #     self.move(1, 1, 1, 0, 1, 0, tide)
 
     def back(self, tide):
         print("driving back")

@@ -16,14 +16,13 @@ import swarm_bot_simulator.model.communication.information_transfer as it
 import math
 import copy
 import threading
-# from swarm_bot_simulator.model.simulation.physical import SimulatedBot
+from swarm_bot_simulator.model.simulation.simulation_module import PhysicsSimulator
 
+# from swarm_bot_simulator.model.simulation.physical import SimulatedBot
 
 class Commands:
     FORWARD = "FORWARD"
     TURN = "TURN"
-
-
 
 class Bot:
     # last_id = 0
@@ -39,8 +38,9 @@ class Bot:
         self.bot_settings = None
         self.board_settings = None
 
+        self.physics_simulator = None
         self.config = None
-        self.bot_info = None
+        self.bot_info_aware = None
         self.bot_info_real = None
         self.bot_info_sensor = None
         self.simulated_bot = None
@@ -110,8 +110,6 @@ class Bot:
         if order[0] is Commands.FORWARD:
             self.forward(order)
 
-    def forward(self, order):
-        pass
 
     def run_flocking_algorithm(self):
         while True:
@@ -124,6 +122,7 @@ class Bot:
             self.borders()
             # self.move()
             self.update()
+            self.report_val()
             self.send_bot_info_to_server()
 
     def move(self, ):
@@ -135,8 +134,8 @@ class Bot:
 
     def orientiate(self):
         calc = SimulatedBot()
-        self.bot_info_achieved = calc.calculate(self.bot_info.get_data_to_calc())
-        
+        self.bot_info_achieved = calc.calculate(self.bot_info_aware.get_data_to_calc())
+
     def mock_turn(self, dir):
         pass
 
@@ -148,7 +147,7 @@ class Bot:
         self.messenger.send(message=mes)
 
     def send_bot_info_to_server(self):
-        mes = it.Message(id=self.id, type=it.MTYPE.BOT_INFO, content=self.bot_info)
+        mes = it.Message(id=self.id, type=it.MTYPE.BOT_INFO, content=self.bot_info_aware)
         self.messenger.send(message=mes)
 
     def send_ready_to_server(self):
@@ -197,9 +196,10 @@ class Bot:
         self.config = config
         self.bot_settings = config["bot_settings"]
         self.board_settings = config["board_settings"]
+        self.physics_simulator = PhysicsSimulator(config)
 
     def set_init_values(self, bot_info):
-        self.bot_info = copy.deepcopy(bot_info)
+        self.bot_info_aware = copy.deepcopy(bot_info)
         self.bot_info_real = copy.deepcopy(bot_info)
         self.bot_info_sensor = copy.deepcopy(bot_info)
 
@@ -212,11 +212,11 @@ class Bot:
             self.line = self.line + 1
 
     def update_board_info(self):
-        self.board.bots_info[self.id] = self.bot_info
+        self.board.bots_info[self.id] = self.bot_info_aware
 
     def update_real_data(self):
         # bot_info_list = self.get_sensor_info()
-        self.bot_info = self.negotiate(self.bot_info, self.bot_info_sensor)
+        self.bot_info_aware = self.negotiate(self.bot_info_aware, self.bot_info_sensor)
 
     def negotiate(self, bot_info, bot_real):
         bot_info.position.x = bot_real.position.x
@@ -235,13 +235,13 @@ class Bot:
         self.messenger = it.Messenger(name=self.name, communication_settings=self.communication_settings)
 
     def comm_out(self):
-        self.messenger.send(self.bot_info)
+        self.messenger.send(self.bot_info_aware)
 
     def comm_in(self):
         self.messenger.recieve()
 
     def update_data(self):
-        self.comm_out(self.bot_info.serialize())
+        self.comm_out(self.bot_info_aware.serialize())
         self.board = self.comm_in()
 
     def designate_coords(self):
@@ -249,7 +249,7 @@ class Bot:
 
     # def move(self, vec):
     #     self.bot_info.position.add_vector(vec)
-        # self.update_data()
+    # self.update_data()
 
     def calibrate(self):
         pass
@@ -261,31 +261,31 @@ class Bot:
         visible_bots = self.get_visible_bots()
 
         sep = self.separation(visible_bots)
-        # ali = self.alignment(visible_bots)
+        ali = self.alignment(visible_bots)
         coh = self.cohesion(visible_bots)
 
         sep.mul_scalar(self.config["bot_settings"]["sep_mul"])
-        # ali.mul_scalar(self.bot_settings.ali_mul)
+        ali.mul_scalar(self.bot_settings["ali_mul"])
         coh.mul_scalar(self.config["bot_settings"]["coh_mul"])
 
         self.apply_force(sep)
-        # self.apply_force(ali)
+        self.apply_force(ali)
         self.apply_force(coh)
 
-        self.set_direction()
-        self.report_val()
+        # self.set_direction()
+
 
     def separation(self, visible_bots):
         steer = Vector(0, 0)
         for key, bot_info in visible_bots.items():
             dist = self.distance(bot_info)
             steer = self.separation_steer(bot_info, dist, steer, visible_bots)
-            print(str(self.bot_info))
-            print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
+            # print(str(self.bot_info))
+            # print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
 
         self.correct_separation(steer, visible_bots)
         # steer.invert()
-        print("steer" + str(steer))
+        # print("steer" + str(steer))
         return steer
         # if steer.magnitude() > 0:
         #     steer.normalize()
@@ -311,12 +311,12 @@ class Bot:
         if steer.magnitude() > 0:
             steer.normalize()
             steer.mul_scalar(self.bot_settings["max_speed"])
-            steer.sub_vector(self.bot_info.speed)
+            steer.sub_vector(self.bot_info_aware.speed)
             steer.limit(self.bot_settings["max_force"])
 
     def points2vector(self, bot_info):
-        diff_poz = Point(bot_info.position.x - self.bot_info.position.x,
-                         bot_info.position.y - self.bot_info.position.y)
+        diff_poz = Point(bot_info.position.x - self.bot_info_aware.position.x,
+                         bot_info.position.y - self.bot_info_aware.position.y)
         diff_vec = Vector(diff_poz.x, diff_poz.y)
         return diff_vec
 
@@ -348,8 +348,8 @@ class Bot:
         for key, bot_info in visible_bots.items():
             dist = self.distance(bot_info)
             steer = self.alignment_steer(bot_info, dist, steer, visible_bots)
-            print(str(self.bot_info))
-            print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
+            # print(str(self.bot_info))
+            # print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
 
         visible_bot_amount = len(visible_bots)
         if visible_bot_amount is not 0:
@@ -357,11 +357,11 @@ class Bot:
 
         return self.correct_alignment(steer, visible_bots)
 
-    def alignment_steer(self, bot, dist, steer, visible_bots):
-        if dist > self.bot_settings.alignment_distance:
+    def alignment_steer(self, bot_info, dist, steer, visible_bots):
+        if dist > self.bot_settings["alignment_distance"]:
             return steer
 
-        steer.add_vector(bot.bot_info.speed)
+        steer.add_vector(bot_info.speed)
         return steer
 
     def correct_alignment(self, steer, visible_bots):
@@ -369,9 +369,9 @@ class Bot:
             steer.div_scalar(len(visible_bots))
 
         steer.normalize()
-        steer.mul_scalar(self.bot_settings.max_speed)
-        steer.sub_vector(self.bot_info.speed)
-        steer.limit(self.bot_settings.max_force)
+        steer.mul_scalar(self.bot_settings["max_speed"])
+        steer.sub_vector(self.bot_info_aware.speed)
+        steer.limit(self.bot_settings["max_force"])
         return steer
 
     def get_single_line_follower(self, line_event):
@@ -405,7 +405,7 @@ class Bot:
         assert isinstance(self.bot_settings["view_mode_is_omni"], bool)
         if self.bot_settings["view_mode_is_omni"] is True:
             all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in self.board.bots_info.items()
-                           if bot_info.bot_id != self.bot_info.bot_id}
+                           if bot_info.bot_id != self.bot_info_aware.bot_id}
             return all_bots_cp
 
         # visible_bots = []
@@ -425,50 +425,82 @@ class Bot:
         # return visible_bots
 
     def distance(self, bot_info):
-        return self.bot_info.position.distance(bot_info.position)
+        return self.bot_info_aware.position.distance(bot_info.position)
 
     def apply_force(self, sep):
-        self.bot_info.acceleration.add_vector(sep)
+        self.bot_info_aware.acceleration.add_vector(sep)
 
     def seek(self, vec):
         desired = Vector(0, 0)
         desired.add_vector(vec)
         desired.normalize()
         desired.mul_scalar(self.bot_settings["max_speed"])
-        desired.sub_vector(self.bot_info.speed)
+        desired.sub_vector(self.bot_info_aware.speed)
         desired.limit(self.bot_settings["max_force"])
         # desired.invert()
         return desired
 
     def borders(self):
-        next_pos = self.bot_info.position + self.bot_info.speed
+        next_pos = self.bot_info_aware.position + self.bot_info_aware.speed
         if next_pos.in_borders(Vector(self.board_settings["border_x"], self.board_settings["border_y"])) is False:
             self.stop()
 
     def update(self):
-        self.bot_info.acceleration.mul_scalar(1)
+        self.bot_info_aware.acceleration.mul_scalar(1)
 
-        self.bot_info.speed.add_vector(self.bot_info.acceleration)
-        self.bot_info.speed.limit(self.bot_settings["max_speed"])
-        self.bot_info.position.add_vector(self.bot_info.speed)
-        self.bot_info.acceleration.mul_scalar(0)
+        self.bot_info_aware.speed.add_vector(self.bot_info_aware.acceleration)
+        self.bot_info_aware.speed.limit(self.bot_settings["max_speed"])
+        self.move_to_position(self.bot_info_aware, self.bot_info_aware.speed)
 
-    def set_direction(self):
-        self.bot_info.dir = math.degrees(self.bot_info.speed.get_angle())
+        self.bot_info_aware.acceleration.mul_scalar(0)
+
+    def move_to_position(self, bot_info, speed):
+        # self.bot_info.dir = math.degrees()
+        self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
+        self.forward(bot_info, speed)
+
+    def conduct_forward(self, bot_info, speed):
+        t = self.physics_simulator.count_forward(bot_info, speed)
+
+        if bot_info.is_real is True:
+            self.hardware.forward(t, self.config["real_settings"]["pwm"])
+
+    def forward(self, bot_info, speed):
+        t = self.physics_simulator.count_forward(speed)
+        self.physics_simulator.simulate_forward(bot_info, speed)
+
+    def turn(self, bot_info, absolute_dir):
+        t = self.physics_simulator.count_turn(self.calc_relative_turn(bot_info, absolute_dir))
+        self.physics_simulator.simulate_turn(bot_info, t)
+        bot_info.dir = math.degrees(absolute_dir)
+        return t
+
+    def calc_relative_turn(self, bot_info, absolute_dir):
+        if math.fabs(absolute_dir - bot_info.dir) < 180:
+            return absolute_dir - bot_info.dir
+        else:
+            return 360 - (absolute_dir - bot_info.dir)
+
+    def conduct_turn(self, bot_info, absolute_dir):
+        t = self.turn(bot_info, absolute_dir)
+
+        if bot_info.is_real is True:
+            self.hardware.turn(t, self.config["real_settings"]["pwm"])
+
 
     def stop(self):
-        self.bot_info.speed.set_xy(0, 0)
+        self.bot_info_aware.speed.set_xy(0, 0)
 
     def __del__(self):
         pass
         # self.listen_lf.join()
 
     def __str__(self):
-        return ("\nbot ID: " + str(self.bot_info.bot_id)
-                + "\nposition: " + str(self.bot_info.position)
-                + "\nspeed: " + str(self.bot_info.speed)
-                + "\naccel: " + str(self.bot_info.acceleration)
-                + "\ndir: " + str(self.bot_info.dir))
+        return ("\nbot ID: " + str(self.bot_info_aware.bot_id)
+                + "\nposition: " + str(self.bot_info_aware.position)
+                + "\nspeed: " + str(self.bot_info_aware.speed)
+                + "\naccel: " + str(self.bot_info_aware.acceleration)
+                + "\ndir: " + str(self.bot_info_aware.dir))
 
 class BotInfo:
     size_x = 20
@@ -650,6 +682,6 @@ class BoardEncoder(JSONEncoder):
         else:
             return json.JSONEncoder.default(self, o)
 
-l = Line(0.0, 1, 0)
-print(str(l.get_point_a_length_away_from((0, 0), math.sqrt(1))))
-l.turn((0, 0), math.pi/2)
+# l = Line(0.0, 1, 0)
+# print(str(l.get_point_a_length_away_from((0, 0), math.sqrt(1))))
+# l.turn((0, 0), math.pi/2)

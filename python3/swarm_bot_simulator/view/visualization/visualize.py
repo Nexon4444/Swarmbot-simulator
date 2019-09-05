@@ -24,10 +24,10 @@ class Visualizer:
         self.game_display = pygame.display.set_mode(self.size)
         self.board_activation_event = board_activation_event
 
-    def display_bot(self, bot_image, x, y, angle):
-        bot_image = pygame.transform.rotate(bot_image, angle)
-        bot_image = pygame.transform.scale(bot_image, (20, 20))
-        self.game_display.blit(bot_image, (x, y))
+    # def display_bot(self, bot_image, x, y, angle):
+    #     bot_image = pygame.transform.rotate(bot_image, angle)
+    #     bot_image = pygame.transform.scale(bot_image, (20, 20))
+    #     self.game_display.blit(bot_image, (x, y))
 
         "thread finished...exiting"
     def visualize(self, q):
@@ -124,7 +124,7 @@ class BotImage:
         cr.set_source_rgb(self.color[0], self.color[1], self.color[2])
         cr.translate(WIDTH / 2, HEIGHT / 2)
         cr.scale(WIDTH, HEIGHT)
-        cr.rotate(dir)
+        cr.rotate(math.radians(180-dir))
         cr.rectangle(-0.2, -0.3, 0.4, 0.6)
         cr.fill()
         cr.set_source_rgb(BotImage.COLOURS["ORANGE"][0], BotImage.COLOURS["ORANGE"][1], BotImage.COLOURS["ORANGE"][2])

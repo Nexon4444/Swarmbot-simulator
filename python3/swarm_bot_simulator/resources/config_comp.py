@@ -64,26 +64,65 @@ config = {
         5,
         1
       ],
-
-      "orders": [
-      ("FORWARD", 50)
-      ],
-
-
       "color": "RED",
       "direction": 180
     },
     {
       "bot_id": "2",
-      "poz_x": 100,
-      "poz_y": 130,
+      "poz_x": 150,
+      "poz_y": 200,
       "is_real": False,
       "speed": [
         4,
         1
       ],
-      "orders": [
-      ("FORWARD", 50)
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "3",
+      "poz_x": 100,
+      "poz_y": 200,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "4",
+      "poz_x": 200,
+      "poz_y": 200,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "5",
+      "poz_x": 250,
+      "poz_y": 200,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "6",
+      "poz_x": 150,
+      "poz_y": 300,
+      "is_real": False,
+      "speed": [
+        4,
+        1
       ],
       "color": "BLUE",
       "direction": 180

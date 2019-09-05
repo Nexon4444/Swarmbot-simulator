@@ -8,6 +8,7 @@ from swarm_bot_simulator.view.visualization.visualize import Visualizer
 # from swarm_bot_simulator.model.bot_components import *
 from swarm_bot_simulator.model.communication.information_transfer import *
 from swarm_bot_simulator.utilities.util import merge_two_dicts, log_flush
+from swarm_bot_simulator.model.image_detection import video_analyzer as va
 
 import threading, queue
 import logging
@@ -25,7 +26,7 @@ class Simulator:
         # self.bots = [Bot(config, self.info_sent_events[bot_info.id], bot_info) for bot_info in config.bot_infos]
         self.bots = [Bot(bot_info["bot_id"], config["communication_settings"]["broker"], config["communication_settings"]["port"])
                      for bot_info in config["bots"] if bot_info["is_real"] is not True]
-
+        self.video_analyser = va.VideoAnalyzer
         self.messenger = Messenger("server", config["communication_settings"]["broker"], config["communication_settings"]["port"],
                                    mess_event=self.mess_event)
         for bot in config["bots"]:
@@ -102,14 +103,14 @@ class Simulator:
 
                     all_messages_received = False
                     end = time.time()
-                    log_flush("NO READY FROM: " + str(bot_id) + " ", start, end)
+                    # log_flush("NO READY FROM: " + str(bot_id) + " ", start, end)
                     # logging.debug("NOT ALL READY messages received from all bots")
                     break
 
             # time.sleep(0.1)
 
         print("\n")
-        logging.debug("READY messages received from all bots")
+        # logging.debug("READY messages received from all bots")
 
     def await_boards(self):
         start = time.time()
@@ -123,12 +124,12 @@ class Simulator:
                 if bot_id not in messages or messages[bot_id].type != MTYPE.BOARD:
                     all_messages_received = False
                     end = time.time()
-                    log_flush("NO BOARD FROM BOT: " + bot_id, start, end)
+                    # log_flush("NO BOARD FROM BOT: " + bot_id, start, end)
                     break
             # time.sleep(0.01)
 
         print("\n")
-        logging.debug("BOARD messages received from all bots")
+        # logging.debug("BOARD messages received from all bots")
 
     def await_bot_info(self):
         received_messages = None
@@ -143,12 +144,12 @@ class Simulator:
                 if bot_id not in messages or messages[bot_id].type != MTYPE.BOT_INFO:
                     all_messages_received = False
                     end = time.time()
-                    log_flush("NOT ALL BOT_INFO messages received from all bots: ", start, end)
+                    # log_flush("NOT ALL BOT_INFO messages received from all bots: ", start, end)
                     break
             # time.sleep(1)
 
         print("\n")
-        logging.debug("BOARD messages received from all bots")
+        # logging.debug("BOARD messages received from all bots")
         return received_messages
 
     # def send_order(self, order):
@@ -189,14 +190,21 @@ class Simulator:
             self.visualize_data(q)
 
         # x = self.messenger.get_last_messages()
-        logging.debug(str(self.messenger.get_last_messages()))
-        logging.debug("Stopping simulation")
+        # logging.debug(str(self.messenger.get_last_messages()))
+        # logging.debug("Stopping simulation")
+    def synchronise_with_camera(self):
+        for bot_info in self.board.bots_info:
+            if bot_info.is_real:
+                photo_params = self.video_analyser.load_photo()
+                board_params = photo_params[0]
+                board_width = board_params[1][0]
+                board_height = board_params[1][1]
 
-    def tune_time2position(self):
-        pass
-
-    def tune(self):
-        pass
+                marker_params = photo_params[1]
+                marker_poz_x = marker_params[0][0]
+                marker_poz_y = marker_params[0][1]
+                marker_direction = marker_params[1]
+                bot_info
 
     def calculate_positions(self, bot_infos_dict):
         for key, bot_info in bot_infos_dict.items():
@@ -205,10 +213,7 @@ class Simulator:
     def bot_info_messages_dict2bots_info_dict(self, bot_info_messages):
         return {key: message.content for key, message in bot_info_messages.items()}
 
-
     def visualize_data(self, q):
         q.put(self.board)
 
-    def simulate_simple_movement(self):
-        pass
 
