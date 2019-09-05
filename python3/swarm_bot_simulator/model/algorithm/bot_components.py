@@ -87,12 +87,7 @@ class Bot:
             self.run_simple()
 
         else:
-            self.run_flocking_algorithm()
-            # self.send_board_to_server()
-
-            # self.send_info_to_server()
-        # return self.bot_info
-    # def run_commands(self):
+            self.run_algorithm_with_communication()
 
     def run_simple(self):
         for command in self.config["bots"][self.id]["orders"]:
@@ -111,19 +106,21 @@ class Bot:
             self.forward(order)
 
 
-    def run_flocking_algorithm(self):
+    def run_algorithm_with_communication(self):
         while True:
             self.get_info_from_server()
             self.send_ready_to_server()
             if self.should_continue() is False:
                 break
 
-            self.flock()
-            self.borders()
-            # self.move()
-            self.update()
-            self.report_val()
+            self.run_flocking_algorithm()
             self.send_bot_info_to_server()
+
+    def run_flocking_algorithm(self):
+        self.flock()
+        self.borders()
+        self.update()
+        self.report_val()
 
     def move(self, ):
         if self.config["bots"]["is_real"] is True:
