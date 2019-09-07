@@ -24,7 +24,11 @@ config = {
   "real_settings": {
     "pwm": 0.7,
     "cm_per_sec": 56.93,
-    "deg_per_sec": 450
+    "deg_per_sec": 450,
+    "gauss": {
+      "x": (56, 5.32),
+      "y": (0.8, 5.32)
+    }
   },
   "bot_settings": {
     "view_mode_is_omni": True,
@@ -48,10 +52,7 @@ config = {
     "center_mass": (0, 0),
     "mass": 200,
     "inertia": "SQUARE",
-    "gauss": {
-      "x": (),
-      "y": ()
-    }
+
 
   },
   "bots": [

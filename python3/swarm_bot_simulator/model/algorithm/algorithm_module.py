@@ -3,7 +3,7 @@ import json
 import logging
 from json import JSONEncoder
 from swarm_bot_simulator.utilities.util import Vector, VectorEncoder, Line
-
+from swarm_bot_simulator.controller.steering_module import Control
 logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
@@ -63,7 +63,7 @@ class Bot:
         self.line_event = threading.Event()
         self.board = None
 
-        self.hardware = Hardware()
+        self.control = None
         self.listen_lf = None
         self.board = None
         self.name = "swarm_bot" + str(bot_id)
@@ -195,6 +195,7 @@ class Bot:
         self.bot_settings = config["bot_settings"]
         self.board_settings = config["board_settings"]
         self.physics_simulator = PhysicsSimulator(config)
+        self.control = Control
 
     def set_init_values(self, bot_info):
         self.bot_info_aware = copy.deepcopy(bot_info)
@@ -376,7 +377,7 @@ class Bot:
         while True:
             line_event.wait()
             logging.log(logging.DEBUG, "Sensors reporting robot movement")
-            self.hardware.lf_sensor.add_pulse()
+            self.control.lf_sensor.add_pulse()
             self.bot_info_sensor.position.x += 1
             line_event.clear()
         # return next_bot_real
@@ -456,17 +457,23 @@ class Bot:
         # self.bot_info.dir = math.degrees()
         self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
         self.conduct_forward(bot_info, speed)
-        # self.forward(bot_info, speed) ***
+        # self.conduct_forward(bot_info, speed) ***
 
     def conduct_forward(self, bot_info, speed):
-        t = self.physics_simulator.count_forward(bot_info, speed)
-        self.forward(bot_info, speed)
+        t = self.forward(bot_info, speed)
         if bot_info.is_real is True:
-            self.hardware.forward(t, self.config["real_settings"]["pwm"])
+            self.control.forward(t, self.config["real_settings"]["pwm"])
+
+    def conduct_turn(self, bot_info, absolute_dir):
+        t = self.turn(bot_info, absolute_dir)
+
+        if bot_info.is_real is True:
+            self.control.turn(t, self.config["real_settings"]["pwm"])
 
     def forward(self, bot_info, speed):
         t = self.physics_simulator.count_forward(speed)
         self.physics_simulator.simulate_forward(bot_info, speed)
+        return t
 
     def turn(self, bot_info, absolute_dir):
         t = self.physics_simulator.count_turn(self.calc_relative_turn(bot_info, absolute_dir))
@@ -483,7 +490,7 @@ class Bot:
     def conduct_turn(self, bot_info, absolute_dir):
         t = self.turn(bot_info, absolute_dir)
         if bot_info.is_real is True:
-            self.hardware.turn(t, self.config["real_settings"]["pwm"])
+            self.control.turn(t, self.config["real_settings"]["pwm"])
 
 
     def stop(self):
@@ -502,7 +509,6 @@ class Bot:
 
     def get_info_from_sensors(self):
         pass
-
 
 class BotInfo:
     size_x = 20

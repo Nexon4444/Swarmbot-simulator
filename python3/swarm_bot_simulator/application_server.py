@@ -4,8 +4,11 @@ import warnings
 import subprocess
 from swarm_bot_simulator.model.simulation.bot_manager_module import Bot_manager
 from swarm_bot_simulator.model.image_detection.image_analyzer_module import VideoAnalyzer
+# import importlib
+# config_file = importlib.import_module("config.py", package="/swarm_bot_simulator/resources")
+# config_file = ("config")
 from swarm_bot_simulator.resources.config import config
-
+# config = config_file.config
 def launch_mosquitto(port):
     subprocess.Popen(["mosquitto", "-p", str(port)])
 launch_mosquitto(config["communication_settings"]["port"])
@@ -14,7 +17,7 @@ launch_mosquitto(config["communication_settings"]["port"])
 
 # subprocess.Popen([ls, "-p", port])
 
-config = config
+
 config_dumped = json.dumps(config)
 print(config_dumped)
 config_loaded = json.loads(config_dumped)
@@ -33,6 +36,7 @@ marker_direction = marker_params[1]
 
 # config["real_settings"] = {}
 config["real_settings"]["pixel_2_real_ratio"] = board_width/config["board_settings"]["real_width"]
+
 # if board_width > board_height:
 #
 # else:

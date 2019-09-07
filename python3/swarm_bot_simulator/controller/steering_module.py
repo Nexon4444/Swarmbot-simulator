@@ -15,7 +15,8 @@ class Control(object):
     sensor_1lf = 45
     program_on_bot = False
 
-    def __init__(self, sensor_event_1lf, config):
+    # def __init__(self, sensor_event_1lf, config):
+    def __init__(self, config):
         if Control.program_on_bot:
             mraa.pwma = mraa.Pwm(20)
             mraa.pwma.period_us(1000)
@@ -35,11 +36,11 @@ class Control(object):
             mraa.b2 = mraa.Gpio(36)
             mraa.b2.dir(mraa.DIR_OUT)
 
-        self.sensor_event_1lf = sensor_event_1lf
+        # self.sensor_event_1lf = sensor_event_1lf
 
-        self.sensors_dict = {
-            "1lf": Sensor(Control.sensor_1lf, self.sensor_event_1lf, config=config)
-        }
+        # self.sensors_dict = {
+        #     "1lf": Sensor(Control.sensor_1lf, self.sensor_event_1lf, config=config)
+        # }
 
     def turn(self, time, pwm):
         if time < 0:
