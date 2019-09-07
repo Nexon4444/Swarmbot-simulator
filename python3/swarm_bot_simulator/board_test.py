@@ -52,7 +52,7 @@ Words in a constant name should be separated by an underscore
 import json
 
 from swarm_bot_simulator.model.board import *
-from swarm_bot_simulator.view.visualization.visualize import *
+from swarm_bot_simulator.view.visualization.visualization_module import *
 
 app_config = None
 

@@ -9,7 +9,7 @@ from threading import Event
 import math
 from shapely.geometry import Point
 from threading import Thread
-from swarm_bot_simulator.model.algorithm.bot_components import Bot, BotInfo
+from swarm_bot_simulator.model.algorithm.algorithm_module import Bot, BotInfo
 # from swarm_bot_simulator.model.algorithm import Bot, BotInfo
 import logging
 

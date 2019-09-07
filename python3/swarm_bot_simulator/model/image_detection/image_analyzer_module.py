@@ -7,7 +7,7 @@ import numpy as np
 from scipy.spatial import distance
 import operator
 import swarm_bot_simulator.utilities.util
-from swarm_bot_simulator.model.algorithm.bot_components import Vector
+from swarm_bot_simulator.model.algorithm.algorithm_module import Vector
 # from swarm_bot_simulator.model.algorithm import Vector
 import imutils
 from shapely.geometry import LineString

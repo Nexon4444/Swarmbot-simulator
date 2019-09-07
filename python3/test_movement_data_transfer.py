@@ -1,5 +1,5 @@
-from swarm_bot_simulator.model.simulation.simulator import *
-from swarm_bot_simulator.model.communication.information_transfer import *
+from swarm_bot_simulator.model.simulation.bot_manager_module import *
+from swarm_bot_simulator.model.communication.communication_module import *
 
 app_config = None
 with open(os.path.join("swarm_bot_simulator", "resources", "app_config.json"), "r", encoding="utf-8") as f:
@@ -8,7 +8,7 @@ with open(os.path.join("swarm_bot_simulator", "resources", "app_config.json"), "
 config = Config(app_config)
 board = Board(config)
 try:
-    simulator = Simulator(config)
+    simulator = Bot_manager(config)
     e = threading.Event()
     message = Message(MTYPE.SIMPLE, MovementData(Vector(0, 1), 90.0, 1, Movement.MOVE_PRIM))
     message_measure_line = Message(MTYPE.MACRO, MMACRO.MEASURE_LINE)

@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.DEBUG,
 # from swarm_bot_simulator.model.board import Board
 # import swarm_bot_simulator.controller.information_transfer as it
 from shapely.geometry import Point
-import swarm_bot_simulator.model.communication.information_transfer as it
+import swarm_bot_simulator.model.communication.communication_module as it
 # from swarm_bot_simulator.model.board import Board
 import math
 import copy
@@ -109,6 +109,7 @@ class Bot:
     def run_algorithm_with_communication(self):
         while True:
             self.get_info_from_server()
+            self.get_info_from_sensors()
             self.send_ready_to_server()
             if self.should_continue() is False:
                 break
@@ -454,11 +455,12 @@ class Bot:
     def move_to_position(self, bot_info, speed):
         # self.bot_info.dir = math.degrees()
         self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
-        self.forward(bot_info, speed)
+        self.conduct_forward(bot_info, speed)
+        # self.forward(bot_info, speed) ***
 
     def conduct_forward(self, bot_info, speed):
         t = self.physics_simulator.count_forward(bot_info, speed)
-
+        self.forward(bot_info, speed)
         if bot_info.is_real is True:
             self.hardware.forward(t, self.config["real_settings"]["pwm"])
 
@@ -480,7 +482,6 @@ class Bot:
 
     def conduct_turn(self, bot_info, absolute_dir):
         t = self.turn(bot_info, absolute_dir)
-
         if bot_info.is_real is True:
             self.hardware.turn(t, self.config["real_settings"]["pwm"])
 
@@ -498,6 +499,10 @@ class Bot:
                 + "\nspeed: " + str(self.bot_info_aware.speed)
                 + "\naccel: " + str(self.bot_info_aware.acceleration)
                 + "\ndir: " + str(self.bot_info_aware.dir))
+
+    def get_info_from_sensors(self):
+        pass
+
 
 class BotInfo:
     size_x = 20

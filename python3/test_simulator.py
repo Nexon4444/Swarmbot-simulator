@@ -1,5 +1,5 @@
-from swarm_bot_simulator.model.simulation.simulator import *
-from swarm_bot_simulator.model.communication.information_transfer import *
+from swarm_bot_simulator.model.simulation.bot_manager_module import *
+from swarm_bot_simulator.model.communication.communication_module import *
 
 app_config = None
 # python3/swarm_bot_simulator/resources/app_config.json
@@ -12,7 +12,7 @@ config = Config(app_config)
 # config.swarm_bots[0].movement.move_prim(5)
 board = Board(config)
 try:
-    simulator = Simulator(config)
+    simulator = Bot_manager(config)
     e = threading.Event()
     mess = Messenger(1, config, e)
     # mess.listen()

@@ -2,8 +2,8 @@
 import json
 import warnings
 import subprocess
-from swarm_bot_simulator.model.simulation.simulator import Simulator
-from swarm_bot_simulator.model.image_detection.video_analyzer import VideoAnalyzer
+from swarm_bot_simulator.model.simulation.bot_manager_module import Bot_manager
+from swarm_bot_simulator.model.image_detection.image_analyzer_module import VideoAnalyzer
 from swarm_bot_simulator.resources.config import config
 
 def launch_mosquitto(port):
@@ -55,7 +55,7 @@ print(config)
 # config.swarm_bots[0].messenger.subscribe(topic="test") #, message="test dzialaj")
 # config.swarm_bots[0].movement.move_prim(5)
 try:
-    simulator = Simulator(config)
+    simulator = Bot_manager(config)
     simulator.simulate()
 
 except ConnectionRefusedError as e:
