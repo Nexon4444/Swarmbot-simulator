@@ -6,8 +6,7 @@ if sys.version_info[0] > 2:
 else:
     from Queue import Queue
 
-# import swarm_bot_simulator.model.bot_components as comp
-# import MovementDataEncoder, MovementData, BotInfo, BotInfoEncoder, Vector, VectorEncoder
+
 from threading import *
 import paho.mqtt.client as mqtt
 import logging
@@ -68,11 +67,8 @@ class Messenger:
         self.receiver.loop_start()
 
     def subscribe(self, topic):
-        # print  topic
-
         self.receiver.subscribe(topic)
-        # print str("1/main").decode("UTF-8")
-        # self.client.subscribe(str("1/main").decode("UTF-8"))
+
 
     def on_subscribe(self, client, userdata, mid, granted_qos):
         self.log("Subscribed: " + str(client) + "")
@@ -99,21 +95,13 @@ class Messenger:
         self.receiver.loop_stop()
 
     def on_message(self, client, userdata, msg):
-        # global last_message
-        # topic = msg.topic
-        # self.x = 3
-        # logging.debug("received message: " + str(msg))
         m_decode = str(msg.payload.decode("utf-8"))
         # print("=========++++++++++++=============")
         self.receiver.last_messages.put(m_decode) #self.create_message_from_string(m_decode)
         self.log(str(self.name) + " received message: " + str(m_decode))
 
-        # if not Messenger.logging_on and Messenger.logging_mess_on:
-        #     logging.debug(str(self.name) + " received message: " + str(m_decode))
-
         self.receiver.mess_event.set()
-        # message = self.create_message_from_string(m_decode)
-        # x=3
+
 
     def send(self, topic=None, message="DEFAULT"):
         if isinstance(message, Message):
@@ -134,11 +122,7 @@ class Messenger:
     def get_message_type_from_string(type_str):
         if type_str in [mtype_str for key, mtype_str in MTYPE.__dict__.items()]:
             return MTYPE.__dict__[type_str]
-        # if type_str == "BOARD":
-        #     return MTYPE.BOARD
-        #
-        # elif type_str == "SIMPLE":
-        #     return MTYPE.SIMPLE
+
 
         else:
             return None
@@ -152,15 +136,6 @@ class Messenger:
         else:
             json_loaded = None
 
-        # mess_type = message_dict["type"]
-        # if mess_type is MTYPE.BOT_INFO:
-        #     return Message(mess_type, BotInfo(json_loaded))
-        # logging.debug('mess_str: ' + str(mess_str))
-        # logging.debug('message_dict: ' + str(message_dict))
-        # logging.debug('message_dict["id"]: ' + str(message_dict["id"]))
-        # logging.debug('Messenger.get_message_type_from_string(message_dict["type"]): ' + str(Messenger.get_message_type_from_string(message_dict["type"])))
-        # logging.debug('json_loaded: ' + str(json_loaded))
-
         return Message(message_dict["id"],
                        Messenger.get_message_type_from_string(message_dict["type"]),
                        json_loaded)
@@ -172,22 +147,17 @@ class Messenger:
         if Messenger.logging_on:
             logging.debug(msg)
 
-    # def set_last_message(self, message):
-    #     with self.last_message_lock:
-    #         self.last_messages.message
     def get_last_messages(self):
         result_dict = dict()
         while not self.receiver.last_messages.empty():
             last_message = Messenger.create_message_from_string(self.receiver.last_messages.get())
             result_dict[last_message.id] = last_message
 
-        # logging.debug("\n".join(str(el) for key, el in result_dict.items()))
         return result_dict
 
     def get_last_message(self):
         if self.receiver.last_messages:
             with self.last_message_lock:
-                # print(self.receiver.last_messages.get())
                 received = self.receiver.last_messages.get()
                 return Messenger.create_message_from_string(received)
         else:
@@ -231,16 +201,7 @@ class MSERVER:
 class Message:
     def __init__(self, id, type, content):
         import swarm_bot_simulator.model.algorithm_module as comp
-        # from model.board import BoardEncoder
-        # from model.bot_components import MovementDataEncoder
-        # if type is MTYPE.BOARD:
-        #     be = BoardEncoder()
-        #     self.message = be.encode(message)
-        # elif type is MTYPE.SIMPLE:
-        #     mde = MovementDataEncoder()
-        #     self.message = mde.encode(message)
-        # else:
-        #     self.message = message
+
         if isinstance(content, dict) and type == MTYPE.BOT_INFO:
             bot_info = comp.BotInfo()
             bot_info.from_dict(content)
@@ -251,10 +212,6 @@ class Message:
             board.from_dict(content)
             content = board
 
-        # elif isinstance(content, dict) and type == MTYPE.CONFIG:
-        #     config = content
-            # board.from_dict(content)
-            # content = board
 
         self.id = id
         self.content = content

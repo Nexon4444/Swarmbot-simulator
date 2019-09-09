@@ -10,7 +10,6 @@ class MainController:
 
     def start_serwer(self):
         # -*- coding: utf-8 -*-
-        import json
         import warnings
         import subprocess
         from swarm_bot_simulator.model.bot_manager_module import Bot_manager
@@ -23,14 +22,6 @@ class MainController:
             subprocess.Popen(["mosquitto", "-p", str(port)])
 
         launch_mosquitto(config["communication_settings"]["port"])
-        # os.system("cmd")
-        # os.system(str(mosquitto_path) + str (" -p ") + str(port))
-
-        # subprocess.Popen([ls, "-p", port])
-
-        # config_dumped = json.dumps(config)
-        # print(config_dumped)
-        # config_loaded = json.loads(config_dumped)
 
         img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
         camera = VideoAnalyzer(config)
@@ -47,13 +38,7 @@ class MainController:
         marker_transformed_poz_x = marker_transformed[0][0]
         marker_transformed_poz_y = marker_transformed[0][1]
 
-        # config["real_settings"] = {}
         config["real_settings"]["pixel_2_real_ratio"] = board_width / config["board_settings"]["real_width"]
-
-        # if board_width > board_height:
-        #
-        # else:
-        # config["real_bot_settings"] = {"real_time_max": }
 
         if config["bots"][0]["is_real"] is True:
             config["bots"][0]["direction"] = marker_direction
@@ -74,11 +59,9 @@ class MainController:
 
         while not self.quit_event.is_set():
             time.sleep(0.1)
-        # quit()
 
 
     def quit_program(self):
         self.quit_event.set()
         quit()
 
-    # def start_visualization(self):

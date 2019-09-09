@@ -1,12 +1,9 @@
 import pygame
 import cairocffi as cairo
-# from gi.repository import cairo
 from math import pi
 from PIL import Image
-from threading import Event
 import math
 from swarm_bot_simulator.model.algorithm_module import BotInfo
-# from swarm_bot_simulator.model.algorithm import Bot, BotInfo
 import logging
 
 class Visualizer:
@@ -37,7 +34,7 @@ class Visualizer:
         spacebar_not_pressed = True
         font = pygame.font.Font('freesansbold.ttf', 12)
 
-        text = font.render('Click spacebar to start simulation, click escape to end', True, Visualizer.black, Visualizer.white)
+        text = font.render('Click space-bar to start simulation, click escape to end, activate robot now', True, Visualizer.black, Visualizer.white)
 
         # create a rectangular object for the
         # text surface object

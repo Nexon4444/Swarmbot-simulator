@@ -295,20 +295,14 @@ class Bot:
         for key, bot_info in visible_bots.items():
             dist = self.distance(bot_info)
             steer = self.separation_steer(bot_info, dist, steer, visible_bots)
-            # print(str(self.bot_info))
-            # print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
 
         self.correct_separation(steer, visible_bots)
-        # steer.invert()
-        # print("steer" + str(steer))
+
         return steer
-        # if steer.magnitude() > 0:
-        #     steer.normalize()
-        #     steer.
+
 
     def separation_steer(self, bot, dist, steer, visible_bots):
-        # self.distance()
-        # diff = Vector2(0, 0)
+
         if self.bot_settings["separation_distance"] < dist:
             return Vector(0, 0)
 
@@ -317,7 +311,6 @@ class Bot:
         diff_vec.normalize()
         steer.sub_vector(diff_vec)
 
-        # print("diff: " + str(diff_vec))
         return steer
 
     def correct_separation(self, steer, visible_bots):
@@ -345,10 +338,7 @@ class Bot:
         if visible_bots_amount is not 0:
             steer.div_scalar(len(visible_bots))
         return self.seek(steer)
-        # print(str(self.bot_info))
-        # print("distance from bot: " + str(bot.bot_info.bot_id) + " :" + str(self.distance(bot)))
 
-        # return Vector(0, 0)
 
     def cohesion_steer(self, bot, dist, steer, visible_bots):
         if dist > self.bot_settings["cohesion_distance"]:
@@ -363,8 +353,7 @@ class Bot:
         for key, bot_info in visible_bots.items():
             dist = self.distance(bot_info)
             steer = self.alignment_steer(bot_info, dist, steer, visible_bots)
-            # print(str(self.bot_info))
-            # print("distance from bot: " + str(bot_info.bot_id) + " :" + str(self.distance(bot_info)))
+
 
         visible_bot_amount = len(visible_bots)
         if visible_bot_amount is not 0:
@@ -396,11 +385,6 @@ class Bot:
             self.control.lf_sensor.add_pulse()
             self.bot_info_sensor.position.x += 1
             line_event.clear()
-        # return next_bot_real
-
-        # next_bot_real = copy.deepcopy(self.bot_real)
-        # next_bot_real.position.x += 1
-        # return next_bot_real
 
     def get_model_info(self):
         pass
@@ -423,21 +407,6 @@ class Bot:
                            if bot_info.bot_id != self.bot_info_aware.bot_id}
             return all_bots_cp
 
-        # visible_bots = []
-        # self_point = (self.bot_info.position.x, self.bot_info.position.y)  # self.bot_info.position
-        # left_cone_angle = self.bot_info.dir - Bot.view_cone / 2
-        # right_cone_angle = self.bot_info.dir + Bot.view_cone / 2
-        #
-        # side = math.cos(Bot.view_cone / 2) * Bot.view_range
-        # left = (math.sin(left_cone_angle) * side, math.cos(left_cone_angle) * side)
-        # right = (math.sin(right_cone_angle) * side, math.cos(right_cone_angle) * side)
-        # triangle = Polygon([self_point, right, left])
-        #
-        # for bot in model.all_bots:
-        #     if triangle.contains(Point(bot.bot_info.position.x, bot.bot_info.position.y)):
-        #         visible_bots.append(bot)
-
-        # return visible_bots
 
     def distance(self, bot_info):
         return self.bot_info_aware.position.distance(bot_info.position)
@@ -470,10 +439,9 @@ class Bot:
         self.bot_info_aware.acceleration.mul_scalar(0)
 
     def move_to_position(self, bot_info, speed):
-        # self.bot_info.dir = math.degrees()
         self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
         self.conduct_forward(bot_info, speed)
-        # self.conduct_forward(bot_info, speed) ***
+
 
     def conduct_forward(self, bot_info, speed):
         t = self.forward(bot_info, speed)
@@ -502,11 +470,6 @@ class Bot:
             return absolute_dir - bot_info.dir
         else:
             return 360 - (absolute_dir - bot_info.dir)
-
-    # def conduct_turn(self, bot_info, absolute_dir):
-    #     t = self.turn(bot_info, absolute_dir)
-    #     if bot_info.is_real is True:
-    #         self.control.turn(t, self.config["real_settings"]["pwm"])
 
 
     def stop(self):
@@ -706,6 +669,3 @@ class BoardEncoder(JSONEncoder):
         else:
             return json.JSONEncoder.default(self, o)
 
-# l = Line(0.0, 1, 0)
-# print(str(l.get_point_a_length_away_from((0, 0), math.sqrt(1))))
-# l.turn((0, 0), math.pi/2)

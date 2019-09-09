@@ -32,11 +32,6 @@ class PhysicsSimulator:
         else:
             bot_info.position.add_vector(dist_vec)
 
-        # vector_forward = poz_forward - bot_info.position
-        #
-        # vec = bot_info.position
-        # vec = Vector.create_vec_from_dir_length(bot_info.direction, dist_vec)
-
 
     def count_normal_forward(self, x_gauss, y_gauss, real_length):
         real_time = self.convert_cm2pix(real_length)

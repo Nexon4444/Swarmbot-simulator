@@ -137,10 +137,6 @@ class Detector:
         marker_parameters = self.find_marker_parameters(marker, imgScale)
 
         board_parameters = self.remember(board_parameters)
-        # print("board_parameters: " + str(board_parameters))
-        # print("marker_parameters: " + str(marker_parameters))
-
-        # M = self.transform(board_parameters)8888
 
         box_transformed, triangle_transformed = self.get_board_marker_translated_positions(board_parameters, marker_parameters)
 
@@ -178,33 +174,22 @@ class Detector:
                 cv2.waitKey(0)
 
     def detect_shape(self, c):
-        # initialize the shape name and approximate the contour
         shape = "unidentified"
         approx = self.approximate(c)
 
-        # if the shape is a triangle, it will have 3 vertices
         if len(approx) == 3:
             shape = "triangle"
 
-        # if the shape has 4 vertices, it is either a square or
-        # a rectangle
         elif len(approx) == 4:
-            # compute the bounding box of the contour and use the
-            # bounding box to compute the aspect ratio
+
             (x, y, w, h) = cv2.boundingRect(approx)
             ar = w / float(h)
 
-            # a square will have an aspect ratio that is approximately
-            # equal to one, otherwise, the shape is a rectangle
             shape = "square" if ar >= 0.95 and ar <= 1.05 else "rectangle"
-        # if the shape is a pentagon, it will have 5 vertices
         elif len(approx) == 5:
             shape = "pentagon"
-        # otherwise, we assume the shape is a circle
-        else:
-            shape = "circle"
 
-        # return the name of the shape
+
         return shape
 
     def approximate(self, contour):
@@ -253,11 +238,6 @@ class Detector:
         center = (cX, cY)
 
 
-        # cv2.circle(board_img, (cX, cY), 5, (255, 255, 255), -1)
-        # cv2.putText(board_img, "centroid", (cX - 25, cY - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
-        # cv2.drawContours(board_img, [box], 0, (0, 255, 0), 3)
-        # self.show_and_wait(board_img, "board")
-
         return center, rect_par, box
 
     def find_marker_parameters(self, image, ratio):
@@ -267,14 +247,13 @@ class Detector:
         triangle = None
         center = None
         for indx, c in enumerate(cnts):
-            # compute the center of the contour, then detect the name of the
-            # shape using only the contour
+
             M = cv2.moments(c)
             area = M["m00"]
 
             if area == 0:
                 continue
-            # shape = self.detect_shape(c)
+
             shape = self.detect_shape(c)
             if shape == "triangle":
                 areas[indx] = area
@@ -289,10 +268,7 @@ class Detector:
         aprox = np.int0(aprox)
         seg1, seg2, seg3 = self.get_oriented_triangle_points(aprox)
         x = 3
-        # board = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
-        # rect = cv2.minAreaRect(largest_cont)
-        # box = cv2.boxPoints(rect)
-        # box = np.int0(box)
+
         return center, math.degrees(self.angle(seg1, seg2, seg3)), [el[0] for el in aprox]
 
     def rectangle_params(self, points):
@@ -348,9 +324,7 @@ class Detector:
         mask2 = cv2.inRange(hsv, lower_red, upper_red)
 
         mask = mask1+mask2
-        # The bitwise and of the frame and mask is done so
-        # that only the blue coloured objects are highlighted
-        # and stored in res
+
         res = cv2.bitwise_and(image, image, mask=mask)
 
         # cv2.imshow('image', image)
@@ -413,31 +387,3 @@ class VideoAnalyzer:
         except ValueError as e:
             print("IMAGE ERROR")
             print(e)
-
-# from swarm_bot_simulator.resources.config import config
-# img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
-# img = cv2.imread(img_path)
-# det = Detector(config)
-# det.analyze_image(img, 0.3)
-# camera = Camera()
-# camera.load_video()
-# v = Vector(-1, 0)
-# print(str(math.degrees(v.get_angle())))
-
-# img_path = "E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\python\\swarm_bot_simulator\\resources\\kartka.jpg"
-# img_path = "E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\python\\swarm_bot_simulator\\resources\\plansza.jpg"
-# img_path = "E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\python\\swarm_bot_simulator\\resources\\trojkat.jpg"
-# sd = ShapeDetector()
-# # print(str(math.degrees(sd.angle((5, 0), (0, 0), (3, 2)))))
-# imgScale = 0.2
-# sd.analyze_image(img_path, imgScale)
-
-# print("oriented_triangle_points" + str(sd.get_oriented_triangle_points()))
-# img_path = "E:\\Users\\Maciej\\Studia\\Praca dyplomowa\\Kod\\Swarmbot-simulator github repo\\python\\swarm_bot_simulator\\resources\\Prostokat.jpg"
-# imgScale = 1
-# img = sd.filter_board(img_path, imgScale)
-
-# cnts = sd.contourize(img)
-# sd.find_board_parameters(img, cnts, imgScale)
-# cv2.imshow("thresh", thresh)
-

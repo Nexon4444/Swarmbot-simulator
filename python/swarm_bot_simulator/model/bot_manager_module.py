@@ -2,15 +2,12 @@
 # from typing import Dict, Any
 import time
 
-# from swarm_bot_simulator.controller.information_transfer import Message
 from swarm_bot_simulator.model.algorithm_module import Board, Bot
 from swarm_bot_simulator.utilities import util
 from swarm_bot_simulator.view.visualization_module import Visualizer
-# from swarm_bot_simulator.model.bot_components import *
 from swarm_bot_simulator.model.communication_module import *
 from swarm_bot_simulator.utilities.util import merge_two_dicts
 from swarm_bot_simulator.model import image_analyzer_module as va
-from swarm_bot_simulator.controller.controller_module import MainController
 import threading, queue
 
 
@@ -40,7 +37,6 @@ class Bot_manager:
 
     def simulate(self):
         q = queue.Queue()
-        # q.put()
         self.simulate_bots()
         board_activation_event = threading.Event()
         board_activation_event.clear()
@@ -68,26 +64,16 @@ class Bot_manager:
         self.t_talk.join()
 
     def visualization_thread(self, q, board_activation_event, start_simulation_event):
-
         vis = Visualizer(self.config["board_settings"], board_activation_event, start_simulation_event)
         stop = False
         vis.visualize(q)
-
-        # while not stop:
-        # stop = vis.visualize(q)
 
     def simulate_bots(self):
         for bot in self.bots:
             bot.start_thread()
 
-    def simulate_movement(self):
-        pass
-
     def communicate(self, bot_info):
-        # me = .encode
         me = MessageEncoder()
-        # bie = BotInfoEncoder()
-        # encoded_string = me.encode(Message(MTYPE.BOT_INFO, bot_info))
         encoded_string = me.encode(Message(self.id, MTYPE.BOT_INFO, bot_info))
         self.messenger.send(message=encoded_string)
 
@@ -104,7 +90,6 @@ class Bot_manager:
     def await_ready(self):
         """
         Blocking
-        :return:
         """
         start = time.time()
         all_messages_received = False
@@ -120,28 +105,15 @@ class Bot_manager:
 
                     all_messages_received = False
                     end = time.time()
-                    # log_flush("NO READY FROM: " + str(bot_id) + " ", start, end)
-                    # logging.debug("NOT ALL READY messages received from all bots")
                     break
-
-            # time.sleep(0.1)
-
         print("\n")
-        # logging.debug("READY messages received from all bots")
 
-    # def perform(fun, *args):
-    #     fun(*args)
     def communicate_with_bots(self, q, board_activation_event, start_simulation_event, quit_event, config):
         start_simulation_event.wait()
         self.synchronise_with_camera()
         logging.debug("communication starting")
-        # self.send_server_info()
-        # self.send_server_info()
-        # self.await_ready()
         self.await_ready_resend(2, self.send_server_info)
         logging.debug("waiting for ready from bots")
-        # self.await_ready()
-        # time.sleep(0.1)
         self.send_config(config)
         self.await_ready()
         board_activation_event.set()
@@ -180,15 +152,12 @@ class Bot_manager:
                             or messages[bot_id].content != MSERVER.READY:
 
                         all_messages_received = False
-                        # log_flush("NO READY FROM: " + str(bot_id) + " ", start, end)
                         logging.debug("NOT ALL READY messages received from all bots")
                         logging.debug("received: " + str(messages))
                 if all_messages_received:
                     return
 
                 time.sleep(1)
-
-            # time.sleep(0.1)
 
         print("\n")
 
@@ -204,12 +173,9 @@ class Bot_manager:
                 if bot_id not in messages or messages[bot_id].type != MTYPE.BOARD:
                     all_messages_received = False
                     end = time.time()
-                    # log_flush("NO BOARD FROM BOT: " + bot_id, start, end)
                     break
-            # time.sleep(0.01)
 
         print("\n")
-        # logging.debug("BOARD messages received from all bots")
 
     def await_bot_info(self):
         received_messages = None
@@ -224,21 +190,11 @@ class Bot_manager:
                 if bot_id not in messages or messages[bot_id].type != MTYPE.BOT_INFO:
                     all_messages_received = False
                     end = time.time()
-                    # log_flush("NOT ALL BOT_INFO messages received from all bots: ", start, end)
                     break
-            # time.sleep(1)
 
         print("\n")
-        # logging.debug("BOARD messages received from all bots")
         return received_messages
 
-    # python
-    #     me = MessageEncoder()
-    #
-    #     if order == "continue":
-    #         encoded_string = me.encode(Message(self.id, MTYPE.ALGORITHM_COMMAND, MALGORITHM_COMMAND.CONTINUE))
-    #         self.messenger.send(message=encoded_string)
-    #     else
 
     def send_continue(self):
         me = MessageEncoder()
@@ -247,14 +203,8 @@ class Bot_manager:
 
     def send_config(self, config):
         me = MessageEncoder()
-        # encoded_string =
         encoded_string = me.encode(Message(self.id, MTYPE.CONFIG, config))
         self.messenger.send(message=encoded_string)
-
-
-        # x = self.messenger.get_last_messages()
-        # logging.debug(str(self.messenger.get_last_messages()))
-        # logging.debug("Stopping simulation")
 
     def get_info_from_bots(self):
         messages_dict = self.await_bot_info()
@@ -268,8 +218,6 @@ class Bot_manager:
 
                 photo_params = self.video_analyser.load_photo(img_path)
                 board_params = photo_params[0]
-                board_width = board_params[1][0]
-                board_height = board_params[1][1]
                 marker_params = photo_params[1]
                 marker_transformed = photo_params[2]
                 marker_transformed_poz_x = marker_transformed[0][0]
