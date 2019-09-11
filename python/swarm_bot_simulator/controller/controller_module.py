@@ -9,7 +9,6 @@ class MainController:
         self.quit_event.clear()
 
     def start_serwer(self):
-        # -*- coding: utf-8 -*-
         import warnings
         import subprocess
         from swarm_bot_simulator.model.bot_manager_module import Bot_manager

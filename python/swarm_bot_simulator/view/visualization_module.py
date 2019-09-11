@@ -36,8 +36,6 @@ class Visualizer:
 
         text = font.render('Click space-bar to start simulation, click escape to end, activate robot now', True, Visualizer.black, Visualizer.white)
 
-        # create a rectangular object for the
-        # text surface object
         textRect = text.get_rect()
         textRect.center = (self.size[0]/ 2, 25)
         while spacebar_not_pressed:
@@ -46,9 +44,7 @@ class Visualizer:
             self.draw_board(game_display)
             clock.tick(10)
             for event in pygame.event.get():
-                # logging.debug(str(event))
                 if event.type == pygame.QUIT:
-                    # self.controller.
                     pygame.quit()
                     quit()
 
@@ -79,13 +75,10 @@ class Visualizer:
                     pygame.quit()
                     quit()
 
-            # display_bot(bot_image, 200, 200, 100)
-            # bot1.draw()
             for key, bot_data in board.bots_info.items():
                 image = BotImage(bot_data, game_display)
                 image.draw(left_top_corner, ratio)
-            # bot1 = BotImage(100, 100, 0, 40, 40, game_display)
-            # bot1.change_poz(0, 0, -11)
+
             x += 2
             self.log("Displaying board: {" + str(board) + "}")
             pygame.display.update()
@@ -112,9 +105,6 @@ class Visualizer:
                                                         draw_size[0],
                                                         draw_size[1]), 7)
         return left_top_corner, ratio
-
-
-
 
 class BotImage:
     COLOURS = {
@@ -157,7 +147,6 @@ class BotImage:
                 'RGBA', (cairo_surface.get_width(),
                          cairo_surface.get_height()),
                 bytes(cairo_surface.get_data()), 'raw', 'BGRA', 0, 1)
-                # cairo_surface.get_data().tobytes(), 'raw', 'BGRA', 0, 1)
 
             return img.tobytes('raw', 'RGBA', 0, 1)
         return pygame.image.frombuffer(

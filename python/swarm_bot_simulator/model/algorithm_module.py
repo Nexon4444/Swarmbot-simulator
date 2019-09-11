@@ -8,45 +8,31 @@ logging.basicConfig(level=logging.DEBUG,
                     format='(%(threadName)-10s) %(message)s',
                     )
 
-# from swarm_bot_simulator.model.board import Board
-# import swarm_bot_simulator.controller.information_transfer as it
-# from shapely.geometry import Point
 import swarm_bot_simulator.model.communication_module as it
-# from swarm_bot_simulator.model.board import Board
 import math
 import copy
 import threading
 from swarm_bot_simulator.model.simulation_module import PhysicsSimulator
-
-# from swarm_bot_simulator.model.simulation.physical import SimulatedBot
 
 class Commands:
     FORWARD = "FORWARD"
     TURN = "TURN"
 
 class Bot:
-    # last_id = 0
     view_range = 1000
     view_cone = 60
 
-    # def __init__(self, bot_info, info_sent_event, config):
     def __init__(self, bot_id, broker, port):
         self.id = str(bot_id)
-        # self.communication_settings = config["communication_settings"]
-        # self.bot_settings = config["bot_settings"]
-        # self.board_settings = config["board_settings"]
         self.bot_settings = None
         self.board_settings = None
 
         self.physics_simulator = None
         self.config = None
-        self.bot_info_aware = None
+        self.bot_info = None
         self.bot_info_real = None
         self.bot_info_sensor = None
         self.simulated_bot = None
-        # self.info_sent_event = info_sent_event
-        # self.bot_info_seBotInfo(parsed_bot_info, config.bot_settings)
-        # self.bot_info_real = BotInfo(parsed_bot_info, config.bot_settings)
 
         self.mess_event = threading.Event()
         self.messenger = it.Messenger(name=str(bot_id),
@@ -54,7 +40,6 @@ class Bot:
                                       port=port,
                                       mess_event=self.mess_event)
 
-        # self.messenger.subscribe(self.bot_info.bot_id)
         self.movement = Movement(communication_channel=bot_id, messenger=self.messenger)
 
         self.lock = threading.Lock()
@@ -127,11 +112,6 @@ class Bot:
             self.orientiate()
         else:
             self.mock_orientiate()
-            # self.mock_front()
-
-    # def orientiate(self):
-    #     calc = SimulatedBot()
-    #     self.bot_info_achieved = calc.calculate(self.bot_info_aware.get_data_to_calc())
 
     def mock_turn(self, dir):
         pass
@@ -144,7 +124,7 @@ class Bot:
         self.messenger.send(message=mes)
 
     def send_bot_info_to_server(self):
-        mes = it.Message(id=self.id, type=it.MTYPE.BOT_INFO, content=self.bot_info_aware)
+        mes = it.Message(id=self.id, type=it.MTYPE.BOT_INFO, content=self.bot_info)
         self.messenger.send(message=mes)
 
     def send_ready_to_server(self):
@@ -168,11 +148,6 @@ class Bot:
         self.mess_event.wait()
         received = self.messenger.get_last_message()
         logging.debug("received from server: " + str(received))
-        # while not received.type == it.MTYPE.SERVER:
-        #     self.mess_event.clear()
-        #     self.mess_event.wait()
-        #     received = self.messenger.get_last_message()
-
         logging.debug("received init_info from server")
         self.messenger.add_topic_to_send(str(received.content))
         self.mess_event.clear()
@@ -181,21 +156,17 @@ class Bot:
 
     def get_info_from_server(self):
         self.mess_event.wait()
-        # bot_info = BotInfo()
         received = self.messenger.get_last_message()
         if received.type == it.MTYPE.ALGORITHM_COMMAND and received.content == it.MALGORITHM_COMMAND.STOP:
-            logging.debug("quiting robot with ID: " + str(self.bot_info_aware.bot_id))
+            logging.debug("quiting robot with ID: " + str(self.bot_info.bot_id))
             exit()
 
         self.board = received.content
-        # x = received.content.bots_info["1"]
         self.set_init_values(received.content.bots_info[str(self.id)])
         self.mess_event.clear()
-        # self.messenger.
 
     def get_config_from_server(self):
         self.mess_event.wait()
-        # bot_info = BotInfo()
         received = self.messenger.get_last_message()
         while received.type is not it.MTYPE.CONFIG:
             self.mess_event.clear()
@@ -214,7 +185,7 @@ class Bot:
         self.control = Control(bot_id=self.id, config=config)
 
     def set_init_values(self, bot_info):
-        self.bot_info_aware = copy.deepcopy(bot_info)
+        self.bot_info = copy.deepcopy(bot_info)
         self.bot_info_real = copy.deepcopy(bot_info)
         self.bot_info_sensor = copy.deepcopy(bot_info)
 
@@ -227,11 +198,10 @@ class Bot:
             self.line = self.line + 1
 
     def update_board_info(self):
-        self.board.bots_info[self.id] = self.bot_info_aware
+        self.board.bots_info[self.id] = self.bot_info
 
     def update_real_data(self):
-        # bot_info_list = self.get_sensor_info()
-        self.bot_info_aware = self.negotiate(self.bot_info_aware, self.bot_info_sensor)
+        self.bot_info = self.negotiate(self.bot_info, self.bot_info_sensor)
 
     def negotiate(self, bot_info, bot_real):
         bot_info.position.x = bot_real.position.x
@@ -246,25 +216,20 @@ class Bot:
         return BotInfo()
 
     def initialize_comm(self):
-        # topic_name = "swarm_bot" + str(self.bot_info.bot_id)
         self.messenger = it.Messenger(name=self.name, communication_settings=self.communication_settings)
 
     def comm_out(self):
-        self.messenger.send(self.bot_info_aware)
+        self.messenger.send(self.bot_info)
 
     def comm_in(self):
         self.messenger.recieve()
 
     def update_data(self):
-        self.comm_out(self.bot_info_aware.serialize())
+        self.comm_out(self.bot_info.serialize())
         self.board = self.comm_in()
 
     def designate_coords(self):
         self.update_data()
-
-    # def move(self, vec):
-    #     self.bot_info.position.add_vector(vec)
-    # self.update_data()
 
     def calibrate(self):
         pass
@@ -286,9 +251,6 @@ class Bot:
         self.apply_force(sep)
         self.apply_force(ali)
         self.apply_force(coh)
-
-        # self.set_direction()
-
 
     def separation(self, visible_bots):
         steer = Vector(0, 0)
@@ -319,12 +281,12 @@ class Bot:
         if steer.magnitude() > 0:
             steer.normalize()
             steer.mul_scalar(self.bot_settings["max_speed"])
-            steer.sub_vector(self.bot_info_aware.speed)
+            steer.sub_vector(self.bot_info.speed)
             steer.limit(self.bot_settings["max_force"])
 
     def points2vector(self, bot_info):
-        diff_poz = (bot_info.position.x - self.bot_info_aware.position.x,
-                         bot_info.position.y - self.bot_info_aware.position.y)
+        diff_poz = (bot_info.position.x - self.bot_info.position.x,
+                         bot_info.position.y - self.bot_info.position.y)
         diff_vec = Vector(diff_poz[0], diff_poz[1])
         return diff_vec
 
@@ -374,7 +336,7 @@ class Bot:
 
         steer.normalize()
         steer.mul_scalar(self.bot_settings["max_speed"])
-        steer.sub_vector(self.bot_info_aware.speed)
+        steer.sub_vector(self.bot_info.speed)
         steer.limit(self.bot_settings["max_force"])
         return steer
 
@@ -404,42 +366,42 @@ class Bot:
         assert isinstance(self.bot_settings["view_mode_is_omni"], bool)
         if self.bot_settings["view_mode_is_omni"] is True:
             all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in self.board.bots_info.items()
-                           if bot_info.bot_id != self.bot_info_aware.bot_id}
+                           if bot_info.bot_id != self.bot_info.bot_id}
             return all_bots_cp
 
 
     def distance(self, bot_info):
-        return self.bot_info_aware.position.distance(bot_info.position)
+        return self.bot_info.position.distance(bot_info.position)
 
     def apply_force(self, sep):
-        self.bot_info_aware.acceleration.add_vector(sep)
+        self.bot_info.acceleration.add_vector(sep)
 
     def seek(self, vec):
         desired = Vector(0, 0)
         desired.add_vector(vec)
         desired.normalize()
         desired.mul_scalar(self.bot_settings["max_speed"])
-        desired.sub_vector(self.bot_info_aware.speed)
+        desired.sub_vector(self.bot_info.speed)
         desired.limit(self.bot_settings["max_force"])
         # desired.invert()
         return desired
 
     def borders(self):
-        next_pos = self.bot_info_aware.position + self.bot_info_aware.speed
+        next_pos = self.bot_info.position + self.bot_info.speed
         if next_pos.in_borders(Vector(self.board_settings["border_x"], self.board_settings["border_y"])) is False:
             self.stop()
 
     def update(self):
-        self.bot_info_aware.acceleration.mul_scalar(1)
+        self.bot_info.acceleration.mul_scalar(1)
 
-        self.bot_info_aware.speed.add_vector(self.bot_info_aware.acceleration)
-        self.bot_info_aware.speed.limit(self.bot_settings["max_speed"])
-        self.move_to_position(self.bot_info_aware, self.bot_info_aware.speed)
+        self.bot_info.speed.add_vector(self.bot_info.acceleration)
+        self.bot_info.speed.limit(self.bot_settings["max_speed"])
+        self.move_to_position(self.bot_info, self.bot_info.speed)
 
-        self.bot_info_aware.acceleration.mul_scalar(0)
+        self.bot_info.acceleration.mul_scalar(0)
 
     def move_to_position(self, bot_info, speed):
-        self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
+        self.conduct_turn(bot_info, self.bot_info.speed.get_angle())
         self.conduct_forward(bot_info, speed)
 
 
@@ -473,18 +435,17 @@ class Bot:
 
 
     def stop(self):
-        self.bot_info_aware.speed.set_xy(0, 0)
+        self.bot_info.speed.set_xy(0, 0)
 
     def __del__(self):
         pass
-        # self.listen_lf.join()
 
     def __str__(self):
-        return ("\nbot ID: " + str(self.bot_info_aware.bot_id)
-                + "\nposition: " + str(self.bot_info_aware.position)
-                + "\nspeed: " + str(self.bot_info_aware.speed)
-                + "\naccel: " + str(self.bot_info_aware.acceleration)
-                + "\ndir: " + str(self.bot_info_aware.dir))
+        return ("\nbot ID: " + str(self.bot_info.bot_id)
+                + "\nposition: " + str(self.bot_info.position)
+                + "\nspeed: " + str(self.bot_info.speed)
+                + "\naccel: " + str(self.bot_info.acceleration)
+                + "\ndir: " + str(self.bot_info.dir))
 
     def get_info_from_sensors(self):
         pass
@@ -634,17 +595,8 @@ class Board:
         self.bots_info = {key: BotInfo() for key, bot_info in bots_info_to_parse.items()}
         for key, bot_info in self.bots_info.items():
             bot_info.from_dict(bots_infos_dicts[key])
-        # self.bots_info = {key: empty_bot_infos[key].from_dict(bots_infos_dicts[key]) for key, bot_info in empty_bot_infos.items()}
-        # bot_info = BotInfo()
-        # bot_info.dict2bot_info(json.loads(x["1"]))
-        # self.bots_info = json.load(board_dict["bots_info"])
-        # json_loaded = json.loads(self.bots_info)
-        # message_dict = literal_eval(self.bots_info)
-        #
-        # x=3
 
     def __str__(self):
-        # bot_list = [str(bot) for bot in self.all_bots_data]
         return "\n".join(self.__dict__)
 
     def calibrate(self):

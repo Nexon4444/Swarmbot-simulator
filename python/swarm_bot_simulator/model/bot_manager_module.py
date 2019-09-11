@@ -245,7 +245,6 @@ class Bot_manager:
         me = MessageEncoder()
         encoded_string = me.encode(Message(self.id, MTYPE.ALGORITHM_COMMAND, MALGORITHM_COMMAND.STOP))
         self.messenger.send(message=encoded_string)
-
         quit()
 
 

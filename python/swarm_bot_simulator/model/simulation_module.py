@@ -52,7 +52,4 @@ class PhysicsSimulator:
 
     def convert_cm2sec(self, cm):
         return 1 / self.config["real_settings"]["cm_per_sec"] * cm
-# print(np.random.normal(0, 0))
 
-# for x in range(0, 100):
-#     print(np.random.normal(1, 11))

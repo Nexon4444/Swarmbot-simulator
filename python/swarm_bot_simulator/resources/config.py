@@ -1,7 +1,4 @@
 config = {
-  "simulation_settings":{
-    "simple_commands": False
-  },
   "view_settings":{
     "launch": True
   },

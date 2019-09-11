@@ -15,9 +15,7 @@ def log_flush(message, start, stop):
                         )
     time = stop - start
 
-    # logging.debug('wat wat')
     sys.stdout.write(str(message) + str(time))
-    # logging.debug((str(message) + str(time)))
     sys.stdout.write('\r')
     sys.stdout.flush()
 
@@ -45,26 +43,18 @@ class Vector:
             vec = Vector.direction2normalized_vector(args[0])
             self.set_xy(vec.x, vec.y)
 
-        # elif len(args) == 1 and isinstance(args[0], pymunk.Vec2d):
-        #     self.x = args[0][0]
-        #     self.y = args[0][1]
-
         elif len(args) == 2:
             self.x = args[0]
             self.y = args[1]
 
         elif len(args) == 3:
             self.points_direction2vector(args[0], args[1], args[2])
-        # self.y = y
 
     @staticmethod
     def direction2normalized_vector(direction):
         vec = Vector(sin(direction), cos(direction))
         vec.normalize()
         return vec
-
-    # def direction_and_length2vector(self, direction, l):
-
 
     def get_points_after_attaching_point(self, point):
         start = Vector(point)
@@ -80,7 +70,6 @@ class Vector:
         vec.mul_scalar(magnitude)
         self.x = vec.x
         self.y = vec.y
-    # def turn_abs(self, angle):
 
     def list2vector(self, vector_list):
         self.x = vector_list[0]
@@ -115,7 +104,6 @@ class Vector:
     def div_scalar(self, scalar):
         self.x = self.x / scalar
         self.y = self.y / scalar
-    # , self.vec.y / scalar)
 
     def add_vector(self, vec):
         self.x = self.x + vec.x
@@ -255,15 +243,6 @@ class Line:
         x1 = cos(degrees)*x0 - sin(degrees)*y0
         y1 = sin(degrees)*x0 + cos(degrees)*y0
 
-
-        # theta = math.atan(B/A)
-        # beta = theta+degrees
-        #
-        # p = -C/math.sqrt(A**2 + B**2)
-        # pnew = p + x0*(math.cos(beta)-math.cos(theta)) + y0 * (math.sin(beta)-math.sin(theta))
-        # x=3
-
-
     def get_point_a_length_away_from(self, point, distance):
         xp = point[0]
         yp = point[1]
@@ -298,22 +277,3 @@ class Line:
             y1 = y2 = -C/B
 
         return [(x1, y1), (x2, y2)]
-
-# vec = Vector.create_vec_from_dir_length(math.pi/2, 4)
-# print(vec)
-# # print(cos(4*math.pi/2))
-# # vec = Vector(2*math.pi/4)
-# #
-# # print(str(vec))
-# # vec.turn(math.pi/2)
-# # print(str(vec))
-# # print(str(math.degrees(vec.get_angle())))
-# # import time, sys
-# #
-# # t = 0
-# # while True:
-# #     print('Seconds passed:', t, end='')
-# #     sys.stdout.flush()
-# #     time.sleep(1)
-# #     t += 1
-# #     # print('\b'*20, end='')

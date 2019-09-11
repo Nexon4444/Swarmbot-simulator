@@ -23,8 +23,10 @@ class Detector:
             Detector.show_images = True
         else:
             Detector.show_images = False
+
         self.remembered_flag = False
         self.remembered_board = None
+
     def angle(self, seg1, seg2, dist_point):
         Ax = seg1[0]
         Ay = seg1[1]
@@ -123,12 +125,9 @@ class Detector:
         else:
             return board_parameters
 
-
     def analyze_image(self, img, imgScale):
-        # img = cv2.imread(img_path)
         newX, newY = img.shape[1] * imgScale, img.shape[0] * imgScale
         resized = cv2.resize(img, (int(newX), int(newY)))
-        # self.show_and_wait(resized, "resized")
 
         marker = self.filter_marker(resized)
         board = self.filter_board(resized)
@@ -206,7 +205,6 @@ class Detector:
 
     def find_board_parameters(self, image, ratio):
         cnts = self.contourize(image)
-        # cnt_array = np.asarray(cnts)
         areas = dict()
 
         for indx, c in enumerate(cnts):
@@ -221,7 +219,6 @@ class Detector:
                 areas[indx] = area
                 continue
 
-        # print("max: " + str(max(areas, key=areas.get)))
         largest_cont = cnts[max(areas, key=areas.get)]
 
         board_img = np.zeros((image.shape[0], image.shape[1], 3), np.uint8)
@@ -281,7 +278,6 @@ class Detector:
         return distances_list
 
     def get_oriented_triangle_points(self, cont):
-        # pom = cont[0][0][0]
         p0 = cont[0][0]
         p1 = cont[1][0]
         p2 = cont[2][0]
@@ -361,9 +357,6 @@ class VideoAnalyzer:
             img_resp = requests.get(url=self.photo_url)
             im_arr = np.array(bytearray(img_resp.content), dtype=np.uint8)
             img = cv2.imdecode(im_arr, -1)
-            # newX, newY = img.shape[1], img.shape[0]
-            # img = cv2.resize(img, (int(newX), int(newY)))
-            # cv2.imshow("AndroidCam", img)
             self.analyze(img)
             if cv2.waitKey(1) == 27:
                 break

@@ -18,7 +18,6 @@ class Control(object):
     sensor_1lf = 45
 
     def __init__(self, bot_id=None, sensor_event_1lf=None, config=None, on_robot=False):
-        # on_robot = False
         if bot_id is not None:
             for bot in config["bots"]:
                 if bot["bot_id"] == bot_id and bot["is_real"]:
@@ -104,7 +103,6 @@ class Control(object):
         mraa.b2.write(0)
         mraa.pwma.write(0)
         mraa.pwma.write(0)
-        # time.sleep(0.1)
 
     def forward(self, tide, pwm):
         print("driving forward for: " + str(tide) + " with speed: " + str(pwm))
@@ -132,26 +130,11 @@ class Control(object):
         self.move(1, 0.5, 1, 0, 1, 0, tide)
 
     def movement_front_until_event(self, e):
-        # print "q: " + str(q.get())
         logging.log(logging.DEBUG, "before wait")
         self.forward_nonstop()
         e.wait()
         self.stop()
         logging.log(logging.DEBUG, "after stop")
-
-    # def get_sensor_info(self, e, switching_to, sensor_pin_id):
-    #     # e = threading.Event()
-    #     gpio = mraa.Gpio(sensor_pin_id)
-    #     prev_switch = gpio.read()
-    #     while (True):
-    #         switch = gpio.read()
-    #         # logging.log(logging.DEBUG, "switch: " + str(switch))
-    #         if switch != prev_switch and switch == switching_to:
-    #             # logging.log(logging.DEBUG, "switch: " + str(switch))
-    #             # logging.log(logging.DEBUG, "event before: " + str(e.is_set()))
-    #             e.set()
-    #             # logging.log(logging.DEBUG, "event after: " + str(e.is_set()))
-    #         prev_switch = switch
 
     def move_nonstop(self, xpa, xpb, xa1, xa2, xb1, xb2):
         print ("moving motors")
@@ -227,22 +210,6 @@ class Control(object):
         time.sleep(tide)
         self.stop()
 
-    # def move_front_until_sensor_act(self):
-    #     e = threading.Event()
-    #     con = Control()
-    #     # q = Queue()
-    #     # q.put(1)
-    #     # con.forward_nonstop()
-    #     # time.sleep(1)
-    #     # con.stop()
-    #     t = threading.Thread(target=self.movement_front_until_event, args=[con, e])
-    #     t2 = threading.Thread(target=self.get_sensor_info, args=[e])
-    #     t.start()
-    #     t2.start()
-    #
-    #     t.join()
-    #     t2.join()
-
     def measure_turn_rate(self, e, speed, q):
         # e = threading.Event()
         number_of_turns = 5
@@ -281,65 +248,18 @@ class Control(object):
         logging.log(logging.DEBUG, "movement time: " + str(time_of_movement))
         q.put(time_of_movement)
 
-    # def calibrate(self):
-    #     print ("put robot on a calibration sheet, enter '1' to continue")
-    #     entered = input("put robot on a calibration sheet, enter '1' to continue: ")
-    #     while (entered is not 1):
-    #         entered = input("put robot on a calibration sheet, enter '1' to continue: ")
-    #
-    #     e = threading.Event()
-    #     pwm = 0.65
-    #     q = Queue()
-    #     # t_measure_speed = threading.Thread(target=self.measure_moving_speed, args=[e, pwm, Control.sensor_1lf])
-    #     t_measure = threading.Thread(target=self.measure_turn_rate, args=[e, pwm, q])
-    #     t_sensor = threading.Thread(target=self.get_sensor_info, args=[e, 0])
-    #
-    #     # t_measure_speed.start()
-    #     t_measure.start()
-    #     t_sensor.start()
-    #
-    #     # t_measure_speed.join()
-    #     t_measure.join()
-    #     # t_sensor.join()
-    #
-    # # def get_sensor_info(self, q):
-    # #     gpio = mraa.Gpio(Control.sensor_pin_id)
-    # #     while (True):
-    # #         s = gpio.read()
-    # #         print s
-    # #         q.put(s)
-    # #
-    # # def movement_front(self, q):
-    # #     x = 0def activate_sensor_1lf(self):
-    #     t_sensor_lf = threading.Thread(target=self.get_sensor_info, args=[self.sensor_event_1lf, 0, Control.sensor_1lf])
-    #     t_sensor_lf.start()
-    #     t_sensor_lf.join()
-    #     for i in range(0, 10):
-    #         if q.get() is 0:
-    #             exit()
-    #         print "q: " + q.get()
-    #         self.forward(float(1))
-    #         print "x =" + str(x)
-    #         x = x + 1
     def measure_line(self):
-        # print ("put robot on a calibration sheet, enter '1' to continue")
-        # entered = input("put robot on a calibration sheet, enter '1' to continue: ")
-        # while (entered is not 1):
-        #     entered = input("put robot on a calibration sheet, enter '1' to continue: ")
         q = Queue()
 
         e = threading.Event()
         pwm = 0.65
         t_measure_speed = threading.Thread(target=self.measure_moving_speed, args=[e, pwm, q])
-        # t_measure = threading.Thread(target=self.measure_turn_rate, args=[e, speed])
         t_sensor = threading.Thread(target=self.get_sensor_info, args=[e, 0])
 
         t_measure_speed.start()
-        # t_measure.start()
         t_sensor.start()
 
         t_measure_speed.join()
-        # t_measure.join()
         t_sensor.join()
         print (q.get())
 
@@ -365,7 +285,6 @@ class Sensor:
 
 
     def get_sensor_info(self, e, switching_to, min_impulse_time):
-        # e = threading.Event()
         gpio = mraa.Gpio(self.sensor_pin)
         prev_switch = gpio.read()
         logging.log(logging.DEBUG, "number_of_activations: " + str(self.number_of_activations))
@@ -373,21 +292,15 @@ class Sensor:
 
         while (True):
             switch = gpio.read()
-            # logging.log(logging.DEBUG, "switch: " + str(switch))
-            # '''switching_to  - to what will'''
 
             if switch != prev_switch and switch == switching_to:
                 end = time.time()
-                # print ("end - start: " + str(end - start))
                 if end - start > min_impulse_time:
-                # logging.log(logging.DEBUG, "switch: " + str(switch))
-                #     logging.log(logging.DEBUG, "event before: " + str(e.is_set()))
                     e.set()
                     logging.log(logging.DEBUG, "event: " + str(e.is_set()))
                     self.number_of_activations += 1
                     logging.log(logging.DEBUG, "number_of_activations: " + str(self.number_of_activations))
                     start = time.time()
-                    # logging.log(logging.DEBUG, "event after: " + str(e.is_set()))
 
             prev_switch = switch
 

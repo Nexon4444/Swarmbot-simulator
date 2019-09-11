@@ -19,10 +19,8 @@ last_message = None
 class Messenger:
     logging_on = True
     logging_mess_on = True
-
     def __init__(self, name, broker, port, mess_event):
         self.name = name
-
         self.sender = mqtt.Client(str(name) + "_sender")
         self.receiver = mqtt.Client(str(name) + "_receiver")
 
@@ -42,33 +40,25 @@ class Messenger:
         self.log("connecting to broker: " + str(broker))
         self.sender.connect(broker, port)
         self.receiver.connect(broker, port)
-
         self.receiver_topic = self.create_topic(str(self.name), str("receive"))
         self.sender_topic = self.create_topic(str(self.name), str("send"))
-
         self.receiver.on_subscribe = self.on_subscribe
         self.receiver.subscribe(self.receiver_topic)
-        # self.receiver.subscribe(self.receiver_topic)
-
         self.receiver.last_messages = Queue()
         self.sender.last_messages = Queue()
 
         self.client_topics = list()
-        self.wait_topics = list()
-
         self.last_message_lock = Lock()
         self.cond = Condition()
 
         # self.last_messages = Queue.queue()
         self.listen()
-        # print ("loop started!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
     def listen(self):
         self.receiver.loop_start()
 
     def subscribe(self, topic):
         self.receiver.subscribe(topic)
-
 
     def on_subscribe(self, client, userdata, mid, granted_qos):
         self.log("Subscribed: " + str(client) + "")
@@ -96,18 +86,14 @@ class Messenger:
 
     def on_message(self, client, userdata, msg):
         m_decode = str(msg.payload.decode("utf-8"))
-        # print("=========++++++++++++=============")
         self.receiver.last_messages.put(m_decode) #self.create_message_from_string(m_decode)
         self.log(str(self.name) + " received message: " + str(m_decode))
-
         self.receiver.mess_event.set()
-
 
     def send(self, topic=None, message="DEFAULT"):
         if isinstance(message, Message):
             me = MessageEncoder()
             message = me.encode(message)
-
         if topic is None:
             for client_topic in self.client_topics:
                 self.log("sending message: " + str(message) + " on topic: " + str(client_topic))
@@ -122,7 +108,6 @@ class Messenger:
     def get_message_type_from_string(type_str):
         if type_str in [mtype_str for key, mtype_str in MTYPE.__dict__.items()]:
             return MTYPE.__dict__[type_str]
-
 
         else:
             return None
@@ -196,7 +181,6 @@ class MALGORITHM_COMMAND:
 
 class MSERVER:
     READY = "READY"
-# class MCOMPLEX:
 
 class Message:
     def __init__(self, id, type, content):
@@ -219,6 +203,9 @@ class Message:
 
     def __str__(self):
         return str(self.__dict__)
+
+
+
 
 class MessageEncoder(json.JSONEncoder):
     def default(self, o):
@@ -271,3 +258,6 @@ class MessageEncoder(json.JSONEncoder):
                 }
         else:
             return json.JSONEncoder.default(self, o)
+
+
+
