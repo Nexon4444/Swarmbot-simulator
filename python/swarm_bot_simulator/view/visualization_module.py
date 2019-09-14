@@ -113,9 +113,6 @@ class Visualizer:
                                                         draw_size[1]), 7)
         return left_top_corner, ratio
 
-
-
-
 class BotImage:
     COLOURS = {
         "BLACK": (0, 0, 0),

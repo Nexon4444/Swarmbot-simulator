@@ -24,6 +24,8 @@ class MainController:
         launch_mosquitto(config["communication_settings"]["port"])
 
         img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
+
+        for bots in self.config.
         camera = VideoAnalyzer(config)
         photo_params = camera.load_photo(img_path)
         board_params = photo_params[0]
