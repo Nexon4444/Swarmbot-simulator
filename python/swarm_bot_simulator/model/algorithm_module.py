@@ -280,8 +280,16 @@ class Bot:
         coh = self.cohesion(visible_bots)
 
         sep.mul_scalar(self.config["bot_settings"]["sep_mul"])
-        ali.mul_scalar(self.bot_settings["ali_mul"])
+        ali.mul_scalar(self.config["bot_settings"]["ali_mul"])
         coh.mul_scalar(self.config["bot_settings"]["coh_mul"])
+
+        # print("ID robota:" + str(self.bot_info_aware.bot_id) + "\n"
+        #       + "sep: " + str(sep) + "\n"
+        #       + "ali: " + str(ali) + "\n"
+        #       + "coh: " + str(coh))
+        # print("sep: " + str(sep))
+        # print("ali: " + str(ali))
+        # print("coh: " + str(coh))
 
         self.apply_force(sep)
         self.apply_force(ali)
@@ -305,12 +313,13 @@ class Bot:
 
         if self.bot_settings["separation_distance"] < dist:
             return Vector(0, 0)
-
+        # try:
         diff_vec = self.points2vector(bot)
         diff_vec.div_scalar(dist)
         diff_vec.normalize()
         steer.sub_vector(diff_vec)
-
+        # except:
+        #     raise Exception("Bots cannot take the same position")
         return steer
 
     def correct_separation(self, steer, visible_bots):
@@ -427,8 +436,8 @@ class Bot:
     def borders(self):
         next_pos = self.bot_info_aware.position + self.bot_info_aware.speed
         if next_pos.in_borders(Vector(self.board_settings["border_x"], self.board_settings["border_y"])) is False:
-            self.stop()
-
+            # self.stop()
+            self.bot_info_aware.speed= Vector(0, 0)
     def update(self):
         self.bot_info_aware.acceleration.mul_scalar(1)
 
@@ -439,6 +448,8 @@ class Bot:
         self.bot_info_aware.acceleration.mul_scalar(0)
 
     def move_to_position(self, bot_info, speed):
+        print("bot_id: " + self.bot_info_aware.bot_id + "\nspeed: " + str(speed))
+
         self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
         self.conduct_forward(bot_info, speed)
 

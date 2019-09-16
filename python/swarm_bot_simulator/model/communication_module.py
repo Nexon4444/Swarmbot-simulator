@@ -17,8 +17,8 @@ logging.basicConfig(level=logging.DEBUG,
 last_message = None
 
 class Messenger:
-    logging_on = True
-    logging_mess_on = True
+    logging_on = False
+    logging_mess_on = False
 
     def __init__(self, name, broker, port, mess_event):
         self.name = name

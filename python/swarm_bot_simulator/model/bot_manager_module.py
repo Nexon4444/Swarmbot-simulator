@@ -126,7 +126,7 @@ class Bot_manager:
             self.calculate_positions(self.get_info_from_bots())
             self.synchronise_with_camera()
             self.visualize_data(q)
-            time.sleep(0.5)
+            # time.sleep(0.5)
         self.quit_program()
 
 
@@ -157,7 +157,7 @@ class Bot_manager:
                 if all_messages_received:
                     return
 
-                time.sleep(1)
+                # time.sleep(1)
 
         print("\n")
 

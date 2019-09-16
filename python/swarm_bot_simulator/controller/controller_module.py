@@ -25,28 +25,38 @@ class MainController:
 
         img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
 
-        for bots in self.config.
-        camera = VideoAnalyzer(config)
-        photo_params = camera.load_photo(img_path)
-        board_params = photo_params[0]
-        board_width = board_params[1][0]
-        board_height = board_params[1][1]
+        all_bots_simulated = True
+        real_bot_id = None
+        for bot in self.config["bots"]:
+            if bot["is_real"] is True:
+                all_bots_simulated = False
+                break
 
-        marker_params = photo_params[1]
-        marker_poz_x = marker_params[0][0]
-        marker_poz_y = marker_params[0][1]
-        marker_direction = marker_params[1]
-        marker_transformed = photo_params[2]
-        marker_transformed_poz_x = marker_transformed[0][0]
-        marker_transformed_poz_y = marker_transformed[0][1]
+        if all_bots_simulated is False:
+            camera = VideoAnalyzer(config)
+            photo_params = camera.load_photo(img_path)
+            board_params = photo_params[0]
+            board_width = board_params[1][0]
+            board_height = board_params[1][1]
+
+            marker_params = photo_params[1]
+            marker_poz_x = marker_params[0][0]
+            marker_poz_y = marker_params[0][1]
+            marker_direction = marker_params[1]
+            marker_transformed = photo_params[2]
+            marker_transformed_poz_x = marker_transformed[0][0]
+            marker_transformed_poz_y = marker_transformed[0][1]
+            # if config["bots"][]["is_real"] is True:
+            config["bots"][real_bot_id]["direction"] = marker_direction
+            config["bots"][real_bot_id]["poz_x"] = marker_transformed_poz_x
+            config["bots"][real_bot_id]["poz_y"] = marker_transformed_poz_y
+
+        else:
+            board_width = 600
+            board_height = 600
+            
 
         config["real_settings"]["pixel_2_real_ratio"] = board_width / config["board_settings"]["real_width"]
-
-        if config["bots"][0]["is_real"] is True:
-            config["bots"][0]["direction"] = marker_direction
-            config["bots"][0]["poz_x"] = marker_transformed_poz_x
-            config["bots"][0]["poz_y"] = marker_transformed_poz_y
-
         config["board_settings"] = {}
         config["board_settings"]["border_x"] = board_width
         config["board_settings"]["border_y"] = board_height
