@@ -363,7 +363,6 @@ class Bot:
             dist = self.distance(bot_info)
             steer = self.alignment_steer(bot_info, dist, steer, visible_bots)
 
-
         visible_bot_amount = len(visible_bots)
         if visible_bot_amount is not 0:
             steer.div_scalar(visible_bot_amount)
@@ -416,7 +415,6 @@ class Bot:
                            if bot_info.bot_id != self.bot_info_aware.bot_id}
             return all_bots_cp
 
-
     def distance(self, bot_info):
         return self.bot_info_aware.position.distance(bot_info.position)
 
@@ -453,7 +451,6 @@ class Bot:
         self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
         self.conduct_forward(bot_info, speed)
 
-
     def conduct_forward(self, bot_info, speed):
         t = self.forward(bot_info, speed)
         if bot_info.is_real is True:
@@ -481,7 +478,6 @@ class Bot:
             return absolute_dir - bot_info.dir
         else:
             return 360 - (absolute_dir - bot_info.dir)
-
 
     def stop(self):
         self.bot_info_aware.speed.set_xy(0, 0)

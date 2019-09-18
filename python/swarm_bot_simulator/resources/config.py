@@ -13,7 +13,7 @@ config = {
 
   },
   "camera_settings": {
-    "photo_url": "http://192.168.0.109:8080/shot.jpg",
+    "photo_url": "http://192.168.0.102:8080/shot.jpg",
     "launch_analysis_windows": False,
     "resize": 0.5,
     "shape_tolerance": 0.04,
@@ -27,7 +27,8 @@ config = {
   "real_settings": {
     "pwm": 0.3,
     "cm_per_sec": 56.93,
-    "deg_per_sec": 450,    "gauss": {
+    "deg_per_sec": 450,
+    "gauss": {
       "x": (56, 5.32),
       "y": (0.8, 5.32)
     }
@@ -48,16 +49,13 @@ config = {
 
     "width": 20,
     "height": 40,
-
-
-
   },
   "bots": [
     {
       "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
-      "is_real": True,
+      "is_real": False,
       "speed": [
         5,
         1

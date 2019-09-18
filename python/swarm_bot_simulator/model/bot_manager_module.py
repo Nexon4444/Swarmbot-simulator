@@ -126,7 +126,7 @@ class Bot_manager:
             self.calculate_positions(self.get_info_from_bots())
             self.synchronise_with_camera()
             self.visualize_data(q)
-            # time.sleep(0.5)
+            time.sleep(0.5)
         self.quit_program()
 
 
@@ -159,7 +159,7 @@ class Bot_manager:
 
                 # time.sleep(1)
 
-        print("\n")
+        # print("\n")
 
     def await_boards(self):
         start = time.time()
@@ -175,7 +175,7 @@ class Bot_manager:
                     end = time.time()
                     break
 
-        print("\n")
+        # print("\n")
 
     def await_bot_info(self):
         received_messages = None
@@ -189,10 +189,12 @@ class Bot_manager:
             for bot_id in self.board.bots_info.keys():
                 if bot_id not in messages or messages[bot_id].type != MTYPE.BOT_INFO:
                     all_messages_received = False
+                    time.sleep(0.1)
                     end = time.time()
                     break
 
-        print("\n")
+
+        # print("\n")
         return received_messages
 
 
@@ -216,7 +218,7 @@ class Bot_manager:
             if bot_info.is_real: #or bot_info.bot_id == "1":
                 img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
 
-                photo_params = self.video_analyser.load_photo(img_path)
+                photo_params = self.video_analyser.load_photo()
                 board_params = photo_params[0]
                 marker_params = photo_params[1]
                 marker_transformed = photo_params[2]
@@ -224,10 +226,10 @@ class Bot_manager:
                 marker_transformed_poz_y = marker_transformed[0][1]
                 marker_direction = marker_params[1]
                 bot_info.position = util.Vector(marker_transformed_poz_x, marker_transformed_poz_y)
-                logging.debug("bot_info_before: " + str(bot_info.dir))
+                # logging.debug("bot_info_before: " + str(bot_info.dir))
                 bot_info.dir = marker_direction
-                logging.debug(str("marker params: ") + str((marker_transformed_poz_x, marker_transformed_poz_y)))
-                logging.debug(str(bot_info.dir))
+                # logging.debug(str("marker params: ") + str((marker_transformed_poz_x, marker_transformed_poz_y)))
+                # logging.debug(str(bot_info.dir))
 
     def calculate_positions(self, bot_infos_dict):
         for key, bot_info in bot_infos_dict.items():

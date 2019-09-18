@@ -27,14 +27,15 @@ class MainController:
 
         all_bots_simulated = True
         real_bot_id = None
-        for bot in self.config["bots"]:
+        for indx, bot in enumerate(self.config["bots"]):
             if bot["is_real"] is True:
                 all_bots_simulated = False
+                real_bot_id = indx
                 break
 
         if all_bots_simulated is False:
             camera = VideoAnalyzer(config)
-            photo_params = camera.load_photo(img_path)
+            photo_params = camera.load_photo()
             board_params = photo_params[0]
             board_width = board_params[1][0]
             board_height = board_params[1][1]

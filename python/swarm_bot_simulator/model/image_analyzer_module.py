@@ -12,10 +12,10 @@ from shapely.geometry import LineString
 
 
 class Detector:
-    # wait_for_key_press = False
-    wait_for_key_press = True
-    # show_images = False
-    show_images = True
+    wait_for_key_press = False
+    # wait_for_key_press = True
+    show_images = False
+    # show_images = True
 
     def __init__(self, config):
         self.config = config
@@ -25,6 +25,7 @@ class Detector:
             Detector.show_images = False
         self.remembered_flag = False
         self.remembered_board = None
+
     def angle(self, seg1, seg2, dist_point):
         Ax = seg1[0]
         Ay = seg1[1]
@@ -313,13 +314,13 @@ class Detector:
 
     def filter_marker(self, image):
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-        lower_red = np.array([160, 50, 50])
+        lower_red = np.array([170, 50, 50])
         upper_red = np.array([180, 255, 255])
 
         mask1 = cv2.inRange(hsv, lower_red, upper_red)
 
         lower_red = np.array([0, 50, 50])
-        upper_red = np.array([10, 255, 255])
+        upper_red = np.array([5, 255, 255])
 
         mask2 = cv2.inRange(hsv, lower_red, upper_red)
 
@@ -382,8 +383,9 @@ class VideoAnalyzer:
         # sd = ShapeDetector()
         try:
             frame_data = self.shape_detector.analyze_image(frame, self.config["camera_settings"]["resize"])
-            print(str(frame_data))
+            print("board: " + str(frame_data[0]) + "\nmarker: " + str(frame_data[1]) + "\ntriangle: " + str(frame_data[2]))
             return frame_data
         except ValueError as e:
             print("IMAGE ERROR")
             print(e)
+
