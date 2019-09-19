@@ -120,24 +120,7 @@ class Bot:
         self.flock()
         self.borders()
         self.update()
-        # self.report_val()
 
-    def move(self, ):
-        if self.config["bots"]["is_real"] is True:
-            self.orientiate()
-        else:
-            self.mock_orientiate()
-            # self.mock_front()
-
-    # def orientiate(self):
-    #     calc = SimulatedBot()
-    #     self.bot_info_achieved = calc.calculate(self.bot_info_aware.get_data_to_calc())
-
-    def mock_turn(self, dir):
-        pass
-
-    def mock_front(self, length):
-        pass
 
     def send_board_to_server(self):
         mes = it.Message(id=self.id, type=it.MTYPE.BOARD, content=self.board)
@@ -161,17 +144,13 @@ class Bot:
                 return False
             elif last_message.content == it.MALGORITHM_COMMAND.CONTINUE:
                 return True
-        # return True
+
 
     def get_init_info_from_server(self):
         logging.debug("waiting for init_info from server")
         self.mess_event.wait()
         received = self.messenger.get_last_message()
         logging.debug("received from server: " + str(received))
-        # while not received.type == it.MTYPE.SERVER:
-        #     self.mess_event.clear()
-        #     self.mess_event.wait()
-        #     received = self.messenger.get_last_message()
 
         logging.debug("received init_info from server")
         self.messenger.add_topic_to_send(str(received.content))
@@ -215,8 +194,7 @@ class Bot:
 
     def set_init_values(self, bot_info):
         self.bot_info_aware = copy.deepcopy(bot_info)
-        self.bot_info_real = copy.deepcopy(bot_info)
-        self.bot_info_sensor = copy.deepcopy(bot_info)
+
 
     def pass_line(self):
         self.counter()

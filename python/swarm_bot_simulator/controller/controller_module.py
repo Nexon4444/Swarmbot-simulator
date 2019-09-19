@@ -22,7 +22,7 @@ class MainController:
             subprocess.Popen(["mosquitto", "-p", str(port)])
 
         launch_mosquitto(config["communication_settings"]["port"])
-
+        time.sleep(1)
         img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
 
         all_bots_simulated = True

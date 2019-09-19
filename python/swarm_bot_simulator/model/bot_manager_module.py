@@ -95,6 +95,7 @@ class Bot_manager:
         all_messages_received = False
         messages = dict()
         while all_messages_received is False:
+            time.sleep(0.1)
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)
             all_messages_received = True
@@ -139,6 +140,7 @@ class Bot_manager:
             all_messages_received = False
 
             while all_messages_received is False:
+                time.sleep(0.1)
                 received_messages = self.messenger.get_last_messages()
                 messages = merge_two_dicts(messages, received_messages)
                 all_messages_received = True
@@ -166,6 +168,7 @@ class Bot_manager:
         all_messages_received = False
         messages = dict()
         while all_messages_received is False:
+            time.sleep(0.1)
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)
             all_messages_received = True
@@ -183,6 +186,7 @@ class Bot_manager:
         all_messages_received = False
         messages = dict()
         while all_messages_received is False:
+            time.sleep(0.1)
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)
             all_messages_received = True

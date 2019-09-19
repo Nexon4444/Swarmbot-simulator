@@ -122,8 +122,6 @@ class Messenger:
     def get_message_type_from_string(type_str):
         if type_str in [mtype_str for key, mtype_str in MTYPE.__dict__.items()]:
             return MTYPE.__dict__[type_str]
-
-
         else:
             return None
 
