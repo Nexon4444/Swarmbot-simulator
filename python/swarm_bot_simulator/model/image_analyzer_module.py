@@ -147,7 +147,9 @@ class Detector:
         board_img = np.zeros((800, 800, 3), np.uint8)
         cv2.drawContours(board_img, [box_contour], 0, (0, 255, 0), 3)
         cv2.drawContours(board_img, [triangle_contour], 0, (0, 0, 255), 3)
-        self.show_and_wait(board_img, "board+marker visualized")
+        # self.show_and_wait(board_img, "board+marker visualized")
+        print(marker_parameters[1])
+        cv2.imshow("board+marker visualized", board_img)
         return board_parameters, marker_parameters, triangle_transformed
 
     def create_contour_from_list(self, list_of_points):
@@ -383,7 +385,7 @@ class VideoAnalyzer:
         # sd = ShapeDetector()
         try:
             frame_data = self.shape_detector.analyze_image(frame, self.config["camera_settings"]["resize"])
-            print("board: " + str(frame_data[0]) + "\nmarker: " + str(frame_data[1]) + "\ntriangle: " + str(frame_data[2]))
+            # print("board: " + str(frame_data[0]) + "\nmarker: " + str(frame_data[1]) + "\ntriangle: " + str(frame_data[2]))
             return frame_data
         except ValueError as e:
             print("IMAGE ERROR")

@@ -87,7 +87,7 @@ class Visualizer:
             # bot1 = BotImage(100, 100, 0, 40, 40, game_display)
             # bot1.change_poz(0, 0, -11)
             x += 2
-            self.log("Displaying board: {" + str(board) + "}")
+            # self.log("Displaying board: {" + str(board) + "}")
             pygame.display.update()
 
         pygame.quit()
@@ -102,7 +102,7 @@ class Visualizer:
         x_ratio = Visualizer.max_board_view_size[0]/self.board_settings["border_x"]
         y_ratio = Visualizer.max_board_view_size[1]/self.board_settings["border_y"]
         ratio = min(x_ratio, y_ratio)
-        draw_size = (self.board_settings["border_y"] * ratio, self.board_settings["border_x"] * ratio)
+        draw_size = (self.board_settings["border_x"] * ratio, self.board_settings["border_y"] * ratio)
 
         left_top_corner = (self.size[0]/2 - draw_size[0]/2,
                            self.size[1]/2 - draw_size[1]/2)
@@ -145,7 +145,8 @@ class BotImage:
         self.game_display.blit(self.convert2pygame(self.vectorize(self.dir)),
                                (left_top_corner[0] + self.position.x*ratio,
                                 left_top_corner[1] + self.position.y*ratio))
-        logging.debug("drawing bot: " + str(self.id) + " with dir: " + str(self.dir))
+        # logging.debug("drawing bot: " + str(self.id) + " with dir: " + str(self.dir))
+
 
     def convert2pygame(self, surface):
         def bgra_surf_to_rgba_string(cairo_surface):
