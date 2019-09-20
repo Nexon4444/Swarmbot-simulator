@@ -102,7 +102,7 @@ class Visualizer:
         x_ratio = Visualizer.max_board_view_size[0]/self.board_settings["border_x"]
         y_ratio = Visualizer.max_board_view_size[1]/self.board_settings["border_y"]
         ratio = min(x_ratio, y_ratio)
-        draw_size = (self.board_settings["border_x"] * ratio, self.board_settings["border_y"] * ratio)
+        draw_size = (self.board_settings["border_y"] * ratio, self.board_settings["border_x"] * ratio)
 
         left_top_corner = (self.size[0]/2 - draw_size[0]/2,
                            self.size[1]/2 - draw_size[1]/2)

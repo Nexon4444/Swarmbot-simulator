@@ -95,7 +95,6 @@ class Bot_manager:
         all_messages_received = False
         messages = dict()
         while all_messages_received is False:
-            time.sleep(0.1)
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)
             all_messages_received = True
@@ -119,17 +118,17 @@ class Bot_manager:
         self.await_ready()
         board_activation_event.set()
         while not quit_event.is_set():
-
             self.send_boards()
             self.await_ready()
 
             self.send_continue()
             self.calculate_positions(self.get_info_from_bots())
+            time.sleep(1)
             self.synchronise_with_camera()
             self.visualize_data(q)
-            time.sleep(0.5)
-        self.quit_program()
 
+
+        self.quit_program()
 
     def await_ready_resend(self, wait_time, func):
         messages = dict()
@@ -140,7 +139,6 @@ class Bot_manager:
             all_messages_received = False
 
             while all_messages_received is False:
-                time.sleep(0.1)
                 received_messages = self.messenger.get_last_messages()
                 messages = merge_two_dicts(messages, received_messages)
                 all_messages_received = True
@@ -168,7 +166,6 @@ class Bot_manager:
         all_messages_received = False
         messages = dict()
         while all_messages_received is False:
-            time.sleep(0.1)
             received_messages = self.messenger.get_last_messages()
             messages = merge_two_dicts(messages, received_messages)
             all_messages_received = True
@@ -181,26 +178,23 @@ class Bot_manager:
         # print("\n")
 
     def await_bot_info(self):
-        received_messages = None
+        received_messages = dict()
         start = time.time()
         all_messages_received = False
         messages = dict()
         while all_messages_received is False:
-            time.sleep(0.1)
-            received_messages = self.messenger.get_last_messages()
-            messages = merge_two_dicts(messages, received_messages)
+            messages = self.messenger.get_last_messages()
+            received_messages = merge_two_dicts(messages, received_messages)
             all_messages_received = True
             for bot_id in self.board.bots_info.keys():
-                if bot_id not in messages or messages[bot_id].type != MTYPE.BOT_INFO:
+                if bot_id not in received_messages or received_messages[bot_id].type != MTYPE.BOT_INFO:
                     all_messages_received = False
-                    time.sleep(0.1)
                     end = time.time()
                     break
 
 
         # print("\n")
         return received_messages
-
 
     def send_continue(self):
         me = MessageEncoder()
@@ -233,7 +227,7 @@ class Bot_manager:
                 # logging.debug("bot_info_before: " + str(bot_info.dir))
                 bot_info.dir = marker_direction
                 # logging.debug(str("marker params: ") + str((marker_transformed_poz_x, marker_transformed_poz_y)))
-                # logging.debug(str(bot_info.dir))
+                # logging.debug(str(bot_info.dir))True
 
     def calculate_positions(self, bot_infos_dict):
         for key, bot_info in bot_infos_dict.items():

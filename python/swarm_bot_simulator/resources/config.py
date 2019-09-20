@@ -27,8 +27,7 @@ config = {
   "real_settings": {
     "pwm": 0.3,
     "cm_per_sec": 56.93,
-    "deg_per_sec": 450,
-    "gauss": {
+    "deg_per_sec": 450,    "gauss": {
       "x": (56, 5.32),
       "y": (0.8, 5.32)
     }
@@ -49,6 +48,9 @@ config = {
 
     "width": 20,
     "height": 40,
+
+
+
   },
   "bots": [
     {
@@ -98,55 +100,6 @@ config = {
       ],
       "color": "BLUE",
       "direction": 180
-    },
-    {
-          "bot_id": "5",
-          "poz_x": 170,
-          "poz_y": 150,
-          "is_real": False,
-          "speed": [
-              5,
-              1
-          ],
-          "color": "RED",
-          "direction": 180
-      },
-      {
-          "bot_id": "6",
-          "poz_x": 150,
-          "poz_y": 170,
-          "is_real": False,
-          "speed": [
-              4,
-              1
-          ],
-          "color": "BLUE",
-          "direction": 180
-      },
-      {
-          "bot_id": "7",
-          "poz_x": 200,
-          "poz_y": 150,
-          "is_real": False,
-          "speed": [
-              4,
-              1
-          ],
-          "color": "BLUE",
-          "direction": 180
-      },
-      {
-          "bot_id": "8",
-          "poz_x": 150,
-          "poz_y": 200,
-          "is_real": False,
-          "speed": [
-              4,
-              11
-          ],
-          "color": "BLUE",
-          "direction": 180
-      },
-
+    }
   ]
 }
