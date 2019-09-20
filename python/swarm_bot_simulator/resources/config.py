@@ -13,7 +13,7 @@ config = {
 
   },
   "camera_settings": {
-    "photo_url": "http://192.168.0.102:8080/shot.jpg",
+    "photo_url": "http://192.168.60.57:8080/shot.jpg",
     "launch_analysis_windows": False,
     "resize": 0.5,
     "shape_tolerance": 0.04,
@@ -21,13 +21,14 @@ config = {
     "remember_first": True
   },
   "board_settings": {
-    "real_width": 32,
-    "real_height": 78
+    "real_width": 100,
+    "real_height": 150
   },
   "real_settings": {
-    "pwm": 0.3,
+    "pwm": 0.4,
     "cm_per_sec": 56.93,
-    "deg_per_sec": 450,    "gauss": {
+    "deg_per_sec": 450,
+    "gauss": {
       "x": (56, 5.32),
       "y": (0.8, 5.32)
     }
@@ -39,18 +40,15 @@ config = {
     "cohesion_distance": 200,
     "exclusion_distance": 10,
 
-    "sep_mul": 4.5,
-    "ali_mul": 2.0,
-    "coh_mul": 2.0,
+    "sep_mul": 10.5,
+    "ali_mul": 1.0,
+    "coh_mul": 1.0,
 
     "max_speed": 5,
     "max_force": 1,
 
     "width": 20,
     "height": 40,
-
-
-
   },
   "bots": [
     {
@@ -63,42 +61,6 @@ config = {
         1
       ],
       "color": "RED",
-      "direction": 180
-    },
-    {
-      "bot_id": "2",
-      "poz_x": 150,
-      "poz_y": 100,
-      "is_real": False,
-      "speed": [
-        4,
-        1
-      ],
-      "color": "BLUE",
-      "direction": 180
-    },
-    {
-      "bot_id": "3",
-      "poz_x": 100,
-      "poz_y": 150,
-      "is_real": False,
-      "speed": [
-        4,
-        1
-      ],
-      "color": "BLUE",
-      "direction": 180
-    },
-    {
-      "bot_id": "4",
-      "poz_x": 150,
-      "poz_y": 150,
-      "is_real": False,
-      "speed": [
-        4,
-        1
-      ],
-      "color": "BLUE",
       "direction": 180
     }
   ]

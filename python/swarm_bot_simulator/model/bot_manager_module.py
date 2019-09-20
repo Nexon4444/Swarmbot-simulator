@@ -66,7 +66,7 @@ class Bot_manager:
     def visualization_thread(self, q, board_activation_event, start_simulation_event):
         vis = Visualizer(self.config["board_settings"], board_activation_event, start_simulation_event)
         stop = False
-        vis.visualize(q)
+
 
     def simulate_bots(self):
         for bot in self.bots:

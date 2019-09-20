@@ -55,7 +55,7 @@ config = {
       "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
-      "is_real": True,
+      "is_real": False,
       "speed": [
         5,
         1

@@ -15,7 +15,7 @@ class Visualizer:
 
     def __init__(self, board_settings, board_activation_event, start_simulation_event):
         self.board_settings = board_settings
-        self.size = [800, 600]
+        self.size = [1000, 1200]
         self.game_display = pygame.display.set_mode(self.size)
         self.board_activation_event = board_activation_event
         self.start_simulation_event = start_simulation_event
