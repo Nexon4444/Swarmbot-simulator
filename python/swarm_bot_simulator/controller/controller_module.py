@@ -35,7 +35,7 @@ class MainController:
 
         if all_bots_simulated is False:
             camera = VideoAnalyzer(config)
-            photo_params = camera.load_photo(img_path)
+            photo_params = camera.load_photo_once()
             # photo_params = camera.load_photo()
             board_params = photo_params[0]
             board_width = board_params[1][0]
@@ -54,7 +54,7 @@ class MainController:
             config["bots"][real_bot_id]["poz_y"] = marker_transformed_poz_y
 
         else:
-            board_width = 600
+            board_width = 800
             board_height = 600
             
 

@@ -1,5 +1,6 @@
 import math
 import sys
+import threading
 
 import requests
 import cv2
@@ -9,7 +10,7 @@ from swarm_bot_simulator.model.algorithm_module import Vector
 # from swarm_bot_simulator.model.algorithm import Vector
 import imutils
 from shapely.geometry import LineString
-
+from queue import LifoQueue
 
 class Detector:
     wait_for_key_press = False
@@ -19,6 +20,7 @@ class Detector:
 
     def __init__(self, config):
         self.config = config
+
         if config["camera_settings"]["launch_analysis_windows"] is True:
             Detector.show_images = True
         else:
@@ -118,12 +120,12 @@ class Detector:
     def remember(self, board_parameters):
         if self.config["camera_settings"]["remember_first"] is True and self.remembered_flag is False:
             self.remembered_board = board_parameters
+            self.remembered_flag = True
             return board_parameters
-        elif self.config["camera_settings"]["remember_first"] is True:
+        elif self.config["camera_settings"]["remember_first"] is True and self.remembered_flag is True:
             return self.remembered_board
         else:
             return board_parameters
-
 
     def analyze_image(self, img, imgScale):
         # img = cv2.imread(img_path)
@@ -148,8 +150,8 @@ class Detector:
         cv2.drawContours(board_img, [box_contour], 0, (0, 255, 0), 3)
         cv2.drawContours(board_img, [triangle_contour], 0, (0, 0, 255), 3)
         # self.show_and_wait(board_img, "board+marker visualized")
-        print(marker_parameters[1])
-        cv2.imshow("board+marker visualized", board_img)
+        # print(marker_parameters[1])
+        # cv2.imshow("board+marker visualized", board_img)
         return board_parameters, marker_parameters, triangle_transformed
 
     def create_contour_from_list(self, list_of_points):
@@ -159,14 +161,16 @@ class Detector:
         box = board_parameters[2]
         box = np.int0(box)
         triangle = marker_parameters[2]
+        # print("triangle:\n" + str(triangle))
         triangle = np.int0(triangle)
         trans_params = self.count_transform(board_parameters=board_parameters)
         box_transformed = np.int0([self.transform(point, trans_params) for point in box])
+
         triangle_transformed = (self.transform(marker_parameters[0], trans_params),
                                 np.int0([self.transform(point, trans_params) for point in triangle]),
                                 # self.transform(marker_parameters[0], trans_params)
                                 )
-
+        # print ("triangle_transformed: \n" + str(triangle_transformed[1]))
         return box_transformed, triangle_transformed
 
     def show_and_wait(self, image, name):
@@ -270,6 +274,7 @@ class Detector:
         aprox = self.approximate(largest_cont)
         aprox = np.int0(aprox)
         seg1, seg2, seg3 = self.get_oriented_triangle_points(aprox)
+        # print(str("segs: ") + str(seg1) +"\n" + str(seg2) + "\n" + str(seg3))
         x = 3
 
         return center, math.degrees(self.angle(seg1, seg2, seg3)), [el[0] for el in aprox]
@@ -285,25 +290,30 @@ class Detector:
 
     def get_oriented_triangle_points(self, cont):
         # pom = cont[0][0][0]
-        p0 = cont[0][0]
-        p1 = cont[1][0]
-        p2 = cont[2][0]
+        p0 = tuple(cont[0][0])
+        p1 = tuple(cont[1][0])
+        p2 = tuple(cont[2][0])
 
         d01 = distance.euclidean(p0, p1)
         d12 = distance.euclidean(p1, p2)
         d02 = distance.euclidean(p0, p2)
 
-        dist_dict = {0: d01,
-                     1: d12,
-                     2: d02}
+        dist_dict = {(p0, p1): d01,
+                     (p1, p2): d12,
+                     (p0, p2): d02}
 
-        point_dict = {0: (p0, p1),
-                      1: (p1, p2),
-                      2: (p0, p2)}
+        # point_dict = {0: (p0, p1),
+        #               1: (p1, p2),
+        #               2: (p0, p2)}
 
-        sorted_points = sorted(dist_dict)
-        longer_point1 = point_dict[sorted_points[0]][0]
-        longer_point2 = point_dict[sorted_points[0]][1]
+        sorted_points = sorted(dist_dict.items(), key=lambda kv: kv[1])
+        sorted_points.reverse()
+        # print(str(sorted_points))
+        longer_point1 = sorted_points[0][0][0]
+        longer_point2 = sorted_points[0][0][1]
+        #
+        # print("longer_point1: " + str(longer_point1))
+        # print("longer_point2: " + str(longer_point2))
 
         if p0 is not longer_point1 and p0 is not longer_point2:
             further_point = p0
@@ -355,9 +365,12 @@ class Detector:
 
 class VideoAnalyzer:
     def __init__(self, config):
+        self.q = LifoQueue()
         self.config = config
         self.photo_url = config["camera_settings"]["photo_url"]
         self.shape_detector = Detector(config)
+        self.last_frame_data = None
+
 
     def load_video(self):
         while True:
@@ -371,9 +384,32 @@ class VideoAnalyzer:
             if cv2.waitKey(1) == 27:
                 break
 
-    def load_photo(self, path=None):
+    def start_image_getting(self):
+        t_imget = threading.Thread(target=self.image_get_thread,
+                                   args=[self.q])
+        t_imget.start()
+
+    def image_get_thread(self, q: LifoQueue):
+        while True:
+            img_resp = requests.get(url=self.photo_url)
+            if q.full():
+                q.get()
+            q.put(img_resp)
+
+    def load_photo_once(self, path=None):
         if path is None:
             img_resp = requests.get(url=self.photo_url)
+            # img_resp = self.q.get()
+            im_arr = np.array(bytearray(img_resp.content), dtype=np.uint8)
+            img = cv2.imdecode(im_arr, -1)
+        else:
+            img = cv2.imread(path)
+        return self.analyze(img)
+
+    def load_photo(self, path=None):
+        if path is None:
+            # img_resp = requests.get(url=self.photo_url)
+            img_resp = self.q.get()
             im_arr = np.array(bytearray(img_resp.content), dtype=np.uint8)
             img = cv2.imdecode(im_arr, -1)
         else:
@@ -383,11 +419,14 @@ class VideoAnalyzer:
 
     def analyze(self, frame):
         # sd = ShapeDetector()
+
         try:
             frame_data = self.shape_detector.analyze_image(frame, self.config["camera_settings"]["resize"])
             # print("board: " + str(frame_data[0]) + "\nmarker: " + str(frame_data[1]) + "\ntriangle: " + str(frame_data[2]))
+            self.last_frame_data = frame_data
             return frame_data
         except ValueError as e:
             print("IMAGE ERROR")
             print(e)
+            return self.last_frame_data
 

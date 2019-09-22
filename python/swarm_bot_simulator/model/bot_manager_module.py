@@ -26,6 +26,7 @@ class Bot_manager:
         self.t_talk = None
         self.t_vis= None
         self.video_analyser = va.VideoAnalyzer(config)
+        self.video_analyser.start_image_getting()
         self.messenger = Messenger("server",
                                    config["communication_settings"]["broker"],
                                    config["communication_settings"]["port"],
@@ -106,7 +107,7 @@ class Bot_manager:
                     all_messages_received = False
                     end = time.time()
                     break
-        print("\n")
+        # print("\n")
 
     def communicate_with_bots(self, q, board_activation_event, start_simulation_event, quit_event, config):
         start_simulation_event.wait()
@@ -123,8 +124,9 @@ class Bot_manager:
 
             self.send_continue()
             self.calculate_positions(self.get_info_from_bots())
-            time.sleep(1)
+            time.sleep(self.config["simulation_settings"]["wait_time"])
             self.synchronise_with_camera()
+            print(self.board)
             self.visualize_data(q)
 
 
@@ -133,7 +135,7 @@ class Bot_manager:
     def await_ready_resend(self, wait_time, func):
         messages = dict()
         while True:
-            logging.debug("sending server info")
+            # logging.debug("sending server info")
             func()
             start = time.time()
             all_messages_received = False
@@ -143,7 +145,7 @@ class Bot_manager:
                 messages = merge_two_dicts(messages, received_messages)
                 all_messages_received = True
                 end = time.time()
-                logging.debug("waiting for: " + str(end - start))
+                # logging.debug("waiting for: " + str(end - start))
                 if end - start > wait_time:
                     break
                 for bot_id in self.board.bots_info.keys():
@@ -152,8 +154,8 @@ class Bot_manager:
                             or messages[bot_id].content != MSERVER.READY:
 
                         all_messages_received = False
-                        logging.debug("NOT ALL READY messages received from all bots")
-                        logging.debug("received: " + str(messages))
+                        # logging.debug("NOT ALL READY messages received from all bots")
+                        # logging.debug("received: " + str(messages))
                 if all_messages_received:
                     return
 
@@ -175,8 +177,6 @@ class Bot_manager:
                     end = time.time()
                     break
 
-        # print("\n")
-
     def await_bot_info(self):
         received_messages = dict()
         start = time.time()
@@ -191,8 +191,6 @@ class Bot_manager:
                     all_messages_received = False
                     end = time.time()
                     break
-
-
         # print("\n")
         return received_messages
 
@@ -211,23 +209,41 @@ class Bot_manager:
         bots_info_dict = self.bot_info_messages_dict2bots_info_dict(messages_dict)
         return bots_info_dict
 
+    # def synchronise_with_camera(self):
+    #     for key, bot_info in self.board.bots_info.items():
+    #         if bot_info.is_real: #or bot_info.bot_id == "1":
+    #             img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
+    #
+    #             photo_params = self.video_analyser.load_photo()
+    #             board_params = photo_params[0]
+    #             marker_params = photo_params[1]
+    #             marker_transformed = photo_params[2]
+    #             marker_transformed_poz_x = marker_transformed[0][0]
+    #             marker_transformed_poz_y = marker_transformed[0][1]
+    #             marker_direction = marker_params[1]
+    #             bot_info.position = util.Vector(marker_transformed_poz_x, marker_transformed_poz_y)
+    #             # logging.debug("bot_info_before: " + str(bot_info.dir))
+    #             bot_info.dir = marker_direction
+    #             # logging.debug(str("marker params: ") + str((marker_transformed_poz_x, marker_transformed_poz_y)))
+    #             # logging.debug(str(bot_info.dir))True
+
+    def set_board_from_camera(self, board, bot_id):
+        bot_info = board.bots_info[bot_id]
+        photo_params = self.video_analyser.load_photo()
+        board_params = photo_params[0]
+        marker_params = photo_params[1]
+        marker_transformed = photo_params[2]
+        marker_transformed_poz_x = marker_transformed[0][0]
+        marker_transformed_poz_y = marker_transformed[0][1]
+        marker_direction = marker_params[1]
+        # print(str(marker_transformed[0]))
+        bot_info.position = util.Vector(marker_transformed_poz_x, marker_transformed_poz_y)
+        bot_info.dir = marker_direction
+
     def synchronise_with_camera(self):
         for key, bot_info in self.board.bots_info.items():
             if bot_info.is_real: #or bot_info.bot_id == "1":
-                img_path = "/home/nexon/Projects/Swarmbot-simulator/python/swarm_bot_simulator/resources/trojkat.jpg"
-
-                photo_params = self.video_analyser.load_photo()
-                board_params = photo_params[0]
-                marker_params = photo_params[1]
-                marker_transformed = photo_params[2]
-                marker_transformed_poz_x = marker_transformed[0][0]
-                marker_transformed_poz_y = marker_transformed[0][1]
-                marker_direction = marker_params[1]
-                bot_info.position = util.Vector(marker_transformed_poz_x, marker_transformed_poz_y)
-                # logging.debug("bot_info_before: " + str(bot_info.dir))
-                bot_info.dir = marker_direction
-                # logging.debug(str("marker params: ") + str((marker_transformed_poz_x, marker_transformed_poz_y)))
-                # logging.debug(str(bot_info.dir))True
+                self.set_board_from_camera(self.board, bot_info.bot_id)
 
     def calculate_positions(self, bot_infos_dict):
         for key, bot_info in bot_infos_dict.items():
@@ -237,7 +253,7 @@ class Bot_manager:
         return {key: message.content for key, message in bot_info_messages.items()}
 
     def visualize_data(self, q):
-        logging.debug(str("given board position: ") + str(self.board.bots_info["1"]))
+        # logging.debug(str("given board position: ") + str(self.board.bots_info["1"]))
         q.put(self.board)
 
     def quit_program(self):

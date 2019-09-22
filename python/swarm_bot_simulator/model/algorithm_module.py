@@ -1,6 +1,7 @@
 # from swarm_bot_simulator.model.config import PozInfo
 import json
 import logging
+import time
 from json import JSONEncoder
 from swarm_bot_simulator.utilities.util import Vector, VectorEncoder
 from swarm_bot_simulator.controller.steering_module import Control
@@ -121,7 +122,6 @@ class Bot:
         self.borders()
         self.update()
 
-
     def send_board_to_server(self):
         mes = it.Message(id=self.id, type=it.MTYPE.BOARD, content=self.board)
         self.messenger.send(message=mes)
@@ -131,7 +131,7 @@ class Bot:
         self.messenger.send(message=mes)
 
     def send_ready_to_server(self):
-        logging.debug("sending ready to server")
+        # logging.debug("sending ready to server")
         mes = it.Message(id=self.id, type=it.MTYPE.SERVER, content=it.MSERVER.READY)
         self.messenger.send(message=mes)
 
@@ -155,8 +155,6 @@ class Bot:
         logging.debug("received init_info from server")
         self.messenger.add_topic_to_send(str(received.content))
         self.mess_event.clear()
-
-
 
     def get_info_from_server(self):
         self.mess_event.wait()
@@ -292,10 +290,13 @@ class Bot:
         if self.bot_settings["separation_distance"] < dist:
             return Vector(0, 0)
         # try:
+        max = self.config["bot_settings"]["separation_distance"]
+
         diff_vec = self.points2vector(bot)
         diff_vec.div_scalar(dist)
         diff_vec.normalize()
         steer.sub_vector(diff_vec)
+        steer.mul_scalar((max/dist)**2)
         # except:
         #     raise Exception("Bots cannot take the same position")
         return steer
@@ -306,8 +307,8 @@ class Bot:
         if steer.magnitude() > 0:
             steer.normalize()
             steer.mul_scalar(self.bot_settings["max_speed"])
-            steer.sub_vector(self.bot_info_aware.speed)
-            steer.limit(self.bot_settings["max_force"])
+            # steer.sub_vector(self.bot_info_aware.speed)
+            # steer.limit(self.bot_settings["max_force"])
 
     def points2vector(self, bot_info):
         diff_poz = (bot_info.position.x - self.bot_info_aware.position.x,
@@ -360,8 +361,8 @@ class Bot:
 
         steer.normalize()
         steer.mul_scalar(self.bot_settings["max_speed"])
-        steer.sub_vector(self.bot_info_aware.speed)
-        steer.limit(self.bot_settings["max_force"])
+        # steer.sub_vector(self.bot_info_aware.speed)
+        # steer.limit(self.bot_settings["max_force"])
         return steer
 
     def get_single_line_follower(self, line_event):
@@ -392,6 +393,16 @@ class Bot:
             all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in self.board.bots_info.items()
                            if bot_info.bot_id != self.bot_info_aware.bot_id}
             return all_bots_cp
+        else:
+            # x = 0
+            # y = 0
+            # max = 0
+            # x, y, max = {bot_info.bot_id: bot_info for key, bot_info in self.board.bots_info.items()
+            # # Bot.doer((x, y, max))
+
+            all_bots_cp = {bot_info.bot_id: bot_info for key, bot_info in self.board.bots_info.items()
+                           if bot_info.bot_id != self.bot_info_aware.bot_id}
+            return all_bots_cp
 
     def distance(self, bot_info):
         return self.bot_info_aware.position.distance(bot_info.position)
@@ -404,16 +415,19 @@ class Bot:
         desired.add_vector(vec)
         desired.normalize()
         desired.mul_scalar(self.bot_settings["max_speed"])
-        desired.sub_vector(self.bot_info_aware.speed)
-        desired.limit(self.bot_settings["max_force"])
+        # desired.sub_vector(self.bot_info_aware.speed)
+        # desired.limit(self.bot_settings["max_force"])
         # desired.invert()
         return desired
 
     def borders(self):
-        next_pos = self.bot_info_aware.position + self.bot_info_aware.speed
-        if next_pos.in_borders(Vector(self.board_settings["border_x"], self.board_settings["border_y"])) is False:
+        next_pos = self.bot_info_aware.position + self.bot_info_aware.speed + self.bot_info_aware.acceleration
+        print("bot_info_aware: " + str(self.bot_info_aware))
+
+        if not next_pos.in_borders(Vector(self.board_settings["border_x"], self.board_settings["border_y"])):
             # self.stop()
-            self.bot_info_aware.speed= Vector(0, 0)
+            self.bot_info_aware.speed = Vector(0, 0)
+            self.bot_info_aware.acceleration = Vector(0, 0)
     def update(self):
         self.bot_info_aware.acceleration.mul_scalar(1)
 
@@ -424,9 +438,9 @@ class Bot:
         self.bot_info_aware.acceleration.mul_scalar(0)
 
     def move_to_position(self, bot_info, speed):
-        print("bot_id: " + self.bot_info_aware.bot_id + "\nspeed: " + str(speed))
-
-        self.conduct_turn(bot_info, self.bot_info_aware.speed.get_angle())
+        # print("bot_id: " + self.bot_info_aware.bot_id + "\nspeed: " + str(speed))
+        speed_angle = math.degrees(self.bot_info_aware.speed.get_angle())
+        self.conduct_turn(bot_info, speed_angle)
         self.conduct_forward(bot_info, speed)
 
     def conduct_forward(self, bot_info, speed):
@@ -439,6 +453,7 @@ class Bot:
 
         if bot_info.is_real is True:
             self.control.turn(t, self.config["real_settings"]["pwm"])
+            time.sleep(self.config["simulation_settings"]["wait_time"])
 
     def forward(self, bot_info, speed):
         t = self.physics_simulator.count_forward(speed)
@@ -448,14 +463,18 @@ class Bot:
     def turn(self, bot_info, absolute_dir):
         t = self.physics_simulator.count_turn(self.calc_relative_turn(bot_info, absolute_dir))
         self.physics_simulator.simulate_turn(bot_info, t)
-        bot_info.dir = math.degrees(absolute_dir)
+        # bot_info.dir = math.degrees(absolute_dir)
         return t
 
     def calc_relative_turn(self, bot_info, absolute_dir):
         if math.fabs(absolute_dir - bot_info.dir) < 180:
             return absolute_dir - bot_info.dir
         else:
-            return 360 - (absolute_dir - bot_info.dir)
+            return (absolute_dir - bot_info.dir) - 360
+
+    @staticmethod
+    def doer(x):
+        return 0
 
     def stop(self):
         self.bot_info_aware.speed.set_xy(0, 0)
@@ -630,7 +649,7 @@ class Board:
 
     def __str__(self):
         # bot_list = [str(bot) for bot in self.all_bots_data]
-        return "\n".join(self.__dict__)
+        return "\n".join([str(bot_info) for key, bot_info in self.bots_info.items()])
 
     def calibrate(self):
         pass

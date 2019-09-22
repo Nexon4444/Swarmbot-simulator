@@ -59,6 +59,7 @@ class Vector:
 
     @staticmethod
     def direction2normalized_vector(direction):
+        direction = direction
         vec = Vector(sin(direction), cos(direction))
         vec.normalize()
         return vec
@@ -299,6 +300,8 @@ class Line:
 
         return [(x1, y1), (x2, y2)]
 
+vec = Vector.direction2normalized_vector(0)
+print(vec)
 # vec = Vector.create_vec_from_dir_length(math.pi/2, 4)
 # print(vec)
 # # print(cos(4*math.pi/2))

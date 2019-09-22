@@ -1,6 +1,7 @@
 config = {
   "simulation_settings":{
-    "simple_commands": False
+    "simple_commands": False,
+    "wait_time": 1
   },
   "view_settings":{
     "launch": True
