@@ -127,8 +127,10 @@ class Bot:
         self.messenger.send(message=mes)
 
     def send_bot_info_to_server(self):
+        print("sending bot_info")
         mes = it.Message(id=self.id, type=it.MTYPE.BOT_INFO, content=self.bot_info_aware)
         self.messenger.send(message=mes)
+        print("stopped sending bot_info")
 
     def send_ready_to_server(self):
         # logging.debug("sending ready to server")
@@ -443,7 +445,8 @@ class Bot:
     def conduct_forward(self, bot_info, speed):
         t = self.forward(bot_info, speed)
         if bot_info.is_real is True:
-            self.control.forward(t, self.config["real_settings"]["pwm"])
+            self.control.forward(t, self.config["real_settings"]["pwm_forward"])
+            time.sleep(self.config["simulation_settings"]["wait_time"])
 
     def conduct_turn(self, bot_info, absolute_dir):
         t = self.turn(bot_info, absolute_dir)

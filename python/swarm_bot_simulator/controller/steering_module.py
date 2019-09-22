@@ -66,12 +66,12 @@ class Control(object):
     def move(self, xpa, xpb, xa1, xa2, xb1, xb2, t):
         # time.sleep(0.1)
         # print ("moving motors")
-        pwma = mraa.pwma.read()
-        pwmb = mraa.pwmb.read()
-        a1 = mraa.a1.read()
-        b1 = mraa.b1.read()
-        a2 = mraa.a2.read()
-        b2 = mraa.b2.read()
+        # pwma = mraa.pwma.read()
+        # pwmb = mraa.pwmb.read()
+        # a1 = mraa.a1.read()
+        # b1 = mraa.b1.read()
+        # a2 = mraa.a2.read()
+        # b2 = mraa.b2.read()
 
         # print ("before:\n" +
         #        "pwma: " + str(pwma) +
@@ -155,12 +155,12 @@ class Control(object):
 
     def move_nonstop(self, xpa, xpb, xa1, xa2, xb1, xb2):
         # print ("moving motors")
-        pwma = mraa.pwma.read()
-        pwmb = mraa.pwmb.read()
-        a1 = mraa.a1.read()
-        b1 = mraa.b1.read()
-        a2 = mraa.a2.read()
-        b2 = mraa.b2.read()
+        # pwma = mraa.pwma.read()
+        # pwmb = mraa.pwmb.read()
+        # a1 = mraa.a1.read()
+        # b1 = mraa.b1.read()
+        # a2 = mraa.a2.read()
+        # b2 = mraa.b2.read()
 
         # print ("before:\n" + "pwma: " + str(pwma) +
         #        "pwmb: " + str(pwmb) +

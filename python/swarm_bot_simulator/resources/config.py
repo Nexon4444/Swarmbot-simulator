@@ -1,7 +1,7 @@
 config = {
   "simulation_settings":{
     "simple_commands": False,
-    "wait_time": 0.5
+    "wait_time": 1.0
   },
   "view_settings":{
     "launch": True
@@ -26,9 +26,11 @@ config = {
     "real_height": 83.5
   },
   "real_settings": {
-    "pwm": 0.4,
-    "cm_per_sec": 56.93,
-    "deg_per_sec": 600,
+    "pwm": 0.3,
+    "pwm_forward": 0.7,
+    # "cm_per_sec": 56.93,
+    "cm_per_sec": 5.69,
+    "deg_per_sec": 145,
     "gauss": {
       "x": (0.8, 5.32),
       "y": (56, 5.32)
@@ -56,7 +58,7 @@ config = {
       "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
-      "is_real": False,
+      "is_real": True,
       "speed": [
         10,
         10
