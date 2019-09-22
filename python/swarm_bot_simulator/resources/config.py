@@ -53,6 +53,7 @@ config = {
     "width": 20,
     "height": 40,
   },
+
   "bots": [
     {
       "bot_id": "1",
@@ -60,11 +61,96 @@ config = {
       "poz_y": 100,
       "is_real": True,
       "speed": [
-        10,
-        10
+        5,
+        1
       ],
       "color": "RED",
       "direction": 180
-    }
+    },
+    {
+      "bot_id": "2",
+      "poz_x": 150,
+      "poz_y": 100,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "3",
+      "poz_x": 100,
+      "poz_y": 150,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+      "bot_id": "4",
+      "poz_x": 150,
+      "poz_y": 150,
+      "is_real": False,
+      "speed": [
+        4,
+        1
+      ],
+      "color": "BLUE",
+      "direction": 180
+    },
+    {
+          "bot_id": "5",
+          "poz_x": 170,
+          "poz_y": 150,
+          "is_real": False,
+          "speed": [
+              5,
+              1
+          ],
+          "color": "RED",
+          "direction": 180
+      },
+      {
+          "bot_id": "6",
+          "poz_x": 150,
+          "poz_y": 170,
+          "is_real": False,
+          "speed": [
+              4,
+              1
+          ],
+          "color": "BLUE",
+          "direction": 180
+      },
+      {
+          "bot_id": "7",
+          "poz_x": 200,
+          "poz_y": 150,
+          "is_real": False,
+          "speed": [
+              4,
+              1
+          ],
+          "color": "BLUE",
+          "direction": 180
+      },
+      {
+          "bot_id": "8",
+          "poz_x": 150,
+          "poz_y": 200,
+          "is_real": False,
+          "speed": [
+              4,
+              11
+          ],
+          "color": "BLUE",
+          "direction": 180
+      },
+
   ]
 }
