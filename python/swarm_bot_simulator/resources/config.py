@@ -13,7 +13,7 @@ config = {
 
   },
   "camera_settings": {
-    "photo_url": "http://192.168.60.57:8080/shot.jpg",
+    "photo_url": "http://192.168.0.101:8080/shot.jpg",
     "launch_analysis_windows": False,
     "resize": 0.5,
     "shape_tolerance": 0.04,
