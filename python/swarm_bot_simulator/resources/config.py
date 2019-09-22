@@ -1,7 +1,7 @@
 config = {
   "simulation_settings":{
     "simple_commands": False,
-    "wait_time": 1
+    "wait_time": 0
   },
   "view_settings":{
     "launch": True
@@ -30,8 +30,8 @@ config = {
     "cm_per_sec": 56.93,
     "deg_per_sec": 450,
     "gauss": {
-      "x": (56, 5.32),
-      "y": (0.8, 5.32)
+      "x": (0.8, 5.32),
+      "y": (56, 5.32)
     }
   },
   "bot_settings": {
@@ -56,10 +56,10 @@ config = {
       "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
-      "is_real": True,
+      "is_real": False,
       "speed": [
-        5,
-        1
+        10,
+        10
       ],
       "color": "RED",
       "direction": 180
