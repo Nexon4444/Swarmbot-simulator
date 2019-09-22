@@ -65,7 +65,7 @@ class Control(object):
 
     def move(self, xpa, xpb, xa1, xa2, xb1, xb2, t):
         # time.sleep(0.1)
-        print ("moving motors")
+        # print ("moving motors")
         pwma = mraa.pwma.read()
         pwmb = mraa.pwmb.read()
         a1 = mraa.a1.read()
@@ -73,13 +73,13 @@ class Control(object):
         a2 = mraa.a2.read()
         b2 = mraa.b2.read()
 
-        print ("before:\n" +
-               "pwma: " + str(pwma) +
-               " pwmb: " + str(pwmb) +
-               " a1: " + str(a1) +
-               " b1: " + str(b1) +
-               " a2: " + str(a2) +
-               " b2: " + str(b2))
+        # print ("before:\n" +
+        #        "pwma: " + str(pwma) +
+        #        " pwmb: " + str(pwmb) +
+        #        " a1: " + str(a1) +
+        #        " b1: " + str(b1) +
+        #        " a2: " + str(a2) +
+        #        " b2: " + str(b2))
 
         mraa.pwma.write(xpa)
         mraa.pwmb.write(xpb)
@@ -88,15 +88,15 @@ class Control(object):
         mraa.a2.write(xa2)
         mraa.b2.write(xb2)
 
-        print ("after:\n" +
-               " pwma: " + str(pwma) +
-               " pwmb: " + str(pwmb) +
-               " a1: " + str(a1) +
-               " b1: " + str(b1) +
-               " a2: " + str(a2) +
-               " b2: " + str(b2))
+        # print ("after:\n" +
+        #        " pwma: " + str(pwma) +
+        #        " pwmb: " + str(pwmb) +
+        #        " a1: " + str(a1) +
+        #        " b1: " + str(b1) +
+        #        " a2: " + str(a2) +
+        #        " b2: " + str(b2))
 
-        logging.debug("t: " + str(t))
+        # logging.debug("t: " + str(t))
         time.sleep(t)
         mraa.a1.write(0)
         mraa.b1.write(0)
@@ -107,28 +107,28 @@ class Control(object):
         # time.sleep(0.1)
 
     def forward(self, tide, pwm):
-        print("driving forward for: " + str(tide) + " with speed: " + str(pwm))
+        # print("driving forward for: " + str(tide) + " with speed: " + str(pwm))
         self.move(pwm, pwm, 1, 0, 1, 0, tide)
 
     def back(self, tide):
-        print("driving back")
+        # print("driving back")
         self.move(1, 1, 0, 1, 0, 1, tide)
 
     def lrotate(self, tide):
 
-        print("lrotating: " + str(tide))
+        # print("lrotating: " + str(tide))
         self.move(1, 1, 0, 1, 1, 0, float(tide))
 
     def rrotate(self, tide):
-        print("rrotating")
+        # print("rrotating")
         self.move(1, 1, 1, 0, 0, 1, tide)
 
     def lturn(self, tide):
-        print("lturning")
+        # print("lturning")
         self.move(0.5, 1, 1, 0, 1, 0, tide)
 
     def rturn(self, tide):
-        print ("rturning")
+        # print ("rturning")
         self.move(1, 0.5, 1, 0, 1, 0, tide)
 
     def movement_front_until_event(self, e):
@@ -154,7 +154,7 @@ class Control(object):
     #         prev_switch = switch
 
     def move_nonstop(self, xpa, xpb, xa1, xa2, xb1, xb2):
-        print ("moving motors")
+        # print ("moving motors")
         pwma = mraa.pwma.read()
         pwmb = mraa.pwmb.read()
         a1 = mraa.a1.read()
@@ -162,12 +162,12 @@ class Control(object):
         a2 = mraa.a2.read()
         b2 = mraa.b2.read()
 
-        print ("before:\n" + "pwma: " + str(pwma) +
-               "pwmb: " + str(pwmb) +
-               "a1: " + str(a1) +
-               "b1: " + str(b1) +
-               "a2: " + str(a2) +
-               "b2: " + str(b2))
+        # print ("before:\n" + "pwma: " + str(pwma) +
+        #        "pwmb: " + str(pwmb) +
+        #        "a1: " + str(a1) +
+        #        "b1: " + str(b1) +
+        #        "a2: " + str(a2) +
+        #        "b2: " + str(b2))
 
         mraa.pwma.write(xpa)
         mraa.pwmb.write(xpb)
@@ -175,13 +175,13 @@ class Control(object):
         mraa.b1.write(xb1)
         mraa.a2.write(xa2)
         mraa.b2.write(xb2)
-        print ("after:\n" +
-               "pwma: " + str(pwma) +
-               "pwmb: " + str(pwmb) +
-               "a1: " + str(a1) +
-               "b1: " + str(b1) +
-               "a2: " + str(a2) +
-               "b2: " + str(b2))
+        # print ("after:\n" +
+        #        "pwma: " + str(pwma) +
+        #        "pwmb: " + str(pwmb) +
+        #        "a1: " + str(a1) +
+        #        "b1: " + str(b1) +
+        #        "a2: " + str(a2) +
+        #        "b2: " + str(b2))
 
     def stop(self):
         mraa.a1.write(0)
@@ -192,27 +192,27 @@ class Control(object):
         mraa.pwma.write(0)
 
     def forward_nonstop(self, speed):
-        print("driving forward")
+        # print("driving forward")
         self.move_nonstop(speed, speed, 1, 0, 1, 0)
 
     def back_nonstop(self, speed):
-        print("driving back")
+        # print("driving back")
         self.move_nonstop(speed, speed, 0, 1, 0, 1)
 
     def lrotate_nonstop(self, speed):
-        print("lrotating nonstop")
+        # print("lrotating nonstop")
         self.move_nonstop(speed, speed, 0, 1, 1, 0)
 
     def rrotate_nonstop(self, speed):
-        print("rrotating")
+        # print("rrotating")
         self.move_nonstop(speed, speed, 1, 0, 0, 1)
 
     def lturn_nonstop(self, speed):
-        print("lturning")
+        # print("lturning")
         self.move_nonstop(0.5, 1, 1, 0, 1, 0)
 
     def rturn_nonstop(self, speed):
-        print ("rturning")
+        # print ("rturning")
         self.move_nonstop(1, 0.5, 1, 0, 1, 0)
 
     def lrotate_for(self, tide, speed):
@@ -222,7 +222,7 @@ class Control(object):
         self.stop()
 
     def rrotate_for(self, tide, speed):
-        print ("rotating left for t: " + str(tide) + " speed: " + str(speed))
+        print ("rotating right for t: " + str(tide) + " speed: " + str(speed))
         self.rrotate_nonstop(speed)
         time.sleep(tide)
         self.stop()

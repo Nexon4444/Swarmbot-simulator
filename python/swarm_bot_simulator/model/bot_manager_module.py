@@ -120,14 +120,20 @@ class Bot_manager:
         board_activation_event.set()
         while not quit_event.is_set():
             self.send_boards()
+            logging.debug("sent boards")
             self.await_ready()
+            logging.debug("ready received")
 
             self.send_continue()
+            logging.debug("1")
             self.calculate_positions(self.get_info_from_bots())
+            logging.debug("2")
             time.sleep(self.config["simulation_settings"]["wait_time"])
             self.synchronise_with_camera()
+            logging.debug("3")
             print(self.board)
             self.visualize_data(q)
+            logging.debug("4")
 
 
         self.quit_program()
@@ -145,7 +151,7 @@ class Bot_manager:
                 messages = merge_two_dicts(messages, received_messages)
                 all_messages_received = True
                 end = time.time()
-                # logging.debug("waiting for: " + str(end - start))
+                logging.debug("waiting for: " + str(end - start))
                 if end - start > wait_time:
                     break
                 for bot_id in self.board.bots_info.keys():

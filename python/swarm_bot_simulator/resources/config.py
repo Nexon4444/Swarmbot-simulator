@@ -1,7 +1,7 @@
 config = {
   "simulation_settings":{
     "simple_commands": False,
-    "wait_time": 0
+    "wait_time": 0.5
   },
   "view_settings":{
     "launch": True
@@ -14,7 +14,7 @@ config = {
 
   },
   "camera_settings": {
-    "photo_url": "http://192.168.60.57:8080/shot.jpg",
+    "photo_url": "http://192.168.0.101:8080/shot.jpg",
     "launch_analysis_windows": False,
     "resize": 0.5,
     "shape_tolerance": 0.04,
@@ -22,13 +22,13 @@ config = {
     "remember_first": True
   },
   "board_settings": {
-    "real_width": 100,
-    "real_height": 150
+    "real_width": 94,
+    "real_height": 83.5
   },
   "real_settings": {
     "pwm": 0.4,
     "cm_per_sec": 56.93,
-    "deg_per_sec": 450,
+    "deg_per_sec": 600,
     "gauss": {
       "x": (0.8, 5.32),
       "y": (56, 5.32)

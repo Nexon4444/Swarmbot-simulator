@@ -145,7 +145,6 @@ class Bot:
             elif last_message.content == it.MALGORITHM_COMMAND.CONTINUE:
                 return True
 
-
     def get_init_info_from_server(self):
         logging.debug("waiting for init_info from server")
         self.mess_event.wait()
@@ -182,7 +181,6 @@ class Bot:
         self.set_config_values(received.content)
         self.mess_event.clear()
 
-
     def set_config_values(self, config):
         self.config = config
         self.bot_settings = config["bot_settings"]
@@ -192,7 +190,6 @@ class Bot:
 
     def set_init_values(self, bot_info):
         self.bot_info_aware = copy.deepcopy(bot_info)
-
 
     def pass_line(self):
         self.counter()
