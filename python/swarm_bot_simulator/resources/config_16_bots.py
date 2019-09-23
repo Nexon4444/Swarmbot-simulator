@@ -147,6 +147,101 @@ config = {
           "color": "BLUE",
           "direction": 180
       },
-
+      {
+          "bot_id": "9",
+          "poz_x": 400,
+          "poz_y": 300,
+          "is_real": False,
+          "speed": [
+              5,
+              1
+          ],
+          "color": "GREEN",
+          "direction": 180
+      },
+      {
+          "bot_id": "10",
+          "poz_x": 450,
+          "poz_y": 100,
+          "is_real": False,
+          "speed": [
+              4,
+              1
+          ],
+          "color": "BLUE",
+          "direction": 180
+      },
+      {
+          "bot_id": "11",
+          "poz_x": 450,
+          "poz_y": 150,
+          "is_real": False,
+          "speed": [
+              4,
+              1
+          ],
+          "color": "GREEN",
+          "direction": 180
+      },
+      {
+          "bot_id": "12",
+          "poz_x": 450,
+          "poz_y": 150,
+          "is_real": False,
+          "speed": [
+              4,
+              1
+          ],
+          "color": "GREEN",
+          "direction": 180
+      },
+      {
+          "bot_id": "13",
+          "poz_x": 370,
+          "poz_y": 140,
+          "is_real": False,
+          "speed": [
+              5,
+              1
+          ],
+          "color": "GREEN",
+          "direction": 180
+      },
+      {
+          "bot_id": "14",
+          "poz_x": 350,
+          "poz_y": 170,
+          "is_real": False,
+          "speed": [
+              4,
+              1
+          ],
+          "color": "GREEN",
+          "direction": 180
+      },
+      {
+          "bot_id": "15",
+          "poz_x": 400,
+          "poz_y": 80,
+          "is_real": False,
+          "speed": [
+              4,
+              1
+          ],
+          "color": "GREEN",
+          "direction": 180
+      },
+      {
+          "bot_id": "16",
+          "poz_x": 450,
+          "poz_y": 210,
+          "is_real": False,
+          "speed": [
+              4,
+              11
+          ],
+          "color": "GREEN",
+          "direction": 180
+      },
   ]
 }

@@ -150,7 +150,7 @@ config = {
           ],
           "color": "BLUE",
           "direction": 180
-      }
+      },
 
   ]
 }
