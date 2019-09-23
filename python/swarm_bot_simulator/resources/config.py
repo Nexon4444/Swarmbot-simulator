@@ -29,7 +29,7 @@ config = {
     "pwm": 0.3,
     "pwm_forward": 0.7,
     # "cm_per_sec": 56.93,
-    "cm_per_sec": 25.69,
+    "cm_per_sec": 15.69,
     "deg_per_sec": 145,
     "gauss": {
       "x": (0.8, 5.32),
@@ -43,9 +43,9 @@ config = {
     "cohesion_distance": 300,
     "exclusion_distance": 10,
 
-    "sep_mul": 10.5,
+    "sep_mul": 5,
     "ali_mul": 5,
-    "coh_mul": 0.3,
+    "coh_mul": 5,
 
     "max_speed": 5,
     "max_force": 300,
@@ -59,7 +59,7 @@ config = {
       "bot_id": "1",
       "poz_x": 100,
       "poz_y": 100,
-      "is_real": True,
+      "is_real": False,
       "speed": [
         5,
         1
