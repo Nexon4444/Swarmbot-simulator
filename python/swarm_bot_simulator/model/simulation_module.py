@@ -12,7 +12,13 @@ class PhysicsSimulator:
         pass
 
     def count_turn(self, rel_dir):
-        return rel_dir/self.config["real_settings"]["deg_per_sec"]
+        rel_dir = rel_dir
+        turn_time = rel_dir/self.config["real_settings"]["deg_per_sec"]
+        print ("===============================")
+        print ("==== rel_dir: " + str(rel_dir) + ", time: " + str(turn_time) + " ===")
+        print ("===============================")
+
+        return turn_time
 
     def simulate_turn(self, bot_info, t):
         bot_info.dir = bot_info.dir + self.config["real_settings"]["deg_per_sec"] * t

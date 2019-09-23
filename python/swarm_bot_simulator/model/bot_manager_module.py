@@ -128,7 +128,7 @@ class Bot_manager:
             logging.debug("1")
             self.calculate_positions(self.get_info_from_bots())
             logging.debug("2")
-            time.sleep(self.config["simulation_settings"]["wait_time"])
+
             self.synchronise_with_camera()
             logging.debug("3")
             print(self.board)

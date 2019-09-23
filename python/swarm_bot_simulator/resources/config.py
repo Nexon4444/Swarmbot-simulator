@@ -44,11 +44,11 @@ config = {
     "exclusion_distance": 10,
 
     "sep_mul": 10.5,
-    "ali_mul": 0.5,
-    "coh_mul": 0.5,
+    "ali_mul": 5,
+    "coh_mul": 0.3,
 
     "max_speed": 5,
-    "max_force": 5,
+    "max_force": 300,
 
     "width": 20,
     "height": 40,

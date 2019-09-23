@@ -38,8 +38,13 @@ class MainController:
             photo_params = camera.load_photo_once()
             # photo_params = camera.load_photo()
             board_params = photo_params[0]
-            board_width = board_params[1][0]
-            board_height = board_params[1][1]
+
+            if board_params[1][0] > board_params[1][1]:
+                board_width = board_params[1][1]
+                board_height = board_params[1][0]
+            else:
+                board_width = board_params[1][0]
+                board_height = board_params[1][1]
 
             marker_params = photo_params[1]
             marker_poz_x = marker_params[0][0]

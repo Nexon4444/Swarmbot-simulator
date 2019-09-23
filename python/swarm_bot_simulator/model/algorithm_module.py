@@ -461,16 +461,52 @@ class Bot:
         return t
 
     def turn(self, bot_info, absolute_dir):
-        t = self.physics_simulator.count_turn(self.calc_relative_turn(bot_info, absolute_dir))
+        rel_ang = self.calc_relative_turn(bot_info, absolute_dir)
+        if rel_ang > 180 :
+            print("BIGGER")
+        t = self.physics_simulator.count_turn(rel_ang)
         self.physics_simulator.simulate_turn(bot_info, t)
         # bot_info.dir = math.degrees(absolute_dir)
         return t
 
-    def calc_relative_turn(self, bot_info, absolute_dir):
-        if math.fabs(absolute_dir - bot_info.dir) < 180:
-            return absolute_dir - bot_info.dir
+    def diff_angles(self, ang1, ang2):
+        if ang1 > ang2:
+            dop = 360 - ang1
+            ang = ang2 + dop
+            if ang < 180:
+                return ang
+            else:
+                return 360 - ang
         else:
-            return (absolute_dir - bot_info.dir) - 360
+            dop = 360 - ang2
+            ang = ang1 + dop
+            if ang < 180:
+                return ang
+            else:
+                return 360 - ang
+
+    def calc_relative_turn(self, bot_info, abs_dir):
+        dir = bot_info.dir
+        ang = self.diff_angles(dir, abs_dir)
+        diff_abs = math.fabs(abs_dir - dir)
+        if dir < abs_dir and math.fabs(abs_dir - dir) < 180:
+            return ang
+
+        elif dir < abs_dir and math.fabs(abs_dir - dir) > 180:
+            return -ang
+
+        elif dir > abs_dir and math.fabs(abs_dir - dir) < 180:
+            return -ang
+
+        else:
+            return ang
+
+
+    # def calc_relative_turn(self, bot_info, absolute_dir):
+    #     if math.fabs(absolute_dir - bot_info.dir) < 180:
+    #         return absolute_dir - bot_info.dir
+    #     else:
+    #         return (absolute_dir - bot_info.dir) - 360
 
     @staticmethod
     def doer(x):
